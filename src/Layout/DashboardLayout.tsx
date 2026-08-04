@@ -36,7 +36,14 @@ function DashboardLayout() {
             isSideNavOpen ? "overflow-hidden md:overflow-y-auto" : "overflow-y-auto"
           }`}
         >
-          {activeScreen === "home" && <BookmarksScreen />}
+          {activeScreen === "home" && (
+            <BookmarksScreen
+              collections={collections}
+              tags={tags}
+              onAddCollection={(newCol) => setCollections((prev) => [...prev, newCol])}
+              onAddTags={(newTagsList) => setTags((prev) => [...prev, ...newTagsList])}
+            />
+          )}
           {activeScreen === "collections" && (
             <CollectionsScreen
               collections={collections}

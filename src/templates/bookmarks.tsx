@@ -1,15 +1,36 @@
 import { useState } from "react";
 import type { RedditBookmark } from "../types/bookmark";
+import type { CollectionItem } from "../types/collection";
+import type { TagItem } from "../types/tag";
 import { MOCK_BOOKMARKS } from "../dummy_data/bookmarksData";
+import { INITIAL_COLLECTIONS } from "../dummy_data/collectionsData";
+import { INITIAL_TAGS } from "../dummy_data/tagsData";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
+import { AddBookmarkModal } from "../components/AddBookmarkModal";
 
-export default function BookmarksScreen() {
+interface BookmarksScreenProps {
+  collections?: CollectionItem[];
+  tags?: TagItem[];
+  onAddCollection?: (newCol: CollectionItem) => void;
+  onAddTags?: (newTags: TagItem[]) => void;
+}
+
+export default function BookmarksScreen({
+  collections: externalCollections,
+  tags: externalTags,
+  onAddCollection,
+  onAddTags,
+}: BookmarksScreenProps) {
   const [bookmarks, setBookmarks] = useState<RedditBookmark[]>(MOCK_BOOKMARKS);
   const [filter, setFilter] = useState<"all" | "images" | "articles">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const collections = externalCollections || INITIAL_COLLECTIONS;
+  const tags = externalTags || INITIAL_TAGS;
 
   const cleanSearch = searchTerm.toLowerCase().replace(/^#/, "");
 
@@ -28,6 +49,22 @@ export default function BookmarksScreen() {
     if (deleteConfirmId) {
       setBookmarks((prev) => prev.filter((b) => b.id !== deleteConfirmId));
       setDeleteConfirmId(null);
+    }
+  };
+
+  const handleAddBookmark = (
+    newBookmark: RedditBookmark,
+    newCol?: CollectionItem,
+    newTagsList?: TagItem[]
+  ) => {
+    setBookmarks((prev) => [newBookmark, ...prev]);
+
+    if (newCol && onAddCollection) {
+      onAddCollection(newCol);
+    }
+
+    if (newTagsList && newTagsList.length > 0 && onAddTags) {
+      onAddTags(newTagsList);
     }
   };
 
@@ -119,6 +156,37 @@ export default function BookmarksScreen() {
           </div>
         )}
       </div>
+
+      {/* Floating Circular (+) Button - ALWAYS FLOATING ON HOME BOOKMARKS SCREEN */}
+      <button
+        onClick={() => setIsAddModalOpen(true)}
+        title="Add new bookmark"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-40 size-14 rounded-full bg-[var(--primary)] text-white shadow-2xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer border border-[var(--accent-border)]"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="2.5"
+          stroke="currentColor"
+          className="size-7"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"
+          />
+        </svg>
+      </button>
+
+      {/* Add New Bookmark Modal */}
+      <AddBookmarkModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddBookmark={handleAddBookmark}
+        availableCollections={collections}
+        availableTags={tags}
+      />
 
       {/* Delete Confirmation Modal */}
       <DeleteConfirmModal

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { AnimatedThemeToggler } from "../components/ui/AnimatedThemeToggler";
 
 interface NavProps {
   onToggle: () => void;
@@ -6,29 +7,6 @@ interface NavProps {
 
 function Nav({ onToggle }: NavProps) {
   const [profileClicked, setProfileClicked] = useState(false);
-
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      if (saved) return saved === "dark";
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  }, [isDark]);
-
-  const toggleTheme = () => {
-    setIsDark((prev) => !prev);
-  };
 
   return (
     <div className="nav-container sticky top-0 z-30 bg-[var(--code-bg)]">
@@ -51,47 +29,8 @@ function Nav({ onToggle }: NavProps) {
         </svg>
         {/* Profile and Theme Toggle */}
         <div className="flex items-center ml-auto px-6 relative gap-3">
-          {/* Theme Toggle Button */}
-          <button
-            onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            className="p-2 rounded-full text-[var(--text-h)] bg-[var(--bg)] border border-[var(--border)] hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] transition-all cursor-pointer flex items-center justify-center"
-          >
-            {isDark ? (
-              /* Sun Icon for Light Mode */
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="size-5 text-[var(--accent)]"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 3v2.25m0 13.5V21m8.966-8.966h-2.25m-13.5 0h-2.25m15.356-6.364l-1.591 1.591M6.758 17.242l-1.591 1.591m12.728 0l-1.591-1.591M6.758 6.758L5.167 5.167M12 8.25a3.75 3.75 0 100 7.5 3.75 3.75 0 000-7.5z"
-                />
-              </svg>
-            ) : (
-              /* Moon Icon for Dark Mode */
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="size-5 text-[var(--primary)]"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                />
-              </svg>
-            )}
-          </button>
+          {/* Magic UI Animated Circular Theme Toggler Component */}
+          <AnimatedThemeToggler variant="circle" duration={500} />
 
           {/* Profile Dropdown */}
           <div className="relative">
