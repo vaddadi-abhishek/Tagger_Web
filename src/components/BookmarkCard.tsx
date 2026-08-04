@@ -37,7 +37,7 @@ export function BookmarkCard({
       <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
         <div className="space-y-2">
           <a
-            href={bookmark.permalink}
+            href={bookmark.url || bookmark.permalink}
             target="_blank"
             rel="noreferrer"
             className="text-base font-bold text-[var(--text-h)] hover:text-[var(--primary)] transition-colors leading-snug block line-clamp-2"

@@ -59,7 +59,7 @@ export default function BookmarksScreen() {
             placeholder="Filter saved items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-4 py-2 text-sm rounded-lg bg-[var(--code-bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors"
+            className="px-4 py-2 text-base sm:text-sm rounded-lg bg-[var(--code-bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors"
           />
 
           <div className="flex bg-[var(--code-bg)] border border-[var(--border)] p-1 rounded-lg text-xs font-medium">
