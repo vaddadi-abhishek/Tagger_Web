@@ -21,10 +21,13 @@ function SideNav({ isSideNavOpen, onClose }: SideNavProps) {
         }`}
       >
         <div className="p-5 font-bold flex justify-between items-center text-[var(--text-h)]">
-          <span>My App</span>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-[var(--primary)] shrink-0" />
+            <span className="tracking-wide">My App</span>
+          </div>
           <button
             onClick={onClose}
-            className="md:hidden text-[var(--text)] hover:text-[var(--text-h)] focus:outline-none"
+            className="md:hidden text-[var(--text)] hover:text-[var(--text-h)] focus:outline-none cursor-pointer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -45,16 +48,16 @@ function SideNav({ isSideNavOpen, onClose }: SideNavProps) {
 
         <hr className="border-[var(--border)]" />
 
-        <div className="[&>div>a]:block [&>div>a]:px-5 [&>div>a]:py-3 [&>div>a]:text-[var(--text)] [&>div>a]:hover:bg-[var(--accent-bg)] [&>div>a]:hover:text-[var(--text-h)] transition-colors">
-          <div><a href="#">Link 1</a></div>
+        <div className="[&>div>a]:block [&>div>a]:px-5 [&>div>a]:py-3 [&>div>a]:text-[var(--text)] [&>div>a]:hover:bg-[var(--accent-bg)] [&>div>a]:hover:text-[var(--primary)] [&>div>a]:transition-colors">
+          <div><a href="#" className="font-medium text-[var(--primary)] bg-[var(--accent-bg)] border-l-4 border-[var(--primary)]">Bookmarks</a></div>
           <hr className="border-[var(--border)]" />
-          <div><a href="#">Link 2</a></div>
+          <div><a href="#">Categories</a></div>
           <hr className="border-[var(--border)]" />
-          <div><a href="#">Link 3</a></div>
+          <div><a href="#">Tags</a></div>
           <hr className="border-[var(--border)]" />
-          <div><a href="#">Link 4</a></div>
+          <div><a href="#">Analytics</a></div>
           <hr className="border-[var(--border)]" />
-          <div><a href="#">Link 5</a></div>
+          <div><a href="#">Settings</a></div>
         </div>
       </div>
     </>
