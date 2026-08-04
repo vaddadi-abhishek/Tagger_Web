@@ -7,16 +7,18 @@ function DashboardLayout() {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300">
+    <div className="flex h-screen h-[100dvh] w-screen overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300">
       <SideNav
         isSideNavOpen={isSideNavOpen}
         onClose={() => setIsSideNavOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 h-full">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Nav onToggle={() => setIsSideNavOpen((prev) => !prev)} />
 
-        <main className="flex-1 overflow-y-auto p-6 bg-[var(--bg)] transition-colors duration-300">
+        <main className={`flex-1 p-4 sm:p-6 pb-28 sm:pb-10 bg-[var(--bg)] transition-colors duration-300 ${
+          isSideNavOpen ? "overflow-hidden md:overflow-y-auto" : "overflow-y-auto"
+        }`}>
           <BookmarksScreen />
         </main>
       </div>

@@ -31,7 +31,7 @@ function Nav({ onToggle }: NavProps) {
   };
 
   return (
-    <div className="nav-container">
+    <div className="nav-container sticky top-0 z-30 bg-[var(--code-bg)]">
       <div className="flex justify-between items-center p-5 h-18 bg-[var(--code-bg)] border-b border-[var(--border)] transition-colors duration-300">
         {/* Hamburger Icon */}
         <svg
@@ -41,7 +41,7 @@ function Nav({ onToggle }: NavProps) {
           viewBox="0 0 24 24"
           strokeWidth="2.5"
           stroke="currentColor"
-          className="size-6 text-[var(--text-h)] cursor-pointer hover:opacity-80 transition-opacity"
+          className="size-6 text-[var(--text-h)] cursor-pointer hover:opacity-80 transition-opacity md:hidden"
         >
           <path
             strokeLinecap="round"
@@ -50,7 +50,7 @@ function Nav({ onToggle }: NavProps) {
           />
         </svg>
         {/* Profile and Theme Toggle */}
-        <div className="flex items-center px-6 relative gap-3">
+        <div className="flex items-center ml-auto px-6 relative gap-3">
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}

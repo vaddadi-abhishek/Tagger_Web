@@ -9,15 +9,25 @@ function SideNav({ isSideNavOpen, onClose }: SideNavProps) {
       {/* Mobile Backdrop */}
       {isSideNavOpen && (
         <div
-          onClick={onClose}
-          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose?.();
+          }}
+          onTouchMove={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden touch-none cursor-default select-none pointer-events-auto"
         />
       )}
 
       {/* Sidebar Drawer */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 md:static h-full bg-[var(--code-bg)] border-r border-[var(--border)] transition-all duration-300 ease-in-out overflow-hidden shrink-0 ${
-          isSideNavOpen ? "w-60" : "w-0"
+        className={`fixed inset-y-0 left-0 z-50 md:static h-full w-60 bg-[var(--code-bg)] border-r border-[var(--border)] transition-transform duration-300 ease-in-out shrink-0 ${
+          isSideNavOpen
+            ? "translate-x-0 shadow-2xl md:shadow-none"
+            : "-translate-x-full md:translate-x-0"
         }`}
       >
         <div className="p-5 font-bold flex justify-between items-center text-[var(--text-h)]">
