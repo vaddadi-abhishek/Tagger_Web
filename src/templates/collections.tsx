@@ -138,8 +138,29 @@ export default function CollectionsScreen({
         ))}
 
         {filteredCollections.length === 0 && (
-          <div className="col-span-full text-center py-12 text-[var(--text)] border border-dashed border-[var(--border)] rounded-2xl">
-            No collections found matching your search.
+          <div className="col-span-full text-center py-16 px-4 text-[var(--text)] border border-dashed border-[var(--border)] rounded-2xl bg-[var(--code-bg)]/50 space-y-3">
+            <div className="size-12 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] mx-auto flex items-center justify-center font-bold">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-[var(--text-h)]">No Collections Created</h3>
+            <p className="text-xs max-w-sm mx-auto opacity-80">
+              {searchTerm
+                ? "No collections match your search term."
+                : "Create your first collection using the '+ New collection' button above or while adding a bookmark!"}
+            </p>
           </div>
         )}
       </div>

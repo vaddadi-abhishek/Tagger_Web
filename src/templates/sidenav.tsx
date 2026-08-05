@@ -11,6 +11,8 @@ export interface SideNavProps {
   onSelectScreen?: (screen: "home" | "collections" | "tags") => void;
   collections?: CollectionItem[];
   tags?: TagItem[];
+  onSelectCollectionFilter?: (colName: string) => void;
+  onSelectTagFilter?: (tagName: string) => void;
 }
 
 function SideNav({
@@ -20,6 +22,8 @@ function SideNav({
   onSelectScreen,
   collections: externalCollections,
   tags: externalTags,
+  onSelectCollectionFilter,
+  onSelectTagFilter,
 }: SideNavProps) {
   const [navSearch, setNavSearch] = useState("");
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(true);
@@ -45,65 +49,57 @@ function SideNav({
     onClose?.();
   };
 
+  const handleCollectionItemClick = (colName: string) => {
+    if (onSelectCollectionFilter) {
+      onSelectCollectionFilter(colName);
+    } else {
+      handleNavClick("home");
+    }
+    onClose?.();
+  };
+
+  const handleTagItemClick = (tagName: string) => {
+    if (onSelectTagFilter) {
+      onSelectTagFilter(tagName);
+    } else {
+      handleNavClick("home");
+    }
+    onClose?.();
+  };
+
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop Overlay */}
       {isSideNavOpen && (
         <div
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose?.();
-          }}
-          onTouchMove={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 md:hidden touch-none cursor-default select-none pointer-events-auto"
+          onClick={onClose}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden transition-opacity"
         />
       )}
 
-      {/* Sidebar Drawer */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 md:static h-full w-64 bg-[var(--code-bg)] border-r border-[var(--border)] transition-transform duration-300 ease-in-out shrink-0 flex flex-col justify-between ${isSideNavOpen
-          ? "translate-x-0 shadow-2xl md:shadow-none"
-          : "-translate-x-full md:translate-x-0"
-          }`}
+      {/* SideNav Container */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] w-64 bg-[var(--code-bg)] border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 shrink-0 ${
+          isSideNavOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        {/* 1. FIXED TOP SECTION (Non-scrollable) */}
-        <div className="p-4 space-y-3 shrink-0">
-          {/* Brand Workspace Header */}
-          <div className="flex items-center justify-between pb-1">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--accent-border)] flex items-center justify-center font-bold shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                  stroke="currentColor"
-                  className="size-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
-                  />
-                </svg>
+        {/* 1. FIXED TOP SECTION */}
+        <div className="p-4 space-y-4 shrink-0">
+          {/* Brand Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center font-bold text-lg shadow-md">
+                T
               </div>
-              <div className="min-w-0">
-                <div className="font-bold text-sm text-[var(--text-h)] leading-tight truncate">
-                  SaveFlow
-                </div>
-                <div className="text-[11px] text-[var(--text)] opacity-75 truncate">
-                  Personal workspace
-                </div>
-              </div>
+              <span className="font-bold text-lg text-[var(--text-h)] tracking-tight">
+                Tagger
+              </span>
             </div>
 
+            {/* Mobile Close Button */}
             <button
               onClick={onClose}
-              className="md:hidden text-[var(--text)] hover:text-[var(--text-h)] focus:outline-none cursor-pointer p-1"
+              className="md:hidden p-1.5 rounded-lg hover:bg-[var(--bg)] text-[var(--text)]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +118,7 @@ function SideNav({
             </button>
           </div>
 
-          {/* Search Input Bar (Filters Navbar Collections & Tags) */}
+          {/* Search Input Bar (Filters Navbar Items) */}
           <div className="relative flex items-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +126,7 @@ function SideNav({
               viewBox="0 0 24 24"
               strokeWidth="2"
               stroke="currentColor"
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--text)] pointer-events-none opacity-70"
+              className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--text)] pointer-events-none opacity-70 shrink-0"
             >
               <path
                 strokeLinecap="round"
@@ -143,18 +139,20 @@ function SideNav({
               placeholder="Search items..."
               value={navSearch}
               onChange={(e) => setNavSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors truncate placeholder:truncate leading-normal"
+              className="w-full pl-9 pr-3 py-2 text-base md:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors truncate placeholder:truncate leading-normal"
             />
           </div>
 
-          {/* Fixed Main Nav List */}
-          <nav className="space-y-1 pt-1">
+          {/* Primary Main Menu Links */}
+          <nav className="space-y-1">
+            {/* Home Link */}
             <button
               onClick={() => handleNavClick("home")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${activeScreen === "home"
-                ? "bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)]"
-                : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-                }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
+                activeScreen === "home"
+                  ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
+                  : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -162,7 +160,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0"
+                className="size-4 shrink-0 transition-transform group-hover:scale-110"
               >
                 <path
                   strokeLinecap="round"
@@ -173,12 +171,14 @@ function SideNav({
               <span>Home</span>
             </button>
 
+            {/* Collections Link */}
             <button
               onClick={() => handleNavClick("collections")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${activeScreen === "collections"
-                ? "bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)]"
-                : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-                }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
+                activeScreen === "collections"
+                  ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
+                  : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +186,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0"
+                className="size-4 shrink-0 transition-transform group-hover:scale-110"
               >
                 <path
                   strokeLinecap="round"
@@ -197,12 +197,14 @@ function SideNav({
               <span>Collections</span>
             </button>
 
+            {/* Tags Link */}
             <button
               onClick={() => handleNavClick("tags")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors cursor-pointer ${activeScreen === "tags"
-                ? "bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)]"
-                : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-                }`}
+              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
+                activeScreen === "tags"
+                  ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
+                  : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -210,7 +212,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0"
+                className="size-4 shrink-0 transition-transform group-hover:scale-110"
               >
                 <path
                   strokeLinecap="round"
@@ -245,8 +247,9 @@ function SideNav({
                   viewBox="0 0 24 24"
                   strokeWidth="2.5"
                   stroke="currentColor"
-                  className={`size-3 transition-transform duration-200 ${isCollectionsOpen ? "rotate-90" : ""
-                    }`}
+                  className={`size-3 transition-transform duration-200 ${
+                    isCollectionsOpen ? "rotate-90" : ""
+                  }`}
                 >
                   <path
                     strokeLinecap="round"
@@ -263,7 +266,7 @@ function SideNav({
                 {filteredCollections.map((col) => (
                   <button
                     key={col.name}
-                    onClick={() => handleNavClick("collections")}
+                    onClick={() => handleCollectionItemClick(col.name)}
                     className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -313,8 +316,9 @@ function SideNav({
                   viewBox="0 0 24 24"
                   strokeWidth="2.5"
                   stroke="currentColor"
-                  className={`size-3 transition-transform duration-200 ${isTagsOpen ? "rotate-90" : ""
-                    }`}
+                  className={`size-3 transition-transform duration-200 ${
+                    isTagsOpen ? "rotate-90" : ""
+                  }`}
                 >
                   <path
                     strokeLinecap="round"
@@ -331,7 +335,7 @@ function SideNav({
                 {filteredTags.map((tag) => (
                   <button
                     key={tag.name}
-                    onClick={() => handleNavClick("tags")}
+                    onClick={() => handleTagItemClick(tag.name)}
                     className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
@@ -360,11 +364,11 @@ function SideNav({
 
         <hr className="border-[var(--border)] shrink-0" />
 
-        {/* 3. FIXED BOTTOM SECTION (Non-scrollable) */}
-        <div className="p-3 shrink-0">
-          <a
-            href="#settings"
-            className="flex items-center gap-3 px-3 py-2 text-xs font-medium text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-xl transition-colors"
+        {/* 3. FIXED BOTTOM SECTION */}
+        <div className="p-4 shrink-0">
+          <button
+            onClick={() => handleNavClick("home")}
+            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] transition-colors group cursor-pointer"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -372,12 +376,12 @@ function SideNav({
               viewBox="0 0 24 24"
               strokeWidth="2"
               stroke="currentColor"
-              className="size-4 shrink-0"
+              className="size-4 shrink-0 transition-transform group-hover:scale-110"
             >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.281Z"
+                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 0 1 0 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 0 1 0-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281Z"
               />
               <path
                 strokeLinecap="round"
@@ -386,9 +390,9 @@ function SideNav({
               />
             </svg>
             <span>Settings</span>
-          </a>
+          </button>
         </div>
-      </div>
+      </aside>
     </>
   );
 }

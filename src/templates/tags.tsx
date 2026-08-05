@@ -135,8 +135,29 @@ export default function TagsScreen({
         ))}
 
         {filteredTags.length === 0 && (
-          <div className="text-center py-12 text-[var(--text)] italic">
-            No tags found matching your search.
+          <div className="text-center py-16 px-4 text-[var(--text)] space-y-3">
+            <div className="size-12 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] mx-auto flex items-center justify-center font-bold">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="size-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-base font-semibold text-[var(--text-h)]">No Tags Created</h3>
+            <p className="text-xs max-w-sm mx-auto opacity-80">
+              {searchTerm
+                ? "No tags match your search term."
+                : "Create your first tag using the '+ New tag' button above or while adding a bookmark!"}
+            </p>
           </div>
         )}
       </div>

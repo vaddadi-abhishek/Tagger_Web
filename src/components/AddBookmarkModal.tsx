@@ -236,6 +236,7 @@ export function AddBookmarkModal({
       postType: isImageUrl ? "image" : "link",
       selftext: description.trim() || undefined,
       tags: finalTags.map((t) => (t.startsWith("#") ? t : `#${t}`)),
+      collections: finalCollections,
     };
 
     onAddBookmark(

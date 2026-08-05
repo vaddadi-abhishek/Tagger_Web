@@ -1,5 +1,7 @@
 import React from "react";
 import type { RedditBookmark } from "../types/bookmark";
+import type { CollectionItem } from "../types/collection";
+import type { TagItem } from "../types/tag";
 
 interface BookmarkCardProps {
   bookmark: RedditBookmark;
@@ -7,6 +9,8 @@ interface BookmarkCardProps {
   onToggleMenu: (id: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
   onRequestDelete: (id: string) => void;
+  availableCollections?: CollectionItem[];
+  availableTags?: TagItem[];
 }
 
 export function BookmarkCard({
@@ -15,6 +19,8 @@ export function BookmarkCard({
   onToggleMenu,
   onCloseMenu,
   onRequestDelete,
+  availableCollections,
+  availableTags,
 }: BookmarkCardProps) {
   return (
     <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:border-[var(--accent-border)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
@@ -56,10 +62,28 @@ export function BookmarkCard({
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {bookmark.tags.map((tag, idx) => {
             const cleanTag = tag.replace(/^#/, "");
+            const tagObj = availableTags?.find(
+              (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
+            );
+            const color = tagObj?.color;
+
             return (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)] hover:bg-[var(--primary)] hover:text-white transition-all cursor-pointer group/tag"
+                style={
+                  color
+                    ? {
+                        backgroundColor: `${color}18`,
+                        borderColor: `${color}50`,
+                        color: color,
+                      }
+                    : undefined
+                }
+                className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full transition-all cursor-pointer group/tag border ${
+                  !color
+                    ? "bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)] hover:bg-[var(--primary)] hover:text-white"
+                    : "hover:opacity-80"
+                }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -68,6 +92,7 @@ export function BookmarkCard({
                   strokeWidth="2"
                   stroke="currentColor"
                   className="size-3.5 shrink-0 transition-transform group-hover/tag:scale-110"
+                  style={color ? { color: color } : undefined}
                 >
                   <path
                     strokeLinecap="round"
@@ -85,6 +110,55 @@ export function BookmarkCard({
             );
           })}
         </div>
+
+        {/* Collections Row (Below Tags) */}
+        {bookmark.collections && bookmark.collections.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {bookmark.collections.map((col, idx) => {
+              const colObj = availableCollections?.find(
+                (c) => c.name.toLowerCase() === col.toLowerCase()
+              );
+              const color = colObj?.color;
+
+              return (
+                <span
+                  key={idx}
+                  style={
+                    color
+                      ? {
+                          backgroundColor: `${color}18`,
+                          borderColor: `${color}50`,
+                          color: color,
+                        }
+                      : undefined
+                  }
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-all cursor-pointer group/col ${
+                    !color
+                      ? "bg-[var(--bg)] text-[var(--text-h)] border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                      : "hover:opacity-80"
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    className="size-3.5 shrink-0 transition-transform group-hover/col:scale-110"
+                    style={color ? { color: color } : undefined}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+                    />
+                  </svg>
+                  <span>{col}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Card Footer */}

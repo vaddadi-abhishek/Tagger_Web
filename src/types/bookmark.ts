@@ -14,4 +14,5 @@ export interface RedditBookmark {
   postType: "link" | "image" | "text";
   selftext?: string;
   tags: string[];
+  collections?: string[];
 }
