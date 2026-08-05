@@ -231,7 +231,7 @@ function SideNav({
         <hr className="border-[var(--border)] shrink-0" />
 
         {/* 2. SCROLLABLE MIDDLE SECTION */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 space-y-1">
           {/* Collapsible Collections Section */}
           <div className="space-y-1">
             <button
