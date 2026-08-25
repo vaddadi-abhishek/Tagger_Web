@@ -29,8 +29,6 @@ export function AddBookmarkModal({
 }: AddBookmarkModalProps) {
   // Form State
   const [url, setUrl] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
 
   // Collection State (Tag-style structure)
   const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
@@ -49,8 +47,6 @@ export function AddBookmarkModal({
   useEffect(() => {
     if (isOpen) {
       setUrl("");
-      setTitle("");
-      setDescription("");
       setSelectedCollections([]);
       setCollectionInput("");
       setSelectedTags([]);
@@ -158,21 +154,23 @@ export function AddBookmarkModal({
       }
     }
 
-    // Auto-generate title if empty from domain/path
-    let computedTitle = title.trim();
-    if (!computedTitle) {
-      try {
-        const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
-        computedTitle = parsed.hostname.replace("www.", "") + parsed.pathname;
-      } catch {
-        computedTitle = url;
-      }
+    const formattedUrlStr = url.trim().startsWith("http://") || url.trim().startsWith("https://")
+      ? url.trim()
+      : `https://${url.trim()}`;
+
+    // Initial fallback title before API response returns
+    let computedTitle = formattedUrlStr;
+    try {
+      const parsed = new URL(formattedUrlStr);
+      computedTitle = parsed.hostname.replace("www.", "") + (parsed.pathname !== "/" ? parsed.pathname : "");
+    } catch {
+      computedTitle = formattedUrlStr;
     }
 
-    // Determine domain/source
+    // Initial source
     let sourceName = "web";
     try {
-      const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
+      const parsed = new URL(formattedUrlStr);
       sourceName = parsed.hostname.replace("www.", "").split(".")[0];
     } catch {
       // fallback
@@ -212,7 +210,7 @@ export function AddBookmarkModal({
       }
     });
 
-    const isImageUrl = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url);
+    const isImageUrl = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(formattedUrlStr);
 
     const newBookmark: RedditBookmark = {
       id: `bm_${Date.now()}`,
@@ -228,15 +226,15 @@ export function AddBookmarkModal({
       }),
       score: 1,
       numComments: 0,
-      url: url.startsWith("http") ? url : `https://${url}`,
-      permalink: url.startsWith("http") ? url : `https://${url}`,
+      url: formattedUrlStr,
+      permalink: formattedUrlStr,
       thumbnail: isImageUrl
-        ? url
+        ? formattedUrlStr
         : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
       postType: isImageUrl ? "image" : "link",
-      selftext: description.trim() || undefined,
       tags: finalTags.map((t) => (t.startsWith("#") ? t : `#${t}`)),
       collections: finalCollections,
+      isFetchingMetadata: true, // Flag indicating metadata extraction in progress
     };
 
     onAddBookmark(
@@ -314,35 +312,7 @@ export function AddBookmarkModal({
             />
           </div>
 
-          {/* 2. Title (Optional) */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text)]">
-              Title <span className="opacity-60 font-normal">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Enter bookmark title (or auto-extracted if empty)"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3.5 py-2 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors leading-normal"
-            />
-          </div>
-
-          {/* 3. Description (Optional) */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-[var(--text)]">
-              Description <span className="opacity-60 font-normal">(Optional)</span>
-            </label>
-            <textarea
-              rows={2}
-              placeholder="Add notes or summary..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors leading-normal resize-none"
-            />
-          </div>
-
-          {/* 4. Add to Collection (Optional, Tag-style structure) */}
+          {/* 2. Add to Collection (Optional, Tag-style structure) */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-[var(--text)]">
               Add to Collection <span className="opacity-60 font-normal">(Optional)</span>
@@ -444,7 +414,7 @@ export function AddBookmarkModal({
             </div>
           </div>
 
-          {/* 5. Tags (Optional) */}
+          {/* 3. Tags (Optional) */}
           <div className="space-y-1">
             <label className="text-xs font-semibold text-[var(--text)]">
               Tags <span className="opacity-60 font-normal">(Optional)</span>

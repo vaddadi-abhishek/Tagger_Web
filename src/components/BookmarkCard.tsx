@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { RedditBookmark } from "../types/bookmark";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
@@ -22,18 +22,75 @@ export function BookmarkCard({
   availableCollections,
   availableTags,
 }: BookmarkCardProps) {
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
+  // If metadata is actively being fetched in the background, render clean wireframe gray skeleton boxes
+  if (bookmark.isFetchingMetadata) {
+    return (
+      <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-xs flex flex-col justify-between animate-pulse">
+        {/* Top Media Image Skeleton Box */}
+        <div className="h-48 sm:h-52 w-full bg-[var(--border)] opacity-60" />
+
+        {/* Content Skeleton Bars */}
+        <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+          <div className="space-y-2.5">
+            {/* Title Skeleton Lines */}
+            <div className="h-4 bg-[var(--border)] rounded-full w-4/5" />
+            <div className="h-4 bg-[var(--border)] rounded-full w-3/5" />
+
+            {/* Description Skeleton Lines */}
+            <div className="h-3 bg-[var(--border)] opacity-60 rounded-full w-full mt-3" />
+            <div className="h-3 bg-[var(--border)] opacity-60 rounded-full w-2/3" />
+          </div>
+
+          {/* Tags & Badges Skeleton */}
+          <div className="flex items-center gap-2 pt-2">
+            <div className="h-6 w-16 bg-[var(--border)] opacity-70 rounded-full" />
+            <div className="h-6 w-20 bg-[var(--border)] opacity-70 rounded-full" />
+          </div>
+        </div>
+
+        {/* Card Footer Skeleton */}
+        <div className="px-5 py-3.5 border-t border-[var(--border)] flex items-center justify-between">
+          <div className="h-3 w-20 bg-[var(--border)] opacity-60 rounded-full" />
+          <div className="h-3 w-8 bg-[var(--border)] opacity-60 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:border-[var(--accent-border)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
       {/* Media Image Section */}
       <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[var(--bg)]">
-        <img
-          src={bookmark.thumbnail}
-          alt={bookmark.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {/* Image Loading Gray Skeleton Box before thumbnail finishes loading */}
+        {!imgLoaded && (
+          <div className="absolute inset-0 bg-[var(--border)] opacity-50 animate-pulse" />
+        )}
+
+        {!imgError ? (
+          <img
+            src={bookmark.thumbnail}
+            alt={bookmark.title}
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgError(true)}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${
+              imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+            }`}
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--accent-bg)] text-[var(--text)] p-4 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8 opacity-40 mb-1">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V6.75z" />
+            </svg>
+            <span className="text-[11px] opacity-70 font-medium">{bookmark.source}</span>
+          </div>
+        )}
 
         {/* Top Right Source Badge */}
-        <div className="absolute top-3 right-3 rounded-full px-3 py-1 bg-black/60 backdrop-blur-md text-xs font-medium text-white flex items-center gap-1.5 shadow-md">
+        <div className="absolute top-3 right-3 rounded-full px-3 py-1 bg-black/60 backdrop-blur-md text-xs font-medium text-white flex items-center gap-1.5 shadow-md z-10">
           <span className="size-2 rounded-full bg-red-500 shrink-0 animate-pulse" />
           <span>{bookmark.source}</span>
         </div>

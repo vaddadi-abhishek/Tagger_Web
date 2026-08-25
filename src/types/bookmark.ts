@@ -15,4 +15,5 @@ export interface RedditBookmark {
   selftext?: string;
   tags: string[];
   collections?: string[];
+  isFetchingMetadata?: boolean;
 }
