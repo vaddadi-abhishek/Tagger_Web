@@ -18,8 +18,14 @@ interface ToastNotification {
   message: string;
 }
 
-function DashboardLayout() {
+interface DashboardLayoutProps {
+  user?: { name: string; email: string } | null;
+  onSignOut?: () => void;
+}
+
+function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+
   const [activeScreen, setActiveScreen] = useState<"home" | "collections" | "tags">("home");
 
   // Selected filter collections and tags for Home screen (separate from search bar text!)
@@ -252,7 +258,7 @@ function DashboardLayout() {
   };
 
   return (
-    <div className="flex h-screen h-[100dvh] w-screen overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300 relative">
+    <div className="flex h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300 relative">
       {/* Top-Right Floating Warning Toast Notifications */}
       <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => (
@@ -301,7 +307,11 @@ function DashboardLayout() {
       />
 
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <Nav onToggle={() => setIsSideNavOpen((prev) => !prev)} />
+        <Nav
+          onToggle={() => setIsSideNavOpen((prev) => !prev)}
+          user={user}
+          onSignOut={onSignOut}
+        />
 
         <main
           className={`flex-1 p-4 sm:p-6 pb-28 sm:pb-10 bg-[var(--bg)] transition-colors duration-300 ${

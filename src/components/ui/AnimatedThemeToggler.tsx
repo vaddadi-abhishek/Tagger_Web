@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 
 export type TransitionVariant = "circle";
@@ -52,6 +51,8 @@ export const AnimatedThemeToggler = ({
     }
     return false;
   });
+
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const isDark = isControlled ? theme === "dark" : internalIsDark;
   const buttonRef = useRef<HTMLButtonElement>(null);
   const isTransitioningRef = useRef(false);
@@ -75,100 +76,105 @@ export const AnimatedThemeToggler = ({
   }, [isControlled]);
 
   const toggleTheme = useCallback(() => {
-    const button = buttonRef.current;
-    if (
-      !button ||
-      isTransitioningRef.current ||
-      document.documentElement.dataset.magicuiThemeVt === "active"
-    )
-      return;
+    if (isTransitioningRef.current) return;
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    isTransitioningRef.current = true;
+    setIsTransitioning(true);
 
-    let x: number;
-    let y: number;
-    if (fromCenter) {
-      x = viewportWidth / 2;
-      y = viewportHeight / 2;
-    } else {
-      const { top, left, width, height } = button.getBoundingClientRect();
-      x = left + width / 2;
-      y = top + height / 2;
-    }
-
-    const maxRadius = Math.hypot(
-      Math.max(x, viewportWidth - x),
-      Math.max(y, viewportHeight - y)
-    );
+    const targetNewDarkState = !isDark;
 
     const applyTheme = () => {
-      const newTheme = !isDark;
-      document.documentElement.classList.toggle("dark");
+      document.documentElement.classList.toggle("dark", targetNewDarkState);
       if (isControlled) {
-        onThemeChange?.(newTheme ? "dark" : "light");
+        onThemeChange?.(targetNewDarkState ? "dark" : "light");
       } else {
-        setInternalIsDark(newTheme);
-        localStorage.setItem("theme", newTheme ? "dark" : "light");
+        setInternalIsDark(targetNewDarkState);
+        try {
+          localStorage.setItem("theme", targetNewDarkState ? "dark" : "light");
+        } catch {
+          // ignore quota error
+        }
       }
     };
 
-    if (typeof document.startViewTransition !== "function") {
+    const cleanup = () => {
+      setTimeout(() => {
+        isTransitioningRef.current = false;
+        setIsTransitioning(false);
+        delete document.documentElement.dataset.magicuiThemeVt;
+      }, Math.max(duration, 300));
+    };
+
+    const button = buttonRef.current;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let cx: number;
+    let cy: number;
+    if (fromCenter || !button) {
+      cx = viewportWidth / 2;
+      cy = viewportHeight / 2;
+    } else {
+      const { top, left, width, height } = button.getBoundingClientRect();
+      cx = left + width / 2;
+      cy = top + height / 2;
+    }
+
+    const maxRadius = Math.hypot(
+      Math.max(cx, viewportWidth - cx),
+      Math.max(cy, viewportHeight - cy)
+    );
+
+    // Fallback if View Transitions API is unsupported or reduced motion is enabled
+    if (
+      typeof document.startViewTransition !== "function" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       applyTheme();
+      cleanup();
       return;
     }
 
-    const clipPath = getThemeTransitionClipPaths(
-      shape,
-      x,
-      y,
-      maxRadius,
-      viewportWidth,
-      viewportHeight
-    );
+    try {
+      const root = document.documentElement;
+      root.dataset.magicuiThemeVt = "active";
 
-    const root = document.documentElement;
-    root.dataset.magicuiThemeVt = "active";
-    root.style.setProperty(
-      "--magicui-theme-toggle-vt-duration",
-      `${duration}ms`
-    );
-    root.style.setProperty("--magicui-theme-vt-clip-from", clipPath[0]);
-    const cleanup = () => {
-      isTransitioningRef.current = false;
-      delete root.dataset.magicuiThemeVt;
-      root.style.removeProperty("--magicui-theme-toggle-vt-duration");
-      root.style.removeProperty("--magicui-theme-vt-clip-from");
-    };
+      const clipPath = getThemeTransitionClipPaths(
+        shape,
+        cx,
+        cy,
+        maxRadius,
+        viewportWidth,
+        viewportHeight
+      );
 
-    isTransitioningRef.current = true;
-    const transition = document.startViewTransition(() => {
-      flushSync(applyTheme);
-    });
+      const transition = document.startViewTransition(() => {
+        applyTheme();
+      });
 
-    if (typeof transition?.finished?.finally === "function") {
-      transition.finished.finally(cleanup).catch(() => {});
-    } else {
+      if (transition?.ready) {
+        transition.ready
+          .then(() => {
+            document.documentElement.animate(
+              { clipPath },
+              {
+                duration,
+                easing: "ease-in-out",
+                fill: "forwards",
+                pseudoElement: "::view-transition-new(root)",
+              }
+            );
+          })
+          .catch(() => {})
+          .finally(() => {
+            cleanup();
+          });
+      } else {
+        cleanup();
+      }
+    } catch {
+      applyTheme();
       cleanup();
-    }
-
-    const ready = transition?.ready;
-    if (ready && typeof ready.then === "function") {
-      ready
-        .then(() => {
-          document.documentElement.animate(
-            {
-              clipPath,
-            },
-            {
-              duration,
-              easing: "ease-in-out",
-              fill: "forwards",
-              pseudoElement: "::view-transition-new(root)",
-            }
-          );
-        })
-        .catch(() => {});
     }
   }, [shape, fromCenter, duration, isDark, isControlled, onThemeChange]);
 
@@ -177,8 +183,9 @@ export const AnimatedThemeToggler = ({
       type="button"
       ref={buttonRef}
       onClick={toggleTheme}
+      disabled={isTransitioning}
       className={cn(
-        "p-2 rounded-full text-[var(--text-h)] bg-[var(--bg)] border border-[var(--border)] hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] transition-all cursor-pointer flex items-center justify-center",
+        "p-2 rounded-full text-[var(--text-h)] bg-[var(--bg)] border border-[var(--border)] hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         className
       )}
       aria-label="Toggle Theme"
