@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CreateItemModalProps {
   isOpen: boolean;
@@ -28,6 +28,17 @@ export function CreateItemModal({
 }: CreateItemModalProps) {
   const [name, setName] = useState("");
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

@@ -1,8 +1,6 @@
 import { useState } from "react";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
-import { INITIAL_COLLECTIONS } from "../dummy_data/collectionsData";
-import { INITIAL_TAGS } from "../dummy_data/tagsData";
 
 export interface SideNavProps {
   isSideNavOpen: boolean;
@@ -29,8 +27,9 @@ function SideNav({
   const [isCollectionsOpen, setIsCollectionsOpen] = useState(true);
   const [isTagsOpen, setIsTagsOpen] = useState(true);
 
-  const collections = externalCollections || INITIAL_COLLECTIONS;
-  const tags = externalTags || INITIAL_TAGS;
+  const collections = externalCollections || [];
+  const tags = externalTags || [];
+
 
   const cleanNavSearch = navSearch.toLowerCase().trim();
 

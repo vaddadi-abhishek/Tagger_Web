@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { CollectionItem } from "../types/collection";
-import { INITIAL_COLLECTIONS } from "../dummy_data/collectionsData";
 import { CollectionCard } from "../components/CollectionCard";
 import { CreateItemModal } from "../components/CreateItemModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -15,9 +14,10 @@ export default function CollectionsScreen({
   onCollectionsChange,
 }: CollectionsScreenProps) {
   const [internalCollections, setInternalCollections] =
-    useState<CollectionItem[]>(INITIAL_COLLECTIONS);
+    useState<CollectionItem[]>([]);
 
   const collections = externalCollections || internalCollections;
+
 
   const updateCollections = (updated: CollectionItem[]) => {
     if (onCollectionsChange) {

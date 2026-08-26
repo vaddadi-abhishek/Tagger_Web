@@ -55,26 +55,29 @@ function Nav({ onToggle }: NavProps) {
             </div>
             {profileClicked && (
               <div className="absolute right-0 mt-2 w-48 bg-[var(--bg)] border border-[var(--border)] rounded-md shadow-[var(--shadow)] p-1 z-10 text-[var(--text)]">
-                <a
-                  href="#profile"
-                  className="block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--text-h)] rounded transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setProfileClicked(false)}
+                  className="w-full text-left block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--text-h)] rounded transition-colors cursor-pointer"
                 >
                   Your Profile
-                </a>
+                </button>
                 <hr className="my-1 border-[var(--border)]" />
-                <a
-                  href="#settings"
-                  className="block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--text-h)] rounded transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setProfileClicked(false)}
+                  className="w-full text-left block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--text-h)] rounded transition-colors cursor-pointer"
                 >
                   Settings
-                </a>
+                </button>
                 <hr className="my-1 border-[var(--border)]" />
-                <a
-                  href="#logout"
-                  className="block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] text-red-500 rounded transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setProfileClicked(false)}
+                  className="w-full text-left block text-sm px-4 py-2 hover:bg-[var(--accent-bg)] text-red-500 rounded transition-colors cursor-pointer font-semibold"
                 >
                   Sign Out
-                </a>
+                </button>
               </div>
             )}
           </div>

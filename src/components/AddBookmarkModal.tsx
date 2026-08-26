@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
 import type { RedditBookmark } from "../types/bookmark";
+import { sanitizeUrl } from "../lib/utils";
 
 interface AddBookmarkModalProps {
   isOpen: boolean;
@@ -53,6 +54,18 @@ export function AddBookmarkModal({
       setTagInput("");
     }
   }, [isOpen]);
+
+  // Keyboard shortcut listener for Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Click outside listener for dropdowns
   useEffect(() => {
@@ -154,9 +167,8 @@ export function AddBookmarkModal({
       }
     }
 
-    const formattedUrlStr = url.trim().startsWith("http://") || url.trim().startsWith("https://")
-      ? url.trim()
-      : `https://${url.trim()}`;
+    const formattedUrlStr = sanitizeUrl(url);
+    if (formattedUrlStr === "#") return;
 
     // Initial fallback title before API response returns
     let computedTitle = formattedUrlStr;

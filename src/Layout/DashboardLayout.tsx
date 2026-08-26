@@ -1,6 +1,6 @@
 import Nav from "../templates/nav.tsx";
 import SideNav from "../templates/sidenav.tsx";
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, lazy, Suspense } from "react";
 import { ScreenSkeleton } from "../components/ui/ScreenSkeleton.tsx";
 
 import type { RedditBookmark } from "../types/bookmark.ts";
@@ -41,34 +41,11 @@ function DashboardLayout() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Real LocalStorage state for Bookmarks, Collections, and Tags
-  const [bookmarks, setBookmarks] = useState<RedditBookmark[]>(() => {
-    const saved = localStorage.getItem("tagger_bookmarks");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // In-memory state for Bookmarks, Collections, and Tags
+  const [bookmarks, setBookmarks] = useState<RedditBookmark[]>([]);
+  const [collections, setCollections] = useState<CollectionItem[]>([]);
+  const [tags, setTags] = useState<TagItem[]>([]);
 
-  const [collections, setCollections] = useState<CollectionItem[]>(() => {
-    const saved = localStorage.getItem("tagger_collections");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [tags, setTags] = useState<TagItem[]>(() => {
-    const saved = localStorage.getItem("tagger_tags");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // Sync state changes with localStorage
-  useEffect(() => {
-    localStorage.setItem("tagger_bookmarks", JSON.stringify(bookmarks));
-  }, [bookmarks]);
-
-  useEffect(() => {
-    localStorage.setItem("tagger_collections", JSON.stringify(collections));
-  }, [collections]);
-
-  useEffect(() => {
-    localStorage.setItem("tagger_tags", JSON.stringify(tags));
-  }, [tags]);
 
   // Compute dynamic counts for each collection based on current bookmarks
   const computedCollections = collections.map((col) => {

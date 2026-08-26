@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import type { RedditBookmark } from "../types/bookmark";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
+import { sanitizeUrl } from "../lib/utils";
 
 interface BookmarkCardProps {
   bookmark: RedditBookmark;
@@ -100,7 +101,7 @@ export function BookmarkCard({
       <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
         <div className="space-y-2">
           <a
-            href={bookmark.url || bookmark.permalink}
+            href={sanitizeUrl(bookmark.url || bookmark.permalink)}
             target="_blank"
             rel="noreferrer"
             className="text-base font-bold text-[var(--text-h)] hover:text-[var(--primary)] transition-colors leading-snug block line-clamp-2"
@@ -117,7 +118,7 @@ export function BookmarkCard({
 
         {/* Tags Row */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          {bookmark.tags.map((tag, idx) => {
+          {bookmark.tags?.map((tag, idx) => {
             const cleanTag = tag.replace(/^#/, "");
             const tagObj = availableTags?.find(
               (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
@@ -225,7 +226,7 @@ export function BookmarkCard({
         <div className="flex items-center gap-2">
           {bookmark.url && (
             <a
-              href={bookmark.url}
+              href={sanitizeUrl(bookmark.url)}
               target="_blank"
               rel="noreferrer"
               title="Open Source Link"

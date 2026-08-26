@@ -2,9 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import type { RedditBookmark } from "../types/bookmark";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
-import { MOCK_BOOKMARKS } from "../dummy_data/bookmarksData";
-import { INITIAL_COLLECTIONS } from "../dummy_data/collectionsData";
-import { INITIAL_TAGS } from "../dummy_data/tagsData";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
@@ -37,13 +34,14 @@ export default function BookmarksScreen({
   onSelectFilterTagsChange,
 }: BookmarksScreenProps) {
   const [internalBookmarks, setInternalBookmarks] =
-    useState<RedditBookmark[]>(MOCK_BOOKMARKS);
+    useState<RedditBookmark[]>([]);
   const [internalSelectedCollections, setInternalSelectedCollections] = useState<string[]>([]);
   const [internalSelectedTags, setInternalSelectedTags] = useState<string[]>([]);
 
   const bookmarks = externalBookmarks || internalBookmarks;
-  const collections = externalCollections || INITIAL_COLLECTIONS;
-  const tags = externalTags || INITIAL_TAGS;
+  const collections = externalCollections || [];
+  const tags = externalTags || [];
+
 
   const selectedFilterCollections =
     externalSelectedCollections !== undefined

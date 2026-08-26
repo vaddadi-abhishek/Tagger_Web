@@ -2,14 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { cn } from "../../lib/utils";
 
-export type TransitionVariant =
-  | "circle"
-  | "square"
-  | "triangle"
-  | "diamond"
-  | "hexagon"
-  | "rectangle"
-  | "star";
+export type TransitionVariant = "circle";
 
 interface AnimatedThemeTogglerProps
   extends React.ComponentPropsWithoutRef<"button"> {
@@ -20,9 +13,8 @@ interface AnimatedThemeTogglerProps
   onThemeChange?: (theme: "light" | "dark") => void;
 }
 
-
 function getThemeTransitionClipPaths(
-  variant: TransitionVariant,
+  _variant: TransitionVariant,
   cx: number,
   cy: number,
   maxRadius: number,
@@ -35,18 +27,10 @@ function getThemeTransitionClipPaths(
   const toRadius = (r: number) =>
     `${(r / (Math.hypot(viewportWidth, viewportHeight) / Math.SQRT2)) * 100}%`;
 
-  switch (variant) {
-    case "circle":
-      return [
-        `circle(0% at ${point(cx, cy)})`,
-        `circle(${toRadius(maxRadius)} at ${point(cx, cy)})`,
-      ];
-    default:
-      return [
-        `circle(0% at ${point(cx, cy)})`,
-        `circle(${toRadius(maxRadius)} at ${point(cx, cy)})`,
-      ];
-  }
+  return [
+    `circle(0% at ${point(cx, cy)})`,
+    `circle(${toRadius(maxRadius)} at ${point(cx, cy)})`,
+  ];
 }
 
 export const AnimatedThemeToggler = ({

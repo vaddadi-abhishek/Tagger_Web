@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { TagItem } from "../types/tag";
-import { INITIAL_TAGS } from "../dummy_data/tagsData";
 import { TagRow } from "../components/TagRow";
 import { CreateItemModal } from "../components/CreateItemModal";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -14,9 +13,10 @@ export default function TagsScreen({
   tags: externalTags,
   onTagsChange,
 }: TagsScreenProps) {
-  const [internalTags, setInternalTags] = useState<TagItem[]>(INITIAL_TAGS);
+  const [internalTags, setInternalTags] = useState<TagItem[]>([]);
 
   const tags = externalTags || internalTags;
+
 
   const updateTags = (updated: TagItem[]) => {
     if (onTagsChange) {
