@@ -86,9 +86,9 @@ export function BookmarkCard({
   const logoSrc = (!logoError && bookmark.logo) ? bookmark.logo : domainFavicon;
 
   return (
-    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:shadow-[0_0_30px_rgba(37,99,235,0.25)] dark:hover:shadow-[0_0_35px_rgba(81,194,176,0.35)] transition-shadow duration-300 flex flex-col justify-between">
+    <div className={`group relative glass-panel rounded-3xl transition-all duration-300 flex flex-col justify-between ${isMenuOpen ? "z-30" : "z-0"}`}>
       {/* Media Image Section */}
-      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[var(--bg)]">
+      <div className="relative h-48 sm:h-52 w-full overflow-hidden rounded-t-3xl bg-[var(--bg)]">
         {/* Image Loading Gray Skeleton Box before snapshot/logo finishes loading */}
         {!imgLoaded && (
           <div className="absolute inset-0 bg-[var(--border)] opacity-50 animate-pulse" />
@@ -314,14 +314,14 @@ export function BookmarkCard({
             </button>
 
             {isMenuOpen && (
-              <div className="absolute right-0 bottom-8 w-48 bg-[var(--code-bg)] border border-[var(--border)] rounded-xl shadow-xl p-1.5 z-30 text-xs font-medium text-[var(--text-h)]">
+              <div className="glass-modal absolute right-0 bottom-9 w-52 rounded-3xl p-2 z-40 text-xs font-medium text-[var(--text-h)] animate-in fade-in zoom-in-95 duration-150">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCloseMenu();
                     onRequestEdit?.(bookmark);
+                    onCloseMenu();
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
+                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-xl transition-colors cursor-pointer flex items-center gap-2.5"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -342,10 +342,10 @@ export function BookmarkCard({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCloseMenu();
                     onRequestEditCollections?.(bookmark);
+                    onCloseMenu();
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
+                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-xl transition-colors cursor-pointer flex items-center gap-2.5"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -366,10 +366,10 @@ export function BookmarkCard({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCloseMenu();
                     onRequestEditTags?.(bookmark);
+                    onCloseMenu();
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
+                  className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-xl transition-colors cursor-pointer flex items-center gap-2.5"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -399,7 +399,7 @@ export function BookmarkCard({
                     onRequestDelete(bookmark.id);
                     onCloseMenu();
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-500 rounded-lg transition-colors cursor-pointer font-semibold flex items-center gap-2.5"
+                  className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-500 rounded-xl transition-colors cursor-pointer font-semibold flex items-center gap-2.5"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

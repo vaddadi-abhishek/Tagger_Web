@@ -78,7 +78,7 @@ function SideNav({
 
       {/* SideNav Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] w-64 bg-[var(--code-bg)] border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 shrink-0 ${
+        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] w-64 glass-panel border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 shrink-0 ${
           isSideNavOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -87,10 +87,10 @@ function SideNav({
           {/* Brand Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="size-8 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center font-bold text-lg shadow-md">
+              <div className="size-8.5 rounded-2xl bg-gradient-to-tr from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center font-extrabold text-lg shadow-md border border-white/30">
                 T
               </div>
-              <span className="font-bold text-lg text-[var(--text-h)] tracking-tight">
+              <span className="font-extrabold text-lg text-[var(--text-h)] tracking-tight">
                 Tagger
               </span>
             </div>
@@ -98,7 +98,7 @@ function SideNav({
             {/* Mobile Close Button */}
             <button
               onClick={onClose}
-              className="md:hidden p-1.5 rounded-lg hover:bg-[var(--bg)] text-[var(--text)]"
+              className="md:hidden p-1.5 rounded-xl hover:bg-[var(--bg)] text-[var(--text)]"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -135,10 +135,10 @@ function SideNav({
             </svg>
             <input
               type="text"
-              placeholder="Search items..."
+              placeholder="Search collections & tags"
               value={navSearch}
               onChange={(e) => setNavSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-base md:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors truncate placeholder:truncate leading-normal"
+              className="glass-input w-full pl-9 pr-7 py-1.5 text-xs rounded-full text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all leading-normal"
             />
           </div>
 

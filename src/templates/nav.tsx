@@ -32,8 +32,8 @@ function Nav({
   }
 
   return (
-    <div className="nav-container sticky top-0 z-30 bg-[var(--code-bg)]">
-      <div className="flex justify-between items-center px-4 sm:px-6 h-20 bg-[var(--code-bg)] border-b border-[var(--border)] transition-colors duration-300 gap-4">
+    <div className="nav-container sticky top-0 z-30">
+      <div className="glass-nav flex justify-between items-center px-4 sm:px-6 h-20 border-b border-[var(--border)] transition-colors duration-300 gap-4">
         {/* Hamburger Icon & Navbar Header Title/Subtitle */}
         <div className="flex items-center gap-3 min-w-0">
           <svg
@@ -53,7 +53,7 @@ function Nav({
           </svg>
 
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold text-[var(--text-h)] truncate">
+            <h1 className="text-lg sm:text-xl font-extrabold text-[var(--text-h)] truncate tracking-tight">
               {titleText}
             </h1>
             <p className="text-xs text-[var(--text)] opacity-80 hidden sm:block truncate">
@@ -72,7 +72,7 @@ function Nav({
                 placeholder="Search bookmarks"
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-36 sm:w-64 px-3.5 py-1.5 pr-8 text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors leading-normal"
+                className="glass-input w-36 sm:w-64 px-3.5 py-1.5 pr-8 text-xs rounded-full text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all leading-normal"
               />
               {searchTerm && (
                 <button
@@ -93,7 +93,7 @@ function Nav({
           <div className="relative">
             <div
               onClick={() => setProfileClicked((prev) => !prev)}
-              className="w-10 h-10 bg-[var(--primary)] text-white rounded-full flex items-center justify-center cursor-pointer hover:bg-[var(--accent)] transition-colors shadow-sm font-bold text-sm"
+              className="w-10 h-10 bg-gradient-to-tr from-[var(--primary)] to-[var(--secondary)] text-white rounded-full flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity shadow-md font-extrabold text-sm border border-white/30"
               title={user?.name || "User Profile"}
             >
               {user?.name ? user.name.charAt(0).toUpperCase() : (
@@ -103,7 +103,7 @@ function Nav({
                   viewBox="0 0 24 24"
                   strokeWidth={2.0}
                   stroke="currentColor"
-                  className="size-6"
+                  className="size-5"
                 >
                   <path
                     strokeLinecap="round"
@@ -114,7 +114,7 @@ function Nav({
               )}
             </div>
             {profileClicked && (
-              <div className="absolute right-0 mt-2 w-56 bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl shadow-2xl p-2 z-40 text-[var(--text)] text-xs">
+              <div className="glass-modal absolute right-0 mt-2 w-56 rounded-3xl p-2.5 z-40 text-[var(--text)] text-xs animate-in fade-in zoom-in-95 duration-150">
                 {user && (
                   <div className="px-3 py-2 border-b border-[var(--border)] mb-1">
                     <p className="font-bold text-[var(--text-h)] truncate">{user.name}</p>

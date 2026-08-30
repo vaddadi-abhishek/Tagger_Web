@@ -1,24 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --text-h: #050316;
-  --text: #2f2a45;
-  --bg: #fbfbfe;
-  --border: #dbeafe;
-  --code-bg: #ffffff;
+  --text-h: #0f172a;
+  --text: #334155;
+  --bg: #f8fafc;
+  --border: rgba(226, 232, 240, 0.8);
+  --code-bg: rgba(255, 255, 255, 0.75);
   --primary: #2563eb;
   --secondary: #60a5fa;
   --accent: #3b82f6;
-  --accent-bg: rgba(37, 99, 235, 0.1);
-  --accent-border: #93c5fd;
-  --social-bg: #eff6ff;
-  --shadow:
-    rgba(5, 3, 22, 0.08) 0 10px 15px -3px, rgba(5, 3, 22, 0.04) 0 4px 6px -2px;
-  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
-  --heading: system-ui, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --accent-bg: rgba(37, 99, 235, 0.08);
+  --accent-border: rgba(147, 197, 253, 0.6);
+  --social-bg: rgba(239, 246, 255, 0.7);
+  --shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.07), 0 0 1px rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-border-top: rgba(255, 255, 255, 0.8);
+  --glass-modal-bg: rgba(255, 255, 255, 0.82);
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
   font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
+  letter-spacing: -0.01em;
   color-scheme: light dark;
   color: var(--text);
   background: var(--bg);
@@ -32,19 +35,72 @@
 }
 
 :root.dark {
-  --text-h: #f2faf9;
-  --text: #93abb0;
-  --bg: #080d12;
-  --border: #1b2b36;
-  --code-bg: #101820;
-  --primary: #51c2b0;
-  --secondary: #96dacf;
-  --accent: #52c7c7;
-  --accent-bg: rgba(82, 199, 199, 0.18);
-  --accent-border: rgba(82, 199, 199, 0.45);
-  --social-bg: rgba(16, 24, 32, 0.8);
-  --shadow:
-    rgba(0, 0, 0, 0.5) 0 10px 25px -3px, rgba(0, 0, 0, 0.3) 0 4px 6px -2px;
+  --text-h: #f8fafc;
+  --text: #94a3b8;
+  --bg: #030712;
+  --border: rgba(255, 255, 255, 0.1);
+  --code-bg: rgba(17, 24, 39, 0.7);
+  --primary: #38bdf8;
+  --secondary: #7dd3fc;
+  --accent: #0ea5e9;
+  --accent-bg: rgba(56, 189, 248, 0.12);
+  --accent-border: rgba(56, 189, 248, 0.35);
+  --social-bg: rgba(17, 24, 39, 0.7);
+  --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(15, 23, 42, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-top: rgba(255, 255, 255, 0.22);
+  --glass-modal-bg: rgba(15, 23, 42, 0.85);
+}
+
+/* macOS Glassmorphism Utility Classes */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-top-color: var(--glass-border-top);
+  box-shadow: var(--shadow);
+}
+
+.glass-modal {
+  background: var(--glass-modal-bg);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  border-top-color: var(--glass-border-top);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.35), 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.glass-nav {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.dark .glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+}
+
+.dark .glass-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
 }
 
 /* Global Custom Thin Scrollbar with Theme Accent Color */
@@ -98,10 +154,6 @@
 .dark::view-transition-new(root) {
   z-index: 9999;
 }
-  ::view-transition-old(root), ::view-transition-new(root) {
-    animation: none;
-    mix-blend-mode: normal;
-}
 
 @keyframes shimmer {
   0% {
@@ -110,4 +162,4 @@
   100% {
     background-position: 200% 0;
   }
-}
+}

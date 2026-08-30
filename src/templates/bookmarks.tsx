@@ -186,8 +186,9 @@ export default function BookmarksScreen({
       const matchesTag = item.tags.some((t) =>
         t.toLowerCase().replace(/^#/, "").includes(cleanSearchNoHash)
       );
-      const matchesDate =
-        item.created_at && item.created_at.toLowerCase().includes(cleanSearch);
+      const matchesDate = Boolean(
+        item.created_at && item.created_at.toLowerCase().includes(cleanSearch)
+      );
 
       matchesSearch =
         matchesTitle ||

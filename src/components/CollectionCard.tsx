@@ -38,7 +38,7 @@ export function CollectionCard({
   };
 
   return (
-    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:border-[var(--accent-border)] hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+    <div className="group relative glass-panel rounded-3xl p-5 hover:shadow-[0_20px_50px_rgba(37,99,235,0.15)] dark:hover:shadow-[0_20px_50px_rgba(56,189,248,0.2)] transition-all flex flex-col justify-between space-y-4">
       {/* Top Header: Folder Icon Badge + Responsive Color Controls */}
       <div className="flex items-center justify-between">
         <div

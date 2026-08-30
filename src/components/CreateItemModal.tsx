@@ -53,8 +53,8 @@ export function CreateItemModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-5">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="glass-modal rounded-3xl p-6 max-w-sm w-full space-y-5 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-[var(--text-h)]">{title}</h3>
           <button

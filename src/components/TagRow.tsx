@@ -34,7 +34,7 @@ export function TagRow({ tag, onRename, onDelete, onColorChange }: TagRowProps) 
   };
 
   return (
-    <div className="group relative flex items-center justify-between p-4 bg-[var(--code-bg)] border-b border-[var(--border)] first:rounded-t-2xl last:rounded-b-2xl last:border-b-0 hover:bg-[var(--bg)]/40 transition-colors gap-3">
+    <div className="group relative flex items-center justify-between p-4 glass-panel border-b border-[var(--border)] first:rounded-t-3xl last:rounded-b-3xl last:border-b-0 hover:bg-[var(--accent-bg)]/20 transition-all gap-3">
       {/* Left Info: Tag Icon Badge + Name & Count */}
       <div className="flex items-center gap-3.5 min-w-0 flex-1">
         <div

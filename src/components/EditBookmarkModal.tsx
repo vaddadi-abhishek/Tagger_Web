@@ -35,16 +35,26 @@ export function EditBookmarkModal({
 
   if (!isOpen || !bookmark) return null;
 
+  const initialTitle = bookmark.title || "";
+  const initialDescription = bookmark.description || "";
+
+  const hasChanges =
+    title.trim() !== initialTitle.trim() ||
+    description.trim() !== initialDescription.trim();
+
+  const hasValidTitle = title.trim().length > 0;
+  const isSaveDisabled = !hasChanges || !hasValidTitle;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (isSaveDisabled) return;
     onSave(bookmark.id, title.trim(), description.trim());
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5 text-left">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="glass-modal rounded-3xl p-6 max-w-lg w-full space-y-5 text-left animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="flex items-center gap-2.5">
@@ -121,7 +131,12 @@ export function EditBookmarkModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-[var(--primary)] text-white hover:opacity-90 shadow-md transition-opacity cursor-pointer"
+              disabled={isSaveDisabled}
+              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${
+                !isSaveDisabled
+                  ? "bg-[var(--primary)] text-white hover:opacity-90 shadow-md cursor-pointer opacity-100"
+                  : "bg-[var(--border)] text-[var(--text)] opacity-50 cursor-not-allowed"
+              }`}
             >
               Save Changes
             </button>

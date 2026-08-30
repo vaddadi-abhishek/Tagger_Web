@@ -91,8 +91,8 @@ export function EditTagsModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5 text-left">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="glass-modal rounded-3xl p-6 max-w-md w-full space-y-5 text-left animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
           <div className="flex items-center gap-2.5">
@@ -187,11 +187,7 @@ export function EditTagsModal({
               <label
                 key={rawTag}
                 onClick={() => toggleTag(rawTag)}
-                className={`flex items-center justify-between p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
-                  isChecked
-                    ? "bg-[var(--accent-bg)]/30 border-[var(--primary)] text-[var(--text-h)]"
-                    : "bg-[var(--bg)] border-[var(--border)] text-[var(--text)] hover:border-[var(--accent-border)]"
-                }`}
+                className="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text-h)] hover:border-[var(--accent-border)] transition-all cursor-pointer select-none"
               >
                 <div className="flex items-center gap-2">
                   <span
@@ -200,12 +196,26 @@ export function EditTagsModal({
                   />
                   <span className="text-xs font-semibold">#{clean}</span>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() => {}}
-                  className="size-4 rounded accent-[var(--primary)] cursor-pointer"
-                />
+                <div
+                  className={`size-4.5 rounded-md border flex items-center justify-center transition-all ${
+                    isChecked
+                      ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+                      : "border-[var(--border)] bg-transparent"
+                  }`}
+                >
+                  {isChecked && (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="3"
+                      stroke="currentColor"
+                      className="size-3"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                  )}
+                </div>
               </label>
             );
           })}

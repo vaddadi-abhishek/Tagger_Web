@@ -248,8 +248,8 @@ export function AddBookmarkModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5 my-8">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="glass-modal rounded-3xl p-6 max-w-lg w-full space-y-5 my-8 animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
           <div className="flex items-center gap-2.5">

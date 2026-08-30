@@ -33,6 +33,7 @@ const TagsScreen = lazy(() => import("../templates/tags.tsx"));
 interface ToastNotification {
   id: string;
   message: string;
+  type?: "success" | "error";
 }
 
 interface DashboardLayoutProps {
@@ -54,12 +55,12 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   // Floating Toast Notifications State
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
-  const addToast = (message: string) => {
+  const addToast = (message: string, type?: "success" | "error") => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
-    setToasts((prev) => [...prev, { id, message }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 6000);
+    }, 5000);
   };
 
   const removeToast = (id: string) => {
@@ -505,41 +506,63 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="flex h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300 relative">
-      {/* Top-Right Floating Warning Toast Notifications */}
-      <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className="pointer-events-auto bg-amber-950/90 border border-amber-500/50 text-amber-200 backdrop-blur-md p-3.5 rounded-2xl shadow-2xl flex items-start gap-3 transition-all"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="size-5 text-amber-400 shrink-0 mt-0.5"
+    <div className="flex h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-300 relative bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(56,189,248,0.12),rgba(3,7,18,0))]">
+      {/* Bottom-Center Floating macOS Glass Toast HUD Capsule */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
+        {toasts.map((toast) => {
+          const isError =
+            toast.type === "error" ||
+            /failed|error|unreachable/i.test(toast.message);
+
+          return (
+            <div
+              key={toast.id}
+              className="pointer-events-auto glass-modal px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200 border border-black/10 dark:border-white/15 bg-white/85 dark:bg-zinc-900/85 text-[var(--text-h)] whitespace-nowrap max-w-full"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
-              />
-            </svg>
-            <div className="flex-1 text-xs">
-              <span className="font-bold text-amber-300 block mb-0.5">Notification</span>
-              <span>{toast.message}</span>
+              {isError ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                  stroke="currentColor"
+                  className="size-4.5 text-amber-500 shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2.5"
+                  stroke="currentColor"
+                  className="size-4.5 text-emerald-500 shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              )}
+              <span className="text-xs font-semibold text-[var(--text-h)] truncate">
+                {toast.message}
+              </span>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="text-[var(--text)] opacity-50 hover:opacity-100 cursor-pointer p-0.5 text-xs font-bold transition-opacity ml-1"
+                title="Dismiss notification"
+              >
+                ✕
+              </button>
             </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="text-amber-400 hover:text-white cursor-pointer p-0.5 text-xs font-bold"
-              title="Dismiss warning"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <SideNav
