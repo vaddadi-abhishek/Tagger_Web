@@ -210,7 +210,6 @@ export async function fetchBookmarks(): Promise<Bookmark[]> {
       snapshot: row.snapshot_url || null,
       logo: row.logo_url || null,
       site_name: siteName || "Web",
-      published_at: row.published_at || null,
       tags: tagsList,
       collections: collectionsList,
       created_at: row.created_at || new Date().toISOString(),
@@ -226,7 +225,6 @@ export async function createBookmark(params: {
   snapshot?: string | null;
   logo?: string | null;
   site_name?: string;
-  published_at?: string | null;
   collectionIds?: string[];
   tagIds?: string[];
   collectionNames?: string[];
@@ -246,7 +244,6 @@ export async function createBookmark(params: {
       snapshot_url: params.snapshot || null,
       logo_url: params.logo || null,
       site_name: params.site_name || null,
-      published_at: params.published_at || null,
     })
     .select()
     .single();
@@ -291,7 +288,6 @@ export async function createBookmark(params: {
     snapshot: bookmark.snapshot_url || null,
     logo: bookmark.logo_url || null,
     site_name: siteName,
-    published_at: bookmark.published_at || null,
     tags: tagsList,
     collections: collectionsList,
     created_at: bookmark.created_at || new Date().toISOString(),
@@ -307,7 +303,6 @@ export async function updateBookmarkMetadata(
     snapshot?: string | null;
     logo?: string | null;
     site_name?: string;
-    published_at?: string | null;
   }
 ): Promise<void> {
   const { error } = await supabase
@@ -318,7 +313,6 @@ export async function updateBookmarkMetadata(
       snapshot_url: metadata.snapshot,
       logo_url: metadata.logo,
       site_name: metadata.site_name,
-      published_at: metadata.published_at,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -331,4 +325,146 @@ export async function updateBookmarkMetadata(
 export async function deleteBookmark(id: string): Promise<void> {
   const { error } = await supabase.from("bookmarks").delete().eq("id", id);
   if (error) throw error;
+}
+
+export async function updateBookmarkDetails(
+  id: string,
+  title: string,
+  description: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("bookmarks")
+    .update({
+      title: title.trim(),
+      description: description.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) {
+    console.error("Error updating bookmark details in Supabase:", error);
+    throw error;
+  }
+}
+
+export async function updateBookmarkCollections(
+  bookmarkId: string,
+  collectionNames: string[],
+  availableCollections: CollectionItem[]
+): Promise<CollectionItem[]> {
+  // 1. Delete existing junction entries for this bookmark
+  const { error: delError } = await supabase
+    .from("bookmark_collections")
+    .delete()
+    .eq("bookmark_id", bookmarkId);
+
+  if (delError) {
+    console.error("Error clearing bookmark collections:", delError);
+    throw delError;
+  }
+
+  // 2. Match collection names to IDs or auto-create missing collections
+  const matchedIds: string[] = [];
+  const updatedCollections = [...availableCollections];
+
+  for (const rawName of collectionNames) {
+    const trimmed = rawName.trim();
+    if (!trimmed) continue;
+
+    let matched = updatedCollections.find(
+      (c) => c.name.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (!matched) {
+      try {
+        matched = await createCollection(trimmed);
+        updatedCollections.push(matched);
+      } catch (err) {
+        console.error(`Error auto-creating collection '${trimmed}' in Supabase:`, err);
+      }
+    }
+
+    if (matched && !matchedIds.includes(matched.id)) {
+      matchedIds.push(matched.id);
+    }
+  }
+
+  // 3. Insert new junction rows into bookmark_collections
+  if (matchedIds.length > 0) {
+    const inserts = matchedIds.map((cId) => ({
+      bookmark_id: bookmarkId,
+      collection_id: cId,
+    }));
+    const { error: insError } = await supabase
+      .from("bookmark_collections")
+      .insert(inserts);
+
+    if (insError) {
+      console.error("Error inserting bookmark collections:", insError);
+      throw insError;
+    }
+  }
+
+  return updatedCollections;
+}
+
+export async function updateBookmarkTags(
+  bookmarkId: string,
+  tagNames: string[],
+  availableTags: TagItem[]
+): Promise<TagItem[]> {
+  // 1. Delete existing junction entries for this bookmark
+  const { error: delError } = await supabase
+    .from("bookmark_tags")
+    .delete()
+    .eq("bookmark_id", bookmarkId);
+
+  if (delError) {
+    console.error("Error clearing bookmark tags:", delError);
+    throw delError;
+  }
+
+  // 2. Match tag names to IDs or auto-create missing tags
+  const matchedIds: string[] = [];
+  const updatedTags = [...availableTags];
+
+  for (const rawName of tagNames) {
+    const cleanName = rawName.replace(/^#/, "").trim();
+    if (!cleanName) continue;
+
+    let matched = updatedTags.find(
+      (t) => t.name.toLowerCase().replace(/^#/, "") === cleanName.toLowerCase()
+    );
+
+    if (!matched) {
+      try {
+        matched = await createTag(cleanName);
+        updatedTags.push(matched);
+      } catch (err) {
+        console.error(`Error auto-creating tag '${cleanName}' in Supabase:`, err);
+      }
+    }
+
+    if (matched && !matchedIds.includes(matched.id)) {
+      matchedIds.push(matched.id);
+    }
+  }
+
+  // 3. Insert new junction rows into bookmark_tags
+  if (matchedIds.length > 0) {
+    const inserts = matchedIds.map((tId) => ({
+      bookmark_id: bookmarkId,
+      tag_id: tId,
+    }));
+    const { error: insError } = await supabase
+      .from("bookmark_tags")
+      .insert(inserts);
+
+    if (insError) {
+      console.error("Error inserting bookmark tags:", insError);
+      throw insError;
+    }
+  }
+
+  return updatedTags;
 }

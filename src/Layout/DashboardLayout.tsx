@@ -19,6 +19,9 @@ import {
   fetchBookmarks,
   createBookmark,
   updateBookmarkMetadata,
+  updateBookmarkDetails,
+  updateBookmarkCollections,
+  updateBookmarkTags,
   deleteBookmark,
 } from "../services/supabaseDataService.ts";
 
@@ -200,7 +203,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         snapshot: newBookmark.snapshot,
         logo: newBookmark.logo,
         site_name: newBookmark.site_name,
-        published_at: newBookmark.published_at,
         collectionIds: matchedColIds,
         tagIds: matchedTagIds,
         collectionNames: targetColNames,
@@ -219,7 +221,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
           const derivedTitle = data.title ? data.title : savedBookmark.title;
           const derivedDescription = data.description ? data.description : savedBookmark.description;
           const derivedSiteName = data.site_name ? data.site_name : savedBookmark.site_name;
-          const publishedAt = data.published_at ? data.published_at : null;
 
           // 1. Update DB record in Supabase
           await updateBookmarkMetadata(savedBookmark.id, {
@@ -228,7 +229,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             snapshot: snapshotUrl,
             logo: logoUrl,
             site_name: derivedSiteName,
-            published_at: publishedAt,
           });
 
           // 2. Update local state card
@@ -242,7 +242,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                 snapshot: snapshotUrl,
                 logo: logoUrl,
                 site_name: derivedSiteName,
-                published_at: publishedAt,
                 isFetchingMetadata: false,
               };
             })
@@ -271,6 +270,60 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     } catch (err: any) {
       console.error("Error deleting bookmark:", err);
       addToast(`Failed to delete bookmark: ${err?.message || "Database operation failed"}`);
+    }
+  };
+
+  // Update Bookmark Title & Description Handler
+  const handleUpdateBookmarkDetails = async (
+    id: string,
+    title: string,
+    description: string
+  ) => {
+    try {
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, title, description } : b))
+      );
+      await updateBookmarkDetails(id, title, description);
+      addToast("Bookmark updated successfully!");
+    } catch (err: any) {
+      console.error("Error updating bookmark details:", err);
+      addToast(`Failed to update bookmark: ${err?.message || "Database update failed"}`);
+    }
+  };
+
+  // Update Bookmark Collections Handler
+  const handleUpdateBookmarkCollections = async (
+    id: string,
+    newCollections: string[]
+  ) => {
+    try {
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, collections: newCollections } : b))
+      );
+      const updatedCols = await updateBookmarkCollections(id, newCollections, collections);
+      setCollections(updatedCols);
+      addToast("Collections updated successfully!");
+    } catch (err: any) {
+      console.error("Error updating bookmark collections:", err);
+      addToast(`Failed to update collections: ${err?.message || "Database update failed"}`);
+    }
+  };
+
+  // Update Bookmark Tags Handler
+  const handleUpdateBookmarkTags = async (
+    id: string,
+    newTags: string[]
+  ) => {
+    try {
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, tags: newTags } : b))
+      );
+      const updatedTagsList = await updateBookmarkTags(id, newTags, tags);
+      setTags(updatedTagsList);
+      addToast("Tags updated successfully!");
+    } catch (err: any) {
+      console.error("Error updating bookmark tags:", err);
+      addToast(`Failed to update tags: ${err?.message || "Database update failed"}`);
     }
   };
 
@@ -525,6 +578,9 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                   tags={computedTags}
                   onAddBookmark={handleAddBookmark}
                   onDeleteBookmark={handleDeleteBookmark}
+                  onUpdateBookmarkDetails={handleUpdateBookmarkDetails}
+                  onUpdateBookmarkCollections={handleUpdateBookmarkCollections}
+                  onUpdateBookmarkTags={handleUpdateBookmarkTags}
                   selectedFilterCollections={selectedFilterCollections}
                   onSelectFilterCollectionsChange={setSelectedFilterCollections}
                   selectedFilterTags={selectedFilterTags}

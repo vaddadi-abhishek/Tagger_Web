@@ -5,7 +5,6 @@ export interface MetadataResponse {
   snapshot: string | null;
   logo: string | null;
   site_name: string;
-  published_at: string | null;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";

@@ -5,6 +5,9 @@ import type { TagItem } from "../types/tag";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
+import { EditBookmarkModal } from "../components/EditBookmarkModal";
+import { EditCollectionsModal } from "../components/EditCollectionsModal";
+import { EditTagsModal } from "../components/EditTagsModal";
 
 interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
@@ -16,6 +19,9 @@ interface BookmarksScreenProps {
     newTagsList?: TagItem[]
   ) => void;
   onDeleteBookmark?: (id: string) => void;
+  onUpdateBookmarkDetails?: (id: string, title: string, description: string) => void;
+  onUpdateBookmarkCollections?: (id: string, collections: string[]) => void;
+  onUpdateBookmarkTags?: (id: string, tags: string[]) => void;
   selectedFilterCollections?: string[];
   onSelectFilterCollectionsChange?: (cols: string[]) => void;
   selectedFilterTags?: string[];
@@ -24,12 +30,23 @@ interface BookmarksScreenProps {
   onSearchChange?: (term: string) => void;
 }
 
+function getColumns<T>(items: T[], numCols: number): T[][] {
+  const cols: T[][] = Array.from({ length: numCols }, () => []);
+  items.forEach((item, index) => {
+    cols[index % numCols].push(item);
+  });
+  return cols;
+}
+
 export default function BookmarksScreen({
   bookmarks: externalBookmarks,
   collections: externalCollections,
   tags: externalTags,
   onAddBookmark: externalAddBookmark,
   onDeleteBookmark,
+  onUpdateBookmarkDetails,
+  onUpdateBookmarkCollections,
+  onUpdateBookmarkTags,
   selectedFilterCollections: externalSelectedCollections,
   onSelectFilterCollectionsChange,
   selectedFilterTags: externalSelectedTags,
@@ -42,6 +59,10 @@ export default function BookmarksScreen({
   const [internalSelectedCollections, setInternalSelectedCollections] = useState<string[]>([]);
   const [internalSelectedTags, setInternalSelectedTags] = useState<string[]>([]);
   const [internalSearchTerm, setInternalSearchTerm] = useState("");
+
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [editingCollectionsBookmark, setEditingCollectionsBookmark] = useState<Bookmark | null>(null);
+  const [editingTagsBookmark, setEditingTagsBookmark] = useState<Bookmark | null>(null);
 
   const bookmarks = externalBookmarks || internalBookmarks;
   const collections = externalCollections || [];
@@ -146,7 +167,7 @@ export default function BookmarksScreen({
 
   // Filter Bookmarks based on Search Term, Selected Collections, and Selected Tags
   const filteredBookmarks = bookmarks.filter((item) => {
-    // 1. Search matching across title, description, site_name, url, collections, tags, published_at, created_at
+    // 1. Search matching across title, description, site_name, url, collections, tags, created_at
     const cleanSearch = searchTerm.toLowerCase().trim();
     let matchesSearch = true;
     if (cleanSearch) {
@@ -166,8 +187,7 @@ export default function BookmarksScreen({
         t.toLowerCase().replace(/^#/, "").includes(cleanSearchNoHash)
       );
       const matchesDate =
-        (item.published_at && item.published_at.toLowerCase().includes(cleanSearch)) ||
-        (item.created_at && item.created_at.toLowerCase().includes(cleanSearch));
+        item.created_at && item.created_at.toLowerCase().includes(cleanSearch);
 
       matchesSearch =
         matchesTitle ||
@@ -225,6 +245,36 @@ export default function BookmarksScreen({
       externalAddBookmark(newBookmark, newCol, newTagsList);
     } else {
       setInternalBookmarks((prev) => [newBookmark, ...prev]);
+    }
+  };
+
+  const handleSaveBookmarkDetails = (id: string, title: string, description: string) => {
+    if (onUpdateBookmarkDetails) {
+      onUpdateBookmarkDetails(id, title, description);
+    } else {
+      setInternalBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, title, description } : b))
+      );
+    }
+  };
+
+  const handleSaveBookmarkCollections = (id: string, newCollections: string[]) => {
+    if (onUpdateBookmarkCollections) {
+      onUpdateBookmarkCollections(id, newCollections);
+    } else {
+      setInternalBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, collections: newCollections } : b))
+      );
+    }
+  };
+
+  const handleSaveBookmarkTags = (id: string, newTags: string[]) => {
+    if (onUpdateBookmarkTags) {
+      onUpdateBookmarkTags(id, newTags);
+    } else {
+      setInternalBookmarks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, tags: newTags } : b))
+      );
     }
   };
 
@@ -524,12 +574,14 @@ export default function BookmarksScreen({
       {/* Horizontal Line Break */}
       <hr className="border-[var(--border)] my-2" />
 
-      {/* Bookmarks True Masonry Grid Layout */}
+      {/* Bookmarks Fixed-Column Masonry Grid Layout (Preserves Strict Card Order) */}
       {filteredBookmarks.length > 0 ? (
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
-          {filteredBookmarks.map((bookmark) => (
-            <div key={bookmark.id} className="break-inside-avoid mb-6">
+        <>
+          {/* Mobile View: 1 Column */}
+          <div className="flex flex-col gap-6 sm:hidden">
+            {filteredBookmarks.map((bookmark) => (
               <BookmarkCard
+                key={bookmark.id}
                 bookmark={bookmark}
                 isMenuOpen={openMenuId === bookmark.id}
                 onToggleMenu={(id, e) => {
@@ -538,12 +590,67 @@ export default function BookmarksScreen({
                 }}
                 onCloseMenu={() => setOpenMenuId(null)}
                 onRequestDelete={(id) => setDeleteConfirmId(id)}
+                onRequestEdit={(b) => setEditingBookmark(b)}
+                onRequestEditCollections={(b) => setEditingCollectionsBookmark(b)}
+                onRequestEditTags={(b) => setEditingTagsBookmark(b)}
                 availableCollections={collections}
                 availableTags={tags}
               />
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {/* Tablet View: 2 Fixed Columns */}
+          <div className="hidden sm:grid lg:hidden grid-cols-2 gap-6 items-start">
+            {getColumns(filteredBookmarks, 2).map((colItems, colIdx) => (
+              <div key={`tab_col_${colIdx}`} className="flex flex-col gap-6">
+                {colItems.map((bookmark) => (
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    isMenuOpen={openMenuId === bookmark.id}
+                    onToggleMenu={(id, e) => {
+                      e.stopPropagation();
+                      setOpenMenuId((prev) => (prev === id ? null : id));
+                    }}
+                    onCloseMenu={() => setOpenMenuId(null)}
+                    onRequestDelete={(id) => setDeleteConfirmId(id)}
+                    onRequestEdit={(b) => setEditingBookmark(b)}
+                    onRequestEditCollections={(b) => setEditingCollectionsBookmark(b)}
+                    onRequestEditTags={(b) => setEditingTagsBookmark(b)}
+                    availableCollections={collections}
+                    availableTags={tags}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop View: 3 Fixed Columns */}
+          <div className="hidden lg:grid grid-cols-3 gap-6 items-start">
+            {getColumns(filteredBookmarks, 3).map((colItems, colIdx) => (
+              <div key={`desk_col_${colIdx}`} className="flex flex-col gap-6">
+                {colItems.map((bookmark) => (
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    isMenuOpen={openMenuId === bookmark.id}
+                    onToggleMenu={(id, e) => {
+                      e.stopPropagation();
+                      setOpenMenuId((prev) => (prev === id ? null : id));
+                    }}
+                    onCloseMenu={() => setOpenMenuId(null)}
+                    onRequestDelete={(id) => setDeleteConfirmId(id)}
+                    onRequestEdit={(b) => setEditingBookmark(b)}
+                    onRequestEditCollections={(b) => setEditingCollectionsBookmark(b)}
+                    onRequestEditTags={(b) => setEditingTagsBookmark(b)}
+                    availableCollections={collections}
+                    availableTags={tags}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="text-center py-16 px-4 text-[var(--text)] border border-dashed border-[var(--border)] rounded-2xl bg-[var(--code-bg)]/50 space-y-3">
           <div className="size-12 rounded-full bg-[var(--primary)]/15 text-[var(--primary)] mx-auto flex items-center justify-center font-bold">
@@ -611,6 +718,32 @@ export default function BookmarksScreen({
         onAddBookmark={handleAddBookmark}
         availableCollections={collections}
         availableTags={tags}
+      />
+
+      {/* Edit Bookmark Title & Description Modal */}
+      <EditBookmarkModal
+        isOpen={Boolean(editingBookmark)}
+        bookmark={editingBookmark}
+        onClose={() => setEditingBookmark(null)}
+        onSave={handleSaveBookmarkDetails}
+      />
+
+      {/* Edit Collections Modal */}
+      <EditCollectionsModal
+        isOpen={Boolean(editingCollectionsBookmark)}
+        bookmark={editingCollectionsBookmark}
+        availableCollections={collections}
+        onClose={() => setEditingCollectionsBookmark(null)}
+        onSave={handleSaveBookmarkCollections}
+      />
+
+      {/* Edit Tags Modal */}
+      <EditTagsModal
+        isOpen={Boolean(editingTagsBookmark)}
+        bookmark={editingTagsBookmark}
+        availableTags={tags}
+        onClose={() => setEditingTagsBookmark(null)}
+        onSave={handleSaveBookmarkTags}
       />
 
       {/* Delete Confirmation Modal */}

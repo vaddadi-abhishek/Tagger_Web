@@ -10,6 +10,9 @@ interface BookmarkCardProps {
   onToggleMenu: (id: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
   onRequestDelete: (id: string) => void;
+  onRequestEdit?: (bookmark: Bookmark) => void;
+  onRequestEditCollections?: (bookmark: Bookmark) => void;
+  onRequestEditTags?: (bookmark: Bookmark) => void;
   availableCollections?: CollectionItem[];
   availableTags?: TagItem[];
 }
@@ -20,11 +23,15 @@ export function BookmarkCard({
   onToggleMenu,
   onCloseMenu,
   onRequestDelete,
+  onRequestEdit,
+  onRequestEditCollections,
+  onRequestEditTags,
   availableCollections,
   availableTags,
 }: BookmarkCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // If metadata is actively being fetched in the background, render clean wireframe gray skeleton boxes
@@ -63,17 +70,23 @@ export function BookmarkCard({
   }
 
   const mediaUrl = bookmark.snapshot || bookmark.logo;
-  const dateLabel = bookmark.published_at || (bookmark.created_at ? new Date(bookmark.created_at).toLocaleDateString() : "");
+  const dateLabel = bookmark.created_at ? new Date(bookmark.created_at).toLocaleDateString() : "";
 
   const descriptionText = bookmark.description || "";
   const DESCRIPTION_LIMIT = 110;
   const isLongDescription = descriptionText.length > DESCRIPTION_LIMIT;
-  const displayedDescription = isLongDescription && !isDescriptionExpanded
-    ? `${descriptionText.slice(0, DESCRIPTION_LIMIT).trim()}...`
-    : descriptionText;
+
+  let domainFavicon = "";
+  if (bookmark.url) {
+    try {
+      const hostname = new URL(bookmark.url).hostname;
+      domainFavicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+    } catch { }
+  }
+  const logoSrc = (!logoError && bookmark.logo) ? bookmark.logo : domainFavicon;
 
   return (
-    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:shadow-[0_0_30px_rgba(37,99,235,0.25)] dark:hover:shadow-[0_0_35px_rgba(81,194,176,0.35)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
+    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:shadow-[0_0_30px_rgba(37,99,235,0.25)] dark:hover:shadow-[0_0_35px_rgba(81,194,176,0.35)] transition-shadow duration-300 flex flex-col justify-between">
       {/* Media Image Section */}
       <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[var(--bg)]">
         {/* Image Loading Gray Skeleton Box before snapshot/logo finishes loading */}
@@ -88,9 +101,8 @@ export function BookmarkCard({
             loading="lazy"
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgError(true)}
-            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${
-              imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            }`}
+            className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ${imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--accent-bg)] text-[var(--text)] p-4 text-center">
@@ -101,11 +113,21 @@ export function BookmarkCard({
           </div>
         )}
 
-        {/* Top Right Source Badge */}
-        <div className="absolute top-3 right-3 rounded-full px-3 py-1 bg-black/60 backdrop-blur-md text-xs font-medium text-white flex items-center gap-1.5 shadow-md z-10">
-          <span className="size-2 rounded-full bg-red-500 shrink-0 animate-pulse" />
-          <span>{bookmark.site_name}</span>
-        </div>
+        {/* Top Right Source Logo Badge (Without name or red dot, in original logo colors) */}
+        {logoSrc ? (
+          <div className="absolute top-3 right-3 size-8.5 rounded-full bg-white/90 dark:bg-black/75 backdrop-blur-md p-1.5 shadow-lg z-10 flex items-center justify-center border border-white/20">
+            <img
+              src={logoSrc}
+              alt={bookmark.site_name || "Source Logo"}
+              onError={() => setLogoError(true)}
+              className="w-full h-full object-contain rounded-full"
+            />
+          </div>
+        ) : (
+          <div className="absolute top-3 right-3 rounded-full px-2.5 py-1 bg-black/60 backdrop-blur-md text-[10px] font-semibold text-white shadow-md z-10">
+            <span>{bookmark.site_name}</span>
+          </div>
+        )}
       </div>
 
       {/* Card Body Content */}
@@ -123,11 +145,10 @@ export function BookmarkCard({
           {descriptionText && (
             <div className="relative">
               <div
-                className={`text-xs text-[var(--text)] leading-relaxed opacity-90 transition-all duration-300 ease-in-out overflow-hidden ${
-                  isLongDescription && !isDescriptionExpanded
-                    ? "max-h-11"
-                    : "max-h-[600px]"
-                }`}
+                className={`text-xs text-[var(--text)] leading-relaxed opacity-90 transition-all duration-300 ease-in-out overflow-hidden ${isLongDescription && !isDescriptionExpanded
+                  ? "max-h-11"
+                  : "max-h-[600px]"
+                  }`}
               >
                 <p>{descriptionText}</p>
               </div>
@@ -148,9 +169,8 @@ export function BookmarkCard({
                     viewBox="0 0 24 24"
                     strokeWidth="2.5"
                     stroke="currentColor"
-                    className={`size-3 transition-transform duration-300 ${
-                      isDescriptionExpanded ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={`size-3 transition-transform duration-300 ${isDescriptionExpanded ? "rotate-180" : "rotate-0"
+                      }`}
                   >
                     <path
                       strokeLinecap="round"
@@ -179,17 +199,16 @@ export function BookmarkCard({
                 style={
                   color
                     ? {
-                        backgroundColor: `${color}18`,
-                        borderColor: `${color}50`,
-                        color: color,
-                      }
+                      backgroundColor: `${color}18`,
+                      borderColor: `${color}50`,
+                      color: color,
+                    }
                     : undefined
                 }
-                className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full transition-all cursor-pointer group/tag border ${
-                  !color
-                    ? "bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)] hover:bg-[var(--primary)] hover:text-white"
-                    : "hover:opacity-80"
-                }`}
+                className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full transition-all cursor-pointer group/tag border ${!color
+                  ? "bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)] hover:bg-[var(--primary)] hover:text-white"
+                  : "hover:opacity-80"
+                  }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -232,17 +251,16 @@ export function BookmarkCard({
                   style={
                     color
                       ? {
-                          backgroundColor: `${color}18`,
-                          borderColor: `${color}50`,
-                          color: color,
-                        }
+                        backgroundColor: `${color}18`,
+                        borderColor: `${color}50`,
+                        color: color,
+                      }
                       : undefined
                   }
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-all cursor-pointer group/col ${
-                    !color
-                      ? "bg-[var(--bg)] text-[var(--text-h)] border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                      : "hover:opacity-80"
-                  }`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-all cursor-pointer group/col ${!color
+                    ? "bg-[var(--bg)] text-[var(--text-h)] border-[var(--border)] hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                    : "hover:opacity-80"
+                    }`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -272,31 +290,6 @@ export function BookmarkCard({
         <span>{dateLabel}</span>
 
         <div className="flex items-center gap-2">
-          {bookmark.url && (
-            <a
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              title="Open Source Link"
-              className="p-1.5 rounded-lg hover:bg-[var(--bg)] hover:text-[var(--primary)] transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.8"
-                stroke="currentColor"
-                className="size-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                />
-              </svg>
-            </a>
-          )}
-
           {/* 3-Dots Options Menu Dropdown Container */}
           <div className="relative">
             <button
@@ -326,6 +319,7 @@ export function BookmarkCard({
                   onClick={(e) => {
                     e.stopPropagation();
                     onCloseMenu();
+                    onRequestEdit?.(bookmark);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
                 >
@@ -349,6 +343,7 @@ export function BookmarkCard({
                   onClick={(e) => {
                     e.stopPropagation();
                     onCloseMenu();
+                    onRequestEditCollections?.(bookmark);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
                 >
@@ -366,12 +361,13 @@ export function BookmarkCard({
                       d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
                     />
                   </svg>
-                  <span className="pointer-events-none">Manage Collections</span>
+                  <span className="pointer-events-none">Edit Collections</span>
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onCloseMenu();
+                    onRequestEditTags?.(bookmark);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] rounded-lg transition-colors cursor-pointer flex items-center gap-2.5"
                 >

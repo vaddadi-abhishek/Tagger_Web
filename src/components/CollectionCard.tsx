@@ -69,9 +69,8 @@ export function CollectionCard({
               key={hex}
               onClick={() => onColorChange(collection.id, hex)}
               title="Change color"
-              className={`size-3 rounded-full transition-transform hover:scale-125 cursor-pointer ${
-                collection.color === hex ? "ring-2 ring-offset-1 ring-[var(--primary)] scale-110" : ""
-              }`}
+              className={`size-3 rounded-full transition-transform hover:scale-125 cursor-pointer ${collection.color === hex ? "ring-2 ring-offset-1 ring-[var(--primary)] scale-110" : ""
+                }`}
               style={{ backgroundColor: hex }}
             />
           ))}
@@ -99,9 +98,8 @@ export function CollectionCard({
                     onColorChange(collection.id, hex);
                     setShowMobilePicker(false);
                   }}
-                  className={`size-3.5 rounded-full transition-transform cursor-pointer ${
-                    collection.color === hex ? "ring-2 ring-offset-1 ring-[var(--primary)] scale-110" : ""
-                  }`}
+                  className={`size-3.5 rounded-full transition-transform cursor-pointer ${collection.color === hex ? "ring-2 ring-offset-1 ring-[var(--primary)] scale-110" : ""
+                    }`}
                   style={{ backgroundColor: hex }}
                 />
               ))}

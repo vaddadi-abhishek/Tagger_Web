@@ -232,7 +232,6 @@ export function AddBookmarkModal({
       snapshot: isImageUrl ? formattedUrlStr : null,
       logo: null,
       site_name: sourceName,
-      published_at: null,
       tags: finalTags.map((t) => (t.startsWith("#") ? t : `#${t}`)),
       collections: finalCollections,
       created_at: new Date().toISOString(),
