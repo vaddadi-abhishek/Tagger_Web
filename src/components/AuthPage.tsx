@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { supabase, isSupabaseConfigured } from "../lib/supabase";
 import { AnimatedThemeToggler } from "./ui/AnimatedThemeToggler";
 
 interface AuthPageProps {
@@ -15,30 +16,111 @@ export function AuthPage({
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!email.trim() || !password.trim()) {
       setError("Please fill in all required fields.");
       return;
     }
 
-    if (mode === "signup" && !name.trim()) {
-      setError("Please enter your full name.");
-      return;
-    }
+    if (mode === "signup") {
+      if (!username.trim()) {
+        setError("Please enter a username.");
+        return;
+      }
 
-    // Demo Authentication handler
-    const displayName = mode === "signup" ? name.trim() : email.split("@")[0] || "User";
-    onLoginSuccess({
-      name: displayName,
-      email: email.trim(),
-    });
+      if (!isSupabaseConfigured) {
+        setError(
+          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in tagger-frontend/.env"
+        );
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: {
+              username: username.trim(),
+            },
+          },
+        });
+
+        if (signUpError) {
+          setError(signUpError.message);
+        } else if (data.session) {
+          // If session exists, email confirmation is disabled and user is logged in
+          onLoginSuccess({
+            name: username.trim() || email.trim().split("@")[0] || "User",
+            email: email.trim(),
+          });
+        } else {
+          // Email confirmation is required by Supabase settings
+          setSuccess("Account created successfully! Please check your email to confirm your registration.");
+          setEmail("");
+          setPassword("");
+          setUsername("");
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred during sign up.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      if (!isSupabaseConfigured) {
+        setError(
+          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in tagger-frontend/.env"
+        );
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (signInError) {
+          setError(signInError.message);
+        } else if (data.user) {
+          const userMetadata = data.user.user_metadata || {};
+          const displayName =
+            userMetadata.username ||
+            userMetadata.name ||
+            email.trim().split("@")[0] ||
+            "User";
+
+          onLoginSuccess({
+            name: displayName,
+            email: data.user.email || email.trim(),
+          });
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred during sign in.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -84,6 +166,7 @@ export function AuthPage({
               onClick={() => {
                 setMode("login");
                 setError("");
+                setSuccess("");
               }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 mode === "login"
@@ -98,6 +181,7 @@ export function AuthPage({
               onClick={() => {
                 setMode("signup");
                 setError("");
+                setSuccess("");
               }}
               className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                 mode === "signup"
@@ -142,20 +226,42 @@ export function AuthPage({
             </div>
           )}
 
+          {/* Success Message */}
+          {success && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 rounded-xl text-xs flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="size-4 shrink-0"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>{success}</span>
+            </div>
+          )}
+
           {/* Auth Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "signup" && (
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[var(--text)]">
-                  Full Name
+                  Username
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Jane Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal"
+                  placeholder="johndoe"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={loading}
+                  className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal disabled:opacity-50"
                 />
               </div>
             )}
@@ -170,7 +276,8 @@ export function AuthPage({
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal"
+                disabled={loading}
+                className="w-full px-3.5 py-2.5 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal disabled:opacity-50"
               />
             </div>
 
@@ -196,7 +303,8 @@ export function AuthPage({
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3.5 py-2.5 pr-10 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal"
+                  disabled={loading}
+                  className="w-full px-3.5 py-2.5 pr-10 text-base sm:text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-gray-400 dark:placeholder-gray-500 focus:placeholder-transparent outline-none focus:border-[var(--primary)] transition-colors leading-normal disabled:opacity-50"
                 />
                 <button
                   type="button"
@@ -210,9 +318,38 @@ export function AuthPage({
 
             <button
               type="submit"
-              className="w-full py-3 text-xs font-bold rounded-xl bg-[var(--primary)] text-white hover:opacity-90 shadow-lg shadow-[var(--primary)]/20 transition-all cursor-pointer mt-2"
+              disabled={loading}
+              className="w-full py-3 text-xs font-bold rounded-xl bg-[var(--primary)] text-white hover:opacity-90 shadow-lg shadow-[var(--primary)]/20 transition-all cursor-pointer mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {mode === "login" ? "Sign In to Tagger" : "Create Free Account"}
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>{mode === "login" ? "Signing In..." : "Creating Account..."}</span>
+                </>
+              ) : mode === "login" ? (
+                "Sign In to Tagger"
+              ) : (
+                "Create Free Account"
+              )}
             </button>
           </form>
 
@@ -226,6 +363,7 @@ export function AuthPage({
                   onClick={() => {
                     setMode("signup");
                     setError("");
+                    setSuccess("");
                   }}
                   className="font-bold text-[var(--primary)] hover:underline cursor-pointer"
                 >
@@ -240,6 +378,7 @@ export function AuthPage({
                   onClick={() => {
                     setMode("login");
                     setError("");
+                    setSuccess("");
                   }}
                   className="font-bold text-[var(--primary)] hover:underline cursor-pointer"
                 >
@@ -258,3 +397,4 @@ export function AuthPage({
     </div>
   );
 }
+

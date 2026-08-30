@@ -1,14 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
-import type { RedditBookmark } from "../types/bookmark";
+import type { Bookmark } from "../types/bookmark";
 import { sanitizeUrl } from "../lib/utils";
 
 interface AddBookmarkModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddBookmark: (
-    newBookmark: RedditBookmark,
+    newBookmark: Bookmark,
     newCollection?: CollectionItem,
     newTags?: TagItem[]
   ) => void;
@@ -224,28 +224,18 @@ export function AddBookmarkModal({
 
     const isImageUrl = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(formattedUrlStr);
 
-    const newBookmark: RedditBookmark = {
+    const newBookmark: Bookmark = {
       id: `bm_${Date.now()}`,
-      title: computedTitle,
-      subreddit: finalCollections[0] ? `r/${finalCollections[0]}` : `r/${sourceName}`,
-      source: sourceName,
-      author: "u/you",
-      createdAt: "Just now",
-      dateStr: new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      score: 1,
-      numComments: 0,
       url: formattedUrlStr,
-      permalink: formattedUrlStr,
-      thumbnail: isImageUrl
-        ? formattedUrlStr
-        : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-      postType: isImageUrl ? "image" : "link",
+      title: computedTitle,
+      description: "",
+      snapshot: isImageUrl ? formattedUrlStr : null,
+      logo: null,
+      site_name: sourceName,
+      published_at: null,
       tags: finalTags.map((t) => (t.startsWith("#") ? t : `#${t}`)),
       collections: finalCollections,
+      created_at: new Date().toISOString(),
       isFetchingMetadata: true, // Flag indicating metadata extraction in progress
     };
 

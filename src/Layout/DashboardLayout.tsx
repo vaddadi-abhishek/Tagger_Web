@@ -1,12 +1,26 @@
 import Nav from "../templates/nav.tsx";
 import SideNav from "../templates/sidenav.tsx";
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { ScreenSkeleton } from "../components/ui/ScreenSkeleton.tsx";
 
-import type { RedditBookmark } from "../types/bookmark.ts";
+import type { Bookmark } from "../types/bookmark.ts";
 import type { CollectionItem } from "../types/collection.ts";
 import type { TagItem } from "../types/tag.ts";
 import { fetchUrlMetadata } from "../services/api.ts";
+import {
+  fetchCollections,
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  fetchTags,
+  createTag,
+  updateTag,
+  deleteTag,
+  fetchBookmarks,
+  createBookmark,
+  updateBookmarkMetadata,
+  deleteBookmark,
+} from "../services/supabaseDataService.ts";
 
 // Lazy-loaded screen components for full app UI/UX lazy loading & performance optimization
 const BookmarksScreen = lazy(() => import("../templates/bookmarks.tsx"));
@@ -25,14 +39,16 @@ interface DashboardLayoutProps {
 
 function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
-
   const [activeScreen, setActiveScreen] = useState<"home" | "collections" | "tags">("home");
+
+  // Search term state for Top Navbar Search Input
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Selected filter collections and tags for Home screen (separate from search bar text!)
   const [selectedFilterCollections, setSelectedFilterCollections] = useState<string[]>([]);
   const [selectedFilterTags, setSelectedFilterTags] = useState<string[]>([]);
 
-  // Floating Warning Toast Notifications State
+  // Floating Toast Notifications State
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
   const addToast = (message: string) => {
@@ -47,11 +63,42 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // In-memory state for Bookmarks, Collections, and Tags
-  const [bookmarks, setBookmarks] = useState<RedditBookmark[]>([]);
+  // State for Bookmarks, Collections, and Tags
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [collections, setCollections] = useState<CollectionItem[]>([]);
   const [tags, setTags] = useState<TagItem[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
 
+  // Initial Data Fetch from Supabase
+  useEffect(() => {
+    let isMounted = true;
+    async function loadInitialData() {
+      setLoadingData(true);
+      try {
+        const [fetchedCols, fetchedTagsList, fetchedBms] = await Promise.all([
+          fetchCollections().catch(() => []),
+          fetchTags().catch(() => []),
+          fetchBookmarks().catch(() => []),
+        ]);
+
+        if (isMounted) {
+          setCollections(fetchedCols);
+          setTags(fetchedTagsList);
+          setBookmarks(fetchedBms);
+        }
+      } catch (err: any) {
+        addToast(`Failed to load data from Supabase: ${err?.message || "Unknown error"}`);
+      } finally {
+        if (isMounted) setLoadingData(false);
+      }
+    }
+
+    loadInitialData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Compute dynamic counts for each collection based on current bookmarks
   const computedCollections = collections.map((col) => {
@@ -70,95 +117,208 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     return { ...t, count };
   });
 
-  // Add Bookmark Handler: Adds card immediately to UI & fetches metadata asynchronously in background
-  const handleAddBookmark = (
-    newBookmark: RedditBookmark,
+  // Add Bookmark Handler: Creates in Supabase & fetches metadata asynchronously
+  const handleAddBookmark = async (
+    newBookmark: Bookmark,
     newCol?: CollectionItem,
     newTagsList?: TagItem[]
   ) => {
-    // 1. Instantly display card on Home screen with isFetchingMetadata: true
-    setBookmarks((prev) => [newBookmark, ...prev]);
-
-    if (newCol) {
-      setCollections((prev) => {
-        const exists = prev.some(
+    try {
+      // 1. Ensure any new collection is persisted in Supabase
+      let currentCols = [...collections];
+      if (newCol) {
+        const exists = currentCols.some(
           (c) => c.name.toLowerCase() === newCol.name.toLowerCase()
         );
-        return exists ? prev : [...prev, newCol];
-      });
-    }
-
-    if (newTagsList && newTagsList.length > 0) {
-      setTags((prev) => {
-        const updated = [...prev];
-        newTagsList.forEach((nt) => {
-          if (!updated.some((t) => t.name.toLowerCase() === nt.name.toLowerCase())) {
-            updated.push(nt);
+        if (!exists) {
+          try {
+            const createdCol = await createCollection(newCol.name, newCol.color);
+            currentCols = [...currentCols, createdCol];
+            setCollections(currentCols);
+          } catch (e: any) {
+            console.error("Failed to create collection in Supabase", e);
           }
-        });
-        return updated;
-      });
-    }
+        }
+      }
 
-    // 2. Fetch metadata from API backend asynchronously & update card upon response
-    const targetUrl = newBookmark.url || newBookmark.permalink;
-    fetchUrlMetadata(targetUrl)
-      .then((data) => {
-        setBookmarks((prev) =>
-          prev.map((b) => {
-            if (b.id !== newBookmark.id) return b;
+      if (newBookmark.collections && newBookmark.collections.length > 0) {
+        for (const colName of newBookmark.collections) {
+          const exists = currentCols.some(
+            (c) => c.name.toLowerCase() === colName.toLowerCase()
+          );
+          if (!exists) {
+            try {
+              const createdCol = await createCollection(colName, "#f97316");
+              currentCols = [...currentCols, createdCol];
+              setCollections(currentCols);
+            } catch (e) {
+              console.error("Failed to create collection in Supabase", e);
+            }
+          }
+        }
+      }
 
-            const isImageUrl = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(b.url || "");
-            const newThumbnail =
-              data.snapshot ||
-              data.logo ||
-              (isImageUrl ? b.url : b.thumbnail);
+      // 2. Ensure any new tags are persisted in Supabase
+      let currentTagsList = [...tags];
+      if (newTagsList && newTagsList.length > 0) {
+        for (const nt of newTagsList) {
+          const exists = currentTagsList.some(
+            (t) => t.name.toLowerCase().replace(/^#/, "") === nt.name.toLowerCase().replace(/^#/, "")
+          );
+          if (!exists) {
+            try {
+              const createdT = await createTag(nt.name, nt.color);
+              currentTagsList = [...currentTagsList, createdT];
+              setTags(currentTagsList);
+            } catch (e) {
+              console.error("Failed to create tag in Supabase", e);
+            }
+          }
+        }
+      }
 
-            const derivedSource = data.site_name || b.source;
+      // 3. Map selected collection and tag names to their DB IDs
+      const targetColNames = newBookmark.collections || (newCol ? [newCol.name] : []);
+      const matchedColIds = currentCols
+        .filter((c) => targetColNames.some((tc) => tc.toLowerCase() === c.name.toLowerCase()))
+        .map((c) => c.id);
 
-            return {
-              ...b,
-              title: data.title || b.title,
-              selftext: data.description || b.selftext,
-              thumbnail: newThumbnail || b.thumbnail,
-              source: derivedSource,
-              subreddit: b.collections?.[0]
-                ? `r/${b.collections[0]}`
-                : `r/${derivedSource}`,
-              createdAt: data.published_at || b.createdAt,
-              isFetchingMetadata: false,
-            };
-          })
-        );
-      })
-      .catch((err: any) => {
-        // Clear background fetching spinner/skeleton on bookmark card
-        setBookmarks((prev) =>
-          prev.map((b) =>
-            b.id === newBookmark.id ? { ...b, isFetchingMetadata: false } : b
+      const targetTagNames = newBookmark.tags || (newTagsList ? newTagsList.map((t) => t.name) : []);
+      const matchedTagIds = currentTagsList
+        .filter((t) =>
+          targetTagNames.some(
+            (tt) => tt.toLowerCase().replace(/^#/, "") === t.name.toLowerCase().replace(/^#/, "")
           )
-        );
+        )
+        .map((t) => t.id);
 
-        // Show floating top-right warning notification
-        const errorMessage = err?.message || "Metadata API server unreachable";
-        addToast(`Failed to fetch metadata for ${newBookmark.title}: ${errorMessage}`);
+      // 4. Create bookmark record in Supabase
+      const savedBookmark = await createBookmark({
+        url: newBookmark.url,
+        title: newBookmark.title,
+        description: newBookmark.description,
+        snapshot: newBookmark.snapshot,
+        logo: newBookmark.logo,
+        site_name: newBookmark.site_name,
+        published_at: newBookmark.published_at,
+        collectionIds: matchedColIds,
+        tagIds: matchedTagIds,
+        collectionNames: targetColNames,
+        tagNames: targetTagNames,
       });
+
+      // Update UI state immediately
+      setBookmarks((prev) => [savedBookmark, ...prev]);
+
+      // 5. Fetch metadata asynchronously & update Supabase + local card
+      const targetUrl = savedBookmark.url;
+      fetchUrlMetadata(targetUrl)
+        .then(async (data) => {
+          const snapshotUrl = data.snapshot ? data.snapshot : null;
+          const logoUrl = data.logo ? data.logo : null;
+          const derivedTitle = data.title ? data.title : savedBookmark.title;
+          const derivedDescription = data.description ? data.description : savedBookmark.description;
+          const derivedSiteName = data.site_name ? data.site_name : savedBookmark.site_name;
+          const publishedAt = data.published_at ? data.published_at : null;
+
+          // 1. Update DB record in Supabase
+          await updateBookmarkMetadata(savedBookmark.id, {
+            title: derivedTitle,
+            description: derivedDescription,
+            snapshot: snapshotUrl,
+            logo: logoUrl,
+            site_name: derivedSiteName,
+            published_at: publishedAt,
+          });
+
+          // 2. Update local state card
+          setBookmarks((prev) =>
+            prev.map((b) => {
+              if (b.id !== savedBookmark.id) return b;
+              return {
+                ...b,
+                title: derivedTitle,
+                description: derivedDescription,
+                snapshot: snapshotUrl,
+                logo: logoUrl,
+                site_name: derivedSiteName,
+                published_at: publishedAt,
+                isFetchingMetadata: false,
+              };
+            })
+          );
+        })
+        .catch((err: any) => {
+          setBookmarks((prev) =>
+            prev.map((b) =>
+              b.id === savedBookmark.id ? { ...b, isFetchingMetadata: false } : b
+            )
+          );
+          const errorMessage = err?.message || "Metadata API server unreachable";
+          addToast(`Failed to fetch metadata for ${savedBookmark.title}: ${errorMessage}`);
+        });
+    } catch (err: any) {
+      console.error("Failed to add bookmark to Supabase:", err);
+      addToast(`Error adding bookmark: ${err?.message || "Database insert failed"}`);
+    }
   };
 
   // Delete Bookmark Handler
-  const handleDeleteBookmark = (id: string) => {
-    setBookmarks((prev) => prev.filter((b) => b.id !== id));
+  const handleDeleteBookmark = async (id: string) => {
+    try {
+      await deleteBookmark(id);
+      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    } catch (err: any) {
+      console.error("Error deleting bookmark:", err);
+      addToast(`Failed to delete bookmark: ${err?.message || "Database operation failed"}`);
+    }
   };
 
   // Collections state change handler (Rename / Delete / Color / Create)
-  const handleCollectionsChange = (updatedCollections: CollectionItem[]) => {
+  const handleCollectionsChange = async (updatedCollections: CollectionItem[]) => {
+    // 1. Identify additions
+    const addedCollections = updatedCollections.filter(
+      (newCol) => !collections.some((c) => c.id === newCol.id)
+    );
+    for (const addCol of addedCollections) {
+      try {
+        const created = await createCollection(addCol.name, addCol.color);
+        updatedCollections = updatedCollections.map((c) =>
+          c.id === addCol.id ? created : c
+        );
+      } catch (e: any) {
+        addToast(`Failed to create collection in database: ${e?.message}`);
+      }
+    }
+
+    // 2. Identify updates (Rename / Color)
+    for (const newCol of updatedCollections) {
+      const oldCol = collections.find((c) => c.id === newCol.id);
+      if (oldCol && (oldCol.name !== newCol.name || oldCol.color !== newCol.color)) {
+        try {
+          await updateCollection(newCol.id, newCol.name, newCol.color);
+        } catch (e: any) {
+          addToast(`Failed to update collection: ${e?.message}`);
+        }
+      }
+    }
+
+    // 3. Identify deletions
+    const deletedCollections = collections.filter(
+      (oldCol) => !updatedCollections.some((c) => c.id === oldCol.id)
+    );
+    for (const delCol of deletedCollections) {
+      try {
+        await deleteCollection(delCol.id);
+      } catch (e: any) {
+        addToast(`Failed to delete collection: ${e?.message}`);
+      }
+    }
+
+    // Cascade deletions & renames on local bookmarks state
     setBookmarks((prevBookmarks) => {
       let updatedBookmarks = [...prevBookmarks];
 
-      // 1. Cascade Deletions
-      const deletedCollections = collections.filter(
-        (oldCol) => !updatedCollections.some((c) => c.id === oldCol.id)
-      );
       deletedCollections.forEach((delCol) => {
         const delNameLower = delCol.name.toLowerCase();
         updatedBookmarks = updatedBookmarks.map((b) => ({
@@ -169,7 +329,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         }));
       });
 
-      // 2. Cascade Renames
       updatedCollections.forEach((newCol) => {
         const oldCol = collections.find((c) => c.id === newCol.id);
         if (oldCol && oldCol.name !== newCol.name) {
@@ -190,14 +349,50 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   };
 
   // Tags state change handler (Rename / Delete / Color / Create)
-  const handleTagsChange = (updatedTags: TagItem[]) => {
+  const handleTagsChange = async (updatedTags: TagItem[]) => {
+    // 1. Identify additions
+    const addedTags = updatedTags.filter(
+      (newTag) => !tags.some((t) => t.id === newTag.id)
+    );
+    for (const addTag of addedTags) {
+      try {
+        const created = await createTag(addTag.name, addTag.color);
+        updatedTags = updatedTags.map((t) =>
+          t.id === addTag.id ? created : t
+        );
+      } catch (e: any) {
+        addToast(`Failed to create tag in database: ${e?.message}`);
+      }
+    }
+
+    // 2. Identify updates (Rename / Color)
+    for (const newTag of updatedTags) {
+      const oldTag = tags.find((t) => t.id === newTag.id);
+      if (oldTag && (oldTag.name !== newTag.name || oldTag.color !== newTag.color)) {
+        try {
+          await updateTag(newTag.id, newTag.name, newTag.color);
+        } catch (e: any) {
+          addToast(`Failed to update tag: ${e?.message}`);
+        }
+      }
+    }
+
+    // 3. Identify deletions
+    const deletedTags = tags.filter(
+      (oldTag) => !updatedTags.some((t) => t.id === oldTag.id)
+    );
+    for (const delTag of deletedTags) {
+      try {
+        await deleteTag(delTag.id);
+      } catch (e: any) {
+        addToast(`Failed to delete tag: ${e?.message}`);
+      }
+    }
+
+    // Cascade deletions & renames on local bookmarks state
     setBookmarks((prevBookmarks) => {
       let updatedBookmarks = [...prevBookmarks];
 
-      // 1. Cascade Deletions
-      const deletedTags = tags.filter(
-        (oldTag) => !updatedTags.some((t) => t.id === oldTag.id)
-      );
       deletedTags.forEach((delTag) => {
         const delNameLower = delTag.name.toLowerCase().replace(/^#/, "");
         updatedBookmarks = updatedBookmarks.map((b) => ({
@@ -208,7 +403,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         }));
       });
 
-      // 2. Cascade Renames
       updatedTags.forEach((newTag) => {
         const oldTag = tags.find((t) => t.id === newTag.id);
         if (oldTag && oldTag.name !== newTag.name) {
@@ -281,7 +475,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
               />
             </svg>
             <div className="flex-1 text-xs">
-              <span className="font-bold text-amber-300 block mb-0.5">Metadata Warning</span>
+              <span className="font-bold text-amber-300 block mb-0.5">Notification</span>
               <span>{toast.message}</span>
             </div>
             <button
@@ -311,40 +505,48 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
           onToggle={() => setIsSideNavOpen((prev) => !prev)}
           user={user}
           onSignOut={onSignOut}
+          activeScreen={activeScreen}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
 
         <main
-          className={`flex-1 p-4 sm:p-6 pb-28 sm:pb-10 bg-[var(--bg)] transition-colors duration-300 ${
-            isSideNavOpen ? "overflow-hidden md:overflow-y-auto" : "overflow-y-auto"
-          }`}
+          className={`flex-1 p-4 sm:p-6 pb-28 sm:pb-10 bg-[var(--bg)] transition-colors duration-300 ${isSideNavOpen ? "overflow-hidden md:overflow-y-auto" : "overflow-y-auto"
+            }`}
         >
-          <Suspense fallback={<ScreenSkeleton />}>
-            {activeScreen === "home" && (
-              <BookmarksScreen
-                bookmarks={bookmarks}
-                collections={computedCollections}
-                tags={computedTags}
-                onAddBookmark={handleAddBookmark}
-                onDeleteBookmark={handleDeleteBookmark}
-                selectedFilterCollections={selectedFilterCollections}
-                onSelectFilterCollectionsChange={setSelectedFilterCollections}
-                selectedFilterTags={selectedFilterTags}
-                onSelectFilterTagsChange={setSelectedFilterTags}
-              />
-            )}
-            {activeScreen === "collections" && (
-              <CollectionsScreen
-                collections={computedCollections}
-                onCollectionsChange={handleCollectionsChange}
-              />
-            )}
-            {activeScreen === "tags" && (
-              <TagsScreen
-                tags={computedTags}
-                onTagsChange={handleTagsChange}
-              />
-            )}
-          </Suspense>
+          {loadingData ? (
+            <ScreenSkeleton />
+          ) : (
+            <Suspense fallback={<ScreenSkeleton />}>
+              {activeScreen === "home" && (
+                <BookmarksScreen
+                  bookmarks={bookmarks}
+                  collections={computedCollections}
+                  tags={computedTags}
+                  onAddBookmark={handleAddBookmark}
+                  onDeleteBookmark={handleDeleteBookmark}
+                  selectedFilterCollections={selectedFilterCollections}
+                  onSelectFilterCollectionsChange={setSelectedFilterCollections}
+                  selectedFilterTags={selectedFilterTags}
+                  onSelectFilterTagsChange={setSelectedFilterTags}
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                />
+              )}
+              {activeScreen === "collections" && (
+                <CollectionsScreen
+                  collections={computedCollections}
+                  onCollectionsChange={handleCollectionsChange}
+                />
+              )}
+              {activeScreen === "tags" && (
+                <TagsScreen
+                  tags={computedTags}
+                  onTagsChange={handleTagsChange}
+                />
+              )}
+            </Suspense>
+          )}
         </main>
       </div>
     </div>

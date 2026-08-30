@@ -64,15 +64,12 @@ export default function TagsScreen({
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 relative pb-8">
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-h)]">Tags</h1>
-          <p className="text-sm text-[var(--text)]">
-            Cross-cut your bookmarks with lightweight, colorful labels.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto space-y-4 relative pb-8">
+      {/* Controls Bar above <hr/> Line Break */}
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm font-semibold text-[var(--text-h)]">
+          All Tags ({tags.length})
+        </span>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex items-center">
@@ -121,6 +118,9 @@ export default function TagsScreen({
           </button>
         </div>
       </div>
+
+      {/* Horizontal Line Break */}
+      <hr className="border-[var(--border)] my-2" />
 
       {/* Stacked List of Tag Rows */}
       <div className="bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] divide-y divide-[var(--border)]">

@@ -5,32 +5,87 @@ interface NavProps {
   onToggle: () => void;
   user?: { name: string; email: string } | null;
   onSignOut?: () => void;
+  activeScreen?: "home" | "collections" | "tags";
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
 }
 
-function Nav({ onToggle, user, onSignOut }: NavProps) {
+function Nav({
+  onToggle,
+  user,
+  onSignOut,
+  activeScreen = "home",
+  searchTerm = "",
+  onSearchChange,
+}: NavProps) {
   const [profileClicked, setProfileClicked] = useState(false);
+
+  let titleText = "Saved Bookmarks";
+  let subtitleText = "Saved posts synced with your account";
+
+  if (activeScreen === "collections") {
+    titleText = "Collections";
+    subtitleText = "Group related bookmarks into folders";
+  } else if (activeScreen === "tags") {
+    titleText = "Tags";
+    subtitleText = "Cross-cut your bookmarks with labels";
+  }
 
   return (
     <div className="nav-container sticky top-0 z-30 bg-[var(--code-bg)]">
-      <div className="flex justify-between items-center p-5 h-18 bg-[var(--code-bg)] border-b border-[var(--border)] transition-colors duration-300">
-        {/* Hamburger Icon */}
-        <svg
-          onClick={onToggle}
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth="2.5"
-          stroke="currentColor"
-          className="size-6 text-[var(--text-h)] cursor-pointer hover:opacity-80 transition-opacity md:hidden"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-          />
-        </svg>
-        {/* Profile and Theme Toggle */}
-        <div className="flex items-center ml-auto px-6 relative gap-3">
+      <div className="flex justify-between items-center px-4 sm:px-6 h-20 bg-[var(--code-bg)] border-b border-[var(--border)] transition-colors duration-300 gap-4">
+        {/* Hamburger Icon & Navbar Header Title/Subtitle */}
+        <div className="flex items-center gap-3 min-w-0">
+          <svg
+            onClick={onToggle}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            className="size-6 text-[var(--text-h)] cursor-pointer hover:opacity-80 transition-opacity md:hidden shrink-0"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            />
+          </svg>
+
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold text-[var(--text-h)] truncate">
+              {titleText}
+            </h1>
+            <p className="text-xs text-[var(--text)] opacity-80 hidden sm:block truncate">
+              {subtitleText}
+            </p>
+          </div>
+        </div>
+
+        {/* Right Section: Search Bar + Theme Toggle + Profile Dropdown */}
+        <div className="flex items-center ml-auto relative gap-3 shrink-0">
+          {/* Search Input Bar (in Top Navbar) */}
+          {activeScreen === "home" && onSearchChange && (
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Search bookmarks"
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-36 sm:w-64 px-3.5 py-1.5 pr-8 text-xs rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] transition-colors leading-normal"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => onSearchChange("")}
+                  className="absolute right-2.5 text-[var(--text)] hover:text-red-500 cursor-pointer p-0.5 text-xs font-bold"
+                  title="Clear search input"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Magic UI Animated Circular Theme Toggler Component */}
           <AnimatedThemeToggler variant="circle" duration={500} />
 

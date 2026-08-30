@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import type { RedditBookmark } from "../types/bookmark";
+import type { Bookmark } from "../types/bookmark";
 import type { CollectionItem } from "../types/collection";
 import type { TagItem } from "../types/tag";
 import { sanitizeUrl } from "../lib/utils";
 
 interface BookmarkCardProps {
-  bookmark: RedditBookmark;
+  bookmark: Bookmark;
   isMenuOpen: boolean;
   onToggleMenu: (id: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
@@ -25,6 +25,7 @@ export function BookmarkCard({
 }: BookmarkCardProps) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // If metadata is actively being fetched in the background, render clean wireframe gray skeleton boxes
   if (bookmark.isFetchingMetadata) {
@@ -61,18 +62,28 @@ export function BookmarkCard({
     );
   }
 
+  const mediaUrl = bookmark.snapshot || bookmark.logo;
+  const dateLabel = bookmark.published_at || (bookmark.created_at ? new Date(bookmark.created_at).toLocaleDateString() : "");
+
+  const descriptionText = bookmark.description || "";
+  const DESCRIPTION_LIMIT = 110;
+  const isLongDescription = descriptionText.length > DESCRIPTION_LIMIT;
+  const displayedDescription = isLongDescription && !isDescriptionExpanded
+    ? `${descriptionText.slice(0, DESCRIPTION_LIMIT).trim()}...`
+    : descriptionText;
+
   return (
-    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:border-[var(--accent-border)] hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+    <div className="group relative bg-[var(--code-bg)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-[var(--shadow)] hover:shadow-[0_0_30px_rgba(37,99,235,0.25)] dark:hover:shadow-[0_0_35px_rgba(81,194,176,0.35)] hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between">
       {/* Media Image Section */}
       <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[var(--bg)]">
-        {/* Image Loading Gray Skeleton Box before thumbnail finishes loading */}
+        {/* Image Loading Gray Skeleton Box before snapshot/logo finishes loading */}
         {!imgLoaded && (
           <div className="absolute inset-0 bg-[var(--border)] opacity-50 animate-pulse" />
         )}
 
-        {!imgError ? (
+        {!imgError && mediaUrl ? (
           <img
-            src={bookmark.thumbnail}
+            src={mediaUrl}
             alt={bookmark.title}
             loading="lazy"
             onLoad={() => setImgLoaded(true)}
@@ -86,14 +97,14 @@ export function BookmarkCard({
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8 opacity-40 mb-1">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V6.75z" />
             </svg>
-            <span className="text-[11px] opacity-70 font-medium">{bookmark.source}</span>
+            <span className="text-[11px] opacity-70 font-medium">{bookmark.site_name}</span>
           </div>
         )}
 
         {/* Top Right Source Badge */}
         <div className="absolute top-3 right-3 rounded-full px-3 py-1 bg-black/60 backdrop-blur-md text-xs font-medium text-white flex items-center gap-1.5 shadow-md z-10">
           <span className="size-2 rounded-full bg-red-500 shrink-0 animate-pulse" />
-          <span>{bookmark.source}</span>
+          <span>{bookmark.site_name}</span>
         </div>
       </div>
 
@@ -101,7 +112,7 @@ export function BookmarkCard({
       <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
         <div className="space-y-2">
           <a
-            href={sanitizeUrl(bookmark.url || bookmark.permalink)}
+            href={sanitizeUrl(bookmark.url)}
             target="_blank"
             rel="noreferrer"
             className="text-base font-bold text-[var(--text-h)] hover:text-[var(--primary)] transition-colors leading-snug block line-clamp-2"
@@ -109,10 +120,47 @@ export function BookmarkCard({
             {bookmark.title}
           </a>
 
-          {bookmark.selftext && (
-            <p className="text-xs text-[var(--text)] line-clamp-2 leading-relaxed opacity-90">
-              {bookmark.selftext}
-            </p>
+          {descriptionText && (
+            <div className="relative">
+              <div
+                className={`text-xs text-[var(--text)] leading-relaxed opacity-90 transition-all duration-300 ease-in-out overflow-hidden ${
+                  isLongDescription && !isDescriptionExpanded
+                    ? "max-h-11"
+                    : "max-h-[600px]"
+                }`}
+              >
+                <p>{descriptionText}</p>
+              </div>
+
+              {isLongDescription && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDescriptionExpanded((prev) => !prev);
+                  }}
+                  className="text-[var(--primary)] font-semibold text-xs mt-1 hover:underline cursor-pointer transition-all duration-200 active:scale-95 inline-flex items-center gap-1"
+                >
+                  <span>{isDescriptionExpanded ? "show less" : "show more..."}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                    stroke="currentColor"
+                    className={`size-3 transition-transform duration-300 ${
+                      isDescriptionExpanded ? "rotate-180" : "rotate-0"
+                    }`}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -221,7 +269,7 @@ export function BookmarkCard({
 
       {/* Card Footer */}
       <div className="px-5 py-3.5 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--text)]">
-        <span>{bookmark.dateStr}</span>
+        <span>{dateLabel}</span>
 
         <div className="flex items-center gap-2">
           {bookmark.url && (

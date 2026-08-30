@@ -67,15 +67,12 @@ export default function CollectionsScreen({
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 relative pb-8">
-      {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border)]">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--text-h)]">Collections</h1>
-          <p className="text-sm text-[var(--text)]">
-            Group related bookmarks into folders you can navigate.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto space-y-4 relative pb-8">
+      {/* Controls Bar above <hr/> Line Break */}
+      <div className="flex items-center justify-between gap-4">
+        <span className="text-sm font-semibold text-[var(--text-h)]">
+          All Collections ({collections.length})
+        </span>
 
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex items-center">
@@ -124,6 +121,9 @@ export default function CollectionsScreen({
           </button>
         </div>
       </div>
+
+      {/* Horizontal Line Break */}
+      <hr className="border-[var(--border)] my-2" />
 
       {/* Grid of Collection Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
