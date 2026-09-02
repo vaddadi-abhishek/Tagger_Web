@@ -230,6 +230,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             snapshot: snapshotUrl,
             logo: logoUrl,
             site_name: derivedSiteName,
+            type: data.type || null,
+            card_data: data.card_data || null,
           });
 
           // 2. Update local state card
@@ -244,6 +246,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                 logo: logoUrl,
                 site_name: derivedSiteName,
                 isFetchingMetadata: false,
+                type: data.type || undefined,
+                card_data: data.card_data || undefined,
               };
             })
           );
@@ -567,6 +571,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
 
       <SideNav
         isSideNavOpen={isSideNavOpen}
+        onToggle={() => setIsSideNavOpen((prev) => !prev)}
         onClose={() => setIsSideNavOpen(false)}
         activeScreen={activeScreen}
         onSelectScreen={handleSelectScreen}

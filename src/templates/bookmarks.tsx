@@ -316,10 +316,10 @@ export default function BookmarksScreen({
                     style={
                       color
                         ? {
-                            backgroundColor: `${color}20`,
-                            borderColor: `${color}60`,
-                            color: color,
-                          }
+                          backgroundColor: `${color}20`,
+                          borderColor: `${color}60`,
+                          color: color,
+                        }
                         : undefined
                     }
                     className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)]"
@@ -349,10 +349,10 @@ export default function BookmarksScreen({
                     style={
                       color
                         ? {
-                            backgroundColor: `${color}20`,
-                            borderColor: `${color}60`,
-                            color: color,
-                          }
+                          backgroundColor: `${color}20`,
+                          borderColor: `${color}60`,
+                          color: color,
+                        }
                         : undefined
                     }
                     className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)]"
@@ -383,11 +383,10 @@ export default function BookmarksScreen({
         <div className="relative shrink-0" ref={filterMenuRef}>
           <button
             onClick={() => setIsFilterMenuOpen((prev) => !prev)}
-            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-[var(--code-bg)] border transition-all cursor-pointer ${
-              activeFilterCount > 0 || isFilterMenuOpen
+            className={`flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl bg-[var(--code-bg)] border transition-all cursor-pointer ${activeFilterCount > 0 || isFilterMenuOpen
                 ? "border-[var(--primary)] text-[var(--primary)] bg-[var(--accent-bg)] shadow-xs"
                 : "border-[var(--border)] text-[var(--text-h)] hover:bg-[var(--accent-bg)]"
-            }`}
+              }`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -451,24 +450,23 @@ export default function BookmarksScreen({
                           color
                             ? isSelected
                               ? {
-                                  backgroundColor: color,
-                                  borderColor: color,
-                                  color: "#ffffff",
-                                }
+                                backgroundColor: color,
+                                borderColor: color,
+                                color: "#ffffff",
+                              }
                               : {
-                                  backgroundColor: `${color}18`,
-                                  borderColor: `${color}50`,
-                                  color: color,
-                                }
+                                backgroundColor: `${color}18`,
+                                borderColor: `${color}50`,
+                                color: color,
+                              }
                             : undefined
                         }
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all cursor-pointer ${
-                          !color
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-medium transition-all cursor-pointer ${!color
                             ? isSelected
                               ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
                               : "bg-[var(--code-bg)] text-[var(--text)] border-[var(--border)] hover:border-[var(--accent-border)]"
                             : "hover:opacity-90"
-                        }`}
+                          }`}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -526,24 +524,23 @@ export default function BookmarksScreen({
                           color
                             ? isSelected
                               ? {
-                                  backgroundColor: color,
-                                  borderColor: color,
-                                  color: "#ffffff",
-                                }
+                                backgroundColor: color,
+                                borderColor: color,
+                                color: "#ffffff",
+                              }
                               : {
-                                  backgroundColor: `${color}18`,
-                                  borderColor: `${color}50`,
-                                  color: color,
-                                }
+                                backgroundColor: `${color}18`,
+                                borderColor: `${color}50`,
+                                color: color,
+                              }
                             : undefined
                         }
-                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium transition-all cursor-pointer ${
-                          !color
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-medium transition-all cursor-pointer ${!color
                             ? isSelected
                               ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
                               : "bg-[var(--code-bg)] text-[var(--text)] border-[var(--border)] hover:border-[var(--accent-border)]"
                             : "hover:opacity-90"
-                        }`}
+                          }`}
                       >
                         <span className="font-bold">#</span>
                         <span>{t.name.replace(/^#/, "")}</span>

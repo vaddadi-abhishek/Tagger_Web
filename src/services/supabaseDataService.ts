@@ -214,6 +214,8 @@ export async function fetchBookmarks(): Promise<Bookmark[]> {
       collections: collectionsList,
       created_at: row.created_at || new Date().toISOString(),
       isFetchingMetadata: false,
+      type: row.type || null,
+      card_data: row.card_data || null,
     };
   });
 }
@@ -303,6 +305,8 @@ export async function updateBookmarkMetadata(
     snapshot?: string | null;
     logo?: string | null;
     site_name?: string;
+    type?: string | null;
+    card_data?: any;
   }
 ): Promise<void> {
   const { error } = await supabase
@@ -313,6 +317,8 @@ export async function updateBookmarkMetadata(
       snapshot_url: metadata.snapshot,
       logo_url: metadata.logo,
       site_name: metadata.site_name,
+      type: metadata.type,
+      card_data: metadata.card_data,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);

@@ -4,6 +4,7 @@ import type { TagItem } from "../types/tag";
 
 export interface SideNavProps {
   isSideNavOpen: boolean;
+  onToggle?: () => void;
   onClose?: () => void;
   activeScreen?: "home" | "collections" | "tags";
   onSelectScreen?: (screen: "home" | "collections" | "tags") => void;
@@ -15,6 +16,7 @@ export interface SideNavProps {
 
 function SideNav({
   isSideNavOpen,
+  onToggle,
   onClose,
   activeScreen = "home",
   onSelectScreen,
@@ -30,7 +32,6 @@ function SideNav({
   const collections = externalCollections || [];
   const tags = externalTags || [];
 
-
   const cleanNavSearch = navSearch.toLowerCase().trim();
 
   const filteredCollections = collections.filter((col) =>
@@ -45,7 +46,6 @@ function SideNav({
     if (onSelectScreen) {
       onSelectScreen(screen);
     }
-    onClose?.();
   };
 
   const handleCollectionItemClick = (colName: string) => {
@@ -54,7 +54,6 @@ function SideNav({
     } else {
       handleNavClick("home");
     }
-    onClose?.();
   };
 
   const handleTagItemClick = (tagName: string) => {
@@ -63,7 +62,6 @@ function SideNav({
     } else {
       handleNavClick("home");
     }
-    onClose?.();
   };
 
   return (
@@ -78,27 +76,65 @@ function SideNav({
 
       {/* SideNav Container */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-screen h-[100dvh] w-64 glass-panel border-r border-[var(--border)] flex flex-col justify-between transition-transform duration-300 md:static md:translate-x-0 shrink-0 ${
-          isSideNavOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`relative fixed top-0 left-0 z-50 h-screen h-[100dvh] glass-panel border-r border-[var(--border)] flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 md:static ${isSideNavOpen
+          ? "w-64 translate-x-0 opacity-100"
+          : "-translate-x-full md:translate-x-0 md:w-20 md:opacity-100"
+          }`}
       >
-        {/* 1. FIXED TOP SECTION */}
-        <div className="p-4 space-y-4 shrink-0">
+        {/* Floating Border Edge Toggle Button (Positions right on outer border between side nav & top nav) */}
+        <button
+          onClick={onToggle}
+          type="button"
+          className="hidden md:flex absolute -right-3 top-6 z-50 size-6 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:scale-110 transition-all cursor-pointer shadow-md items-center justify-center"
+          title={isSideNavOpen ? "Collapse sidebar" : "Expand sidebar"}
+          aria-label="Toggle sidebar"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            className="size-3"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d={isSideNavOpen ? "M15.75 19.5L8.25 12l7.5-7.5" : "M8.25 4.5l7.5 7.5-7.5 7.5"}
+            />
+          </svg>
+        </button>
+
+        {/* 1. TOP SECTION (Header + Search + Main Nav) */}
+        <div className="p-3 space-y-4 shrink-0 overflow-hidden">
           {/* Brand Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="size-8.5 rounded-2xl bg-gradient-to-tr from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center font-extrabold text-lg shadow-md border border-white/30">
-                T
+          <div className="flex items-center justify-between h-9 min-w-[200px] md:min-w-0">
+            {isSideNavOpen ? (
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="size-8.5 rounded-2xl bg-gradient-to-tr from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center font-extrabold text-lg shadow-md border border-white/30 shrink-0">
+                  T
+                </div>
+                <span className="font-extrabold text-lg text-[var(--text-h)] tracking-tight truncate">
+                  Tagger
+                </span>
               </div>
-              <span className="font-extrabold text-lg text-[var(--text-h)] tracking-tight">
-                Tagger
-              </span>
-            </div>
+            ) : (
+              <div className="mx-auto flex items-center justify-center">
+                <div
+                  onClick={onToggle}
+                  className="size-8.5 rounded-2xl bg-gradient-to-tr from-[var(--primary)] to-[var(--secondary)] text-white flex items-center justify-center font-extrabold text-lg shadow-md border border-white/30 cursor-pointer"
+                  title="Expand sidebar"
+                >
+                  T
+                </div>
+              </div>
+            )}
 
             {/* Mobile Close Button */}
             <button
               onClick={onClose}
-              className="md:hidden p-1.5 rounded-xl hover:bg-[var(--bg)] text-[var(--text)]"
+              type="button"
+              className="md:hidden p-1.5 rounded-xl hover:bg-[var(--bg)] text-[var(--text)] transition-colors cursor-pointer"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -117,41 +153,67 @@ function SideNav({
             </button>
           </div>
 
-          {/* Search Input Bar (Filters Navbar Items) */}
-          <div className="relative flex items-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="2"
-              stroke="currentColor"
-              className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--text)] pointer-events-none opacity-70 shrink-0"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+          {/* Search Bar / Search Button */}
+          {isSideNavOpen ? (
+            <div className="relative flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--text)] pointer-events-none opacity-70 shrink-0"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search collections & tags"
+                value={navSearch}
+                onChange={(e) => setNavSearch(e.target.value)}
+                className="glass-input w-full pl-9 pr-7 py-1.5 text-xs rounded-full text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all leading-normal"
               />
-            </svg>
-            <input
-              type="text"
-              placeholder="Search collections & tags"
-              value={navSearch}
-              onChange={(e) => setNavSearch(e.target.value)}
-              className="glass-input w-full pl-9 pr-7 py-1.5 text-xs rounded-full text-[var(--text-h)] placeholder-[var(--text)] outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 transition-all leading-normal"
-            />
-          </div>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <button
+                onClick={onToggle}
+                className="p-2 rounded-xl text-[var(--text)] hover:bg-[var(--bg)] hover:text-[var(--text-h)] transition-colors cursor-pointer"
+                title="Search collections & tags"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="size-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
 
-          {/* Primary Main Menu Links */}
+          {/* Primary Navigation Menu */}
           <nav className="space-y-1">
             {/* Home Link */}
             <button
               onClick={() => handleNavClick("home")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
-                activeScreen === "home"
+              title="Home"
+              className={`w-full flex items-center ${isSideNavOpen ? "gap-3 px-3 py-2" : "justify-center p-2.5"
+                } text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${activeScreen === "home"
                   ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
                   : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-              }`}
+                }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -159,7 +221,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0 transition-transform group-hover:scale-110"
+                className="size-5 shrink-0"
               >
                 <path
                   strokeLinecap="round"
@@ -167,17 +229,18 @@ function SideNav({
                   d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
                 />
               </svg>
-              <span>Home</span>
+              {isSideNavOpen && <span>Home</span>}
             </button>
 
             {/* Collections Link */}
             <button
               onClick={() => handleNavClick("collections")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
-                activeScreen === "collections"
+              title="Collections"
+              className={`w-full flex items-center ${isSideNavOpen ? "gap-3 px-3 py-2" : "justify-center p-2.5"
+                } text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${activeScreen === "collections"
                   ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
                   : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-              }`}
+                }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -185,7 +248,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0 transition-transform group-hover:scale-110"
+                className="size-5 shrink-0"
               >
                 <path
                   strokeLinecap="round"
@@ -193,17 +256,18 @@ function SideNav({
                   d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
                 />
               </svg>
-              <span>Collections</span>
+              {isSideNavOpen && <span>Collections</span>}
             </button>
 
             {/* Tags Link */}
             <button
               onClick={() => handleNavClick("tags")}
-              className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${
-                activeScreen === "tags"
+              title="Tags"
+              className={`w-full flex items-center ${isSideNavOpen ? "gap-3 px-3 py-2" : "justify-center p-2.5"
+                } text-xs font-semibold rounded-xl transition-colors group cursor-pointer ${activeScreen === "tags"
                   ? "bg-[var(--accent-bg)] text-[var(--primary)] shadow-xs"
                   : "text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)]"
-              }`}
+                }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -211,7 +275,7 @@ function SideNav({
                 viewBox="0 0 24 24"
                 strokeWidth="2"
                 stroke="currentColor"
-                className="size-4 shrink-0 transition-transform group-hover:scale-110"
+                className="size-5 shrink-0"
               >
                 <path
                   strokeLinecap="round"
@@ -224,59 +288,67 @@ function SideNav({
                   d="M6 6h.008v.008H6V6Z"
                 />
               </svg>
-              <span>Tags</span>
+              {isSideNavOpen && <span>Tags</span>}
             </button>
           </nav>
         </div>
 
         <hr className="border-[var(--border)] shrink-0" />
 
-        {/* 2. SCROLLABLE MIDDLE SECTION */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          {/* Collapsible Collections Section */}
+        {/* 2. MIDDLE SECTION (Collections & Tags) */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {/* Collections Section */}
           <div className="space-y-1">
-            <button
-              onClick={() => setIsCollectionsOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between text-[11px] font-bold tracking-wider text-[var(--text)] uppercase hover:text-[var(--text-h)] py-1 cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2.5"
-                  stroke="currentColor"
-                  className={`size-3 transition-transform duration-200 ${
-                    isCollectionsOpen ? "rotate-90" : ""
-                  }`}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                  />
-                </svg>
-                <span>COLLECTIONS</span>
+            {isSideNavOpen ? (
+              <button
+                onClick={() => setIsCollectionsOpen((prev) => !prev)}
+                className="w-full flex items-center justify-between text-[11px] font-bold tracking-wider text-[var(--text)] uppercase hover:text-[var(--text-h)] py-1 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                    stroke="currentColor"
+                    className={`size-3 transition-transform duration-200 ${isCollectionsOpen ? "rotate-90" : ""
+                      }`}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                  <span>COLLECTIONS</span>
+                </div>
+              </button>
+            ) : (
+              <div className="text-[10px] font-bold text-center text-[var(--text)] opacity-40 uppercase pt-1">
+                Cols
               </div>
-            </button>
+            )}
 
-            {isCollectionsOpen && (
-              <div className="space-y-0.5 pt-1 pl-2">
+            {(isCollectionsOpen || !isSideNavOpen) && (
+              <div className={`space-y-1 ${isSideNavOpen ? "pt-1 pl-2" : "flex flex-col items-center pt-1"}`}>
                 {filteredCollections.map((col) => (
                   <button
                     key={col.name}
                     onClick={() => handleCollectionItemClick(col.name)}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
+                    title={`${col.name} (${col.count})`}
+                    className={`${isSideNavOpen
+                      ? "w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
+                      : "p-2 rounded-xl hover:bg-[var(--accent-bg)] transition-all group cursor-pointer flex items-center justify-center"
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      {/* Multi-color folder icon */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
                         strokeWidth="1.8"
                         stroke="currentColor"
-                        className="size-4 shrink-0 transition-transform group-hover:scale-110"
+                        className="size-5 shrink-0"
                         style={{ color: col.color }}
                       >
                         <path
@@ -285,15 +357,17 @@ function SideNav({
                           d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
                         />
                       </svg>
-                      <span className="truncate">{col.name}</span>
+                      {isSideNavOpen && <span className="truncate">{col.name}</span>}
                     </div>
-                    <span className="text-[11px] opacity-60 font-mono font-medium">
-                      {col.count}
-                    </span>
+                    {isSideNavOpen && (
+                      <span className="text-[11px] opacity-60 font-mono font-medium">
+                        {col.count}
+                      </span>
+                    )}
                   </button>
                 ))}
 
-                {filteredCollections.length === 0 && (
+                {isSideNavOpen && filteredCollections.length === 0 && (
                   <div className="text-[11px] text-[var(--text)] opacity-60 py-1 px-2 italic">
                     No collections found
                   </div>
@@ -302,56 +376,68 @@ function SideNav({
             )}
           </div>
 
-          {/* Collapsible Tags Section */}
-          <div className="space-y-1">
-            <button
-              onClick={() => setIsTagsOpen((prev) => !prev)}
-              className="w-full flex items-center justify-between text-[11px] font-bold tracking-wider text-[var(--text)] uppercase hover:text-[var(--text-h)] py-1 cursor-pointer select-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2.5"
-                  stroke="currentColor"
-                  className={`size-3 transition-transform duration-200 ${
-                    isTagsOpen ? "rotate-90" : ""
-                  }`}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                  />
-                </svg>
-                <span>TAGS</span>
-              </div>
-            </button>
+          <hr className="border-[var(--border)] opacity-60" />
 
-            {isTagsOpen && (
-              <div className="space-y-0.5 pt-1 pl-2">
+          {/* Tags Section */}
+          <div className="space-y-1">
+            {isSideNavOpen ? (
+              <button
+                onClick={() => setIsTagsOpen((prev) => !prev)}
+                className="w-full flex items-center justify-between text-[11px] font-bold tracking-wider text-[var(--text)] uppercase hover:text-[var(--text-h)] py-1 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                    stroke="currentColor"
+                    className={`size-3 transition-transform duration-200 ${isTagsOpen ? "rotate-90" : ""
+                      }`}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                    />
+                  </svg>
+                  <span>TAGS</span>
+                </div>
+              </button>
+            ) : (
+              <div className="text-[10px] font-bold text-center text-[var(--text)] opacity-40 uppercase pt-1">
+                Tags
+              </div>
+            )}
+
+            {(isTagsOpen || !isSideNavOpen) && (
+              <div className={`space-y-1 ${isSideNavOpen ? "pt-1 pl-2" : "flex flex-col items-center pt-1"}`}>
                 {filteredTags.map((tag) => (
                   <button
                     key={tag.name}
                     onClick={() => handleTagItemClick(tag.name)}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
+                    title={`${tag.name} (${tag.count})`}
+                    className={`${isSideNavOpen
+                      ? "w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] rounded-lg transition-colors group cursor-pointer"
+                      : "p-2.5 rounded-xl hover:bg-[var(--accent-bg)] transition-all group cursor-pointer flex items-center justify-center"
+                      }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      {/* Multi-color tag dot icon */}
                       <span
-                        className="size-2 rounded-full shrink-0 transition-transform group-hover:scale-125"
+                        className="size-3 rounded-full shrink-0 border border-black/10 dark:border-white/20"
                         style={{ backgroundColor: tag.color }}
                       />
-                      <span className="truncate">{tag.name}</span>
+                      {isSideNavOpen && <span className="truncate">{tag.name}</span>}
                     </div>
-                    <span className="text-[11px] opacity-60 font-mono font-medium">
-                      {tag.count}
-                    </span>
+                    {isSideNavOpen && (
+                      <span className="text-[11px] opacity-60 font-mono font-medium">
+                        {tag.count}
+                      </span>
+                    )}
                   </button>
                 ))}
 
-                {filteredTags.length === 0 && (
+                {isSideNavOpen && filteredTags.length === 0 && (
                   <div className="text-[11px] text-[var(--text)] opacity-60 py-1 px-2 italic">
                     No tags found
                   </div>
@@ -363,11 +449,13 @@ function SideNav({
 
         <hr className="border-[var(--border)] shrink-0" />
 
-        {/* 3. FIXED BOTTOM SECTION */}
-        <div className="p-4 shrink-0">
+        {/* 3. BOTTOM SECTION (Settings) */}
+        <div className="p-3 shrink-0">
           <button
             onClick={() => handleNavClick("home")}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-semibold rounded-xl text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] transition-colors group cursor-pointer"
+            title="Settings"
+            className={`w-full flex items-center ${isSideNavOpen ? "gap-3 px-3 py-2" : "justify-center p-2.5"
+              } text-xs font-semibold rounded-xl text-[var(--text)] hover:text-[var(--text-h)] hover:bg-[var(--bg)] transition-colors group cursor-pointer`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -375,7 +463,7 @@ function SideNav({
               viewBox="0 0 24 24"
               strokeWidth="2"
               stroke="currentColor"
-              className="size-4 shrink-0 transition-transform group-hover:scale-110"
+              className="size-5 shrink-0"
             >
               <path
                 strokeLinecap="round"
@@ -388,7 +476,7 @@ function SideNav({
                 d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
               />
             </svg>
-            <span>Settings</span>
+            {isSideNavOpen && <span>Settings</span>}
           </button>
         </div>
       </aside>
