@@ -4,6 +4,7 @@ import type { CollectionItem } from "../../types/collection";
 import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
+import { AIContextBadge } from "../AIContextBadge";
 
 interface RedditCardProps {
   bookmark: Bookmark;
@@ -73,58 +74,61 @@ export function RedditCard(props: RedditCardProps) {
   };
 
   const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex items-end justify-between min-h-[32px]">
-      {/* Tags & Collections Row */}
-      <div className="flex flex-wrap items-center gap-2 pr-2">
-        {bookmark.tags?.map((tag, idx) => {
-          const cleanTag = tag.replace(/^#/, "");
-          const tagObj = availableTags?.find(
-            (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-          );
-          const color = tagObj?.color;
-          return (
-            <span
-              key={`tag-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
-            >
-              #{cleanTag}
-            </span>
-          );
-        })}
-        {bookmark.collections?.map((col, idx) => {
-          const colObj = availableCollections?.find((c) => c.name.toLowerCase() === col.toLowerCase());
-          const color = colObj?.color;
-          return (
-            <span
-              key={`col-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
-              {col}
-            </span>
-          );
-        })}
-      </div>
+    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
+      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
+      <div className="flex items-end justify-between min-h-[32px]">
+        {/* Tags & Collections Row */}
+        <div className="flex flex-wrap items-center gap-2 pr-2">
+          {bookmark.tags?.map((tag, idx) => {
+            const cleanTag = tag.replace(/^#/, "");
+            const tagObj = availableTags?.find(
+              (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
+            );
+            const color = tagObj?.color;
+            return (
+              <span
+                key={`tag-${idx}`}
+                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
+                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
+              >
+                #{cleanTag}
+              </span>
+            );
+          })}
+          {bookmark.collections?.map((col, idx) => {
+            const colObj = availableCollections?.find((c) => c.name.toLowerCase() === col.toLowerCase());
+            const color = colObj?.color;
+            return (
+              <span
+                key={`col-${idx}`}
+                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
+                {col}
+              </span>
+            );
+          })}
+        </div>
 
-      {/* 3 Dots Menu Button aligned to right */}
-      <div className="relative shrink-0 ml-auto">
-        <button
-          onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#272729] dark:hover:text-[#d7dadc] transition-colors cursor-pointer text-slate-500 dark:text-[#818384] outline-none"
-        >
-          <MoreIcon />
-        </button>
-        {isMenuOpen && (
-          <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#343536] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#d7dadc] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit bookmark</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Collections</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Tags</button>
-            <hr className="border-slate-200 dark:border-[#343536] my-1" />
-            <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors">Delete</button>
-          </div>
-        )}
+        {/* 3 Dots Menu Button aligned to right */}
+        <div className="relative shrink-0 ml-auto">
+          <button
+            onClick={(e) => onToggleMenu?.(bookmark.id, e)}
+            className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#272729] dark:hover:text-[#d7dadc] transition-colors cursor-pointer text-slate-500 dark:text-[#818384] outline-none"
+          >
+            <MoreIcon />
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#343536] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#d7dadc] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit bookmark</button>
+              <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Collections</button>
+              <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Tags</button>
+              <hr className="border-slate-200 dark:border-[#343536] my-1" />
+              <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors">Delete</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

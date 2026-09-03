@@ -5,6 +5,7 @@ import type { CollectionItem } from "../../types/collection";
 import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
+import { AIContextBadge } from "../AIContextBadge";
 
 interface LinkedInCardProps {
   bookmark: Bookmark;
@@ -85,7 +86,9 @@ export function LinkedInCard(props: LinkedInCardProps) {
   };
 
   const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex items-end justify-between min-h-[32px]">
+    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
+      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
+      <div className="flex items-end justify-between min-h-[32px]">
       {/* Tags & Collections Row */}
       <div className="flex flex-wrap items-center gap-2 pr-2">
         {bookmark.tags?.map((tag: string, idx: number) => {
@@ -141,6 +144,7 @@ export function LinkedInCard(props: LinkedInCardProps) {
         )}
       </div>
     </div>
+  </div>
   );
 
   return (

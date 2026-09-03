@@ -5,6 +5,7 @@ import type { CollectionItem } from "../../types/collection";
 import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
+import { AIContextBadge } from "../AIContextBadge";
 
 interface InstagramCardProps {
   bookmark: Bookmark;
@@ -104,25 +105,27 @@ export function InstagramCard(props: InstagramCardProps) {
   };
 
   const BottomMetadata = () => (
-    <div className="px-4 mt-1 mb-1 flex items-end justify-between min-h-[32px]">
-      {/* Tags & Collections Row */}
-      <div className="flex flex-wrap items-center gap-2 pr-2">
-        {bookmark.tags?.map((tag: string, idx: number) => {
-          const cleanTag = tag.replace(/^#/, "");
-          const tagObj = availableTags?.find(
-            (t: TagItem) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-          );
-          const color = tagObj?.color;
-          return (
-            <span
-              key={`tag-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#262626] dark:text-[#f5f5f5] dark:border-[#363636]" : ""}`}
-            >
-              #{cleanTag}
-            </span>
-          );
-        })}
+    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
+      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
+      <div className="flex items-end justify-between min-h-[32px]">
+        {/* Tags & Collections Row */}
+        <div className="flex flex-wrap items-center gap-2 pr-2">
+          {bookmark.tags?.map((tag: string, idx: number) => {
+            const cleanTag = tag.replace(/^#/, "");
+            const tagObj = availableTags?.find(
+              (t: TagItem) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
+            );
+            const color = tagObj?.color;
+            return (
+              <span
+                key={`tag-${idx}`}
+                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
+                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#262626] dark:text-[#f5f5f5] dark:border-[#363636]" : ""}`}
+              >
+                #{cleanTag}
+              </span>
+            );
+          })}
         {bookmark.collections?.map((col: string, idx: number) => {
           const colObj = availableCollections?.find((c: CollectionItem) => c.name.toLowerCase() === col.toLowerCase());
           const color = colObj?.color;
@@ -160,6 +163,7 @@ export function InstagramCard(props: InstagramCardProps) {
         )}
       </div>
     </div>
+  </div>
   );
 
   return (
@@ -213,12 +217,36 @@ export function InstagramCard(props: InstagramCardProps) {
         </div>
       </div>
 
-      {/* Media Snapshot */}
-      {bookmark.snapshot && (
-        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
-          <img src={bookmark.snapshot} alt="Media" className="w-full aspect-[4/5] object-cover bg-black" loading="lazy" />
-        </a>
-      )}
+      {/* Media Snapshot or Video Player */}
+      {(() => {
+        const videoMedia = cardData?.media?.find((m: any) => m && m.type === "video" && m.url);
+        const videoUrl = videoMedia?.url;
+
+        if (videoUrl) {
+          return (
+            <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+              <video
+                src={videoUrl}
+                poster={bookmark.snapshot || undefined}
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          );
+        }
+
+        if (bookmark.snapshot) {
+          return (
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
+              <img src={bookmark.snapshot} alt="Media" className="w-full aspect-[4/5] object-cover bg-black" loading="lazy" />
+            </a>
+          );
+        }
+
+        return null;
+      })()}
 
       {/* Native Instagram Action Bar */}
       <div className="px-4 pt-3 flex items-center justify-between text-slate-900 dark:text-[#f5f5f5]">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Bookmark, GlobalWebCardData } from "../../types/bookmark";
 import { sanitizeUrl } from "../../lib/utils";
+import { AIContextBadge } from "../AIContextBadge";
 
 export function GenericCard({ bookmark }: { bookmark: Bookmark }) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -130,6 +131,9 @@ export function GenericCard({ bookmark }: { bookmark: Bookmark }) {
                 {cardData.author}
             </div>
         )}
+
+        {/* AI Visual Context */}
+        <AIContextBadge context={bookmark.ai_context} className="mx-0 my-2" />
       </div>
     </>
   );

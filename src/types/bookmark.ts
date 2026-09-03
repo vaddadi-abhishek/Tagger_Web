@@ -122,4 +122,6 @@ export interface Bookmark {
   isFetchingMetadata?: boolean;
   type?: string;
   card_data?: AnyCardData;
+  ai_context?: string | null;
+  ai_tags?: string[];
 }

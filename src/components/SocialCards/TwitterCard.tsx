@@ -3,6 +3,7 @@ import type { CollectionItem } from "../../types/collection";
 import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
+import { AIContextBadge } from "../AIContextBadge";
 
 interface TwitterCardProps {
   bookmark: Bookmark;
@@ -116,7 +117,9 @@ export function TwitterCard(props: TwitterCardProps) {
   };
 
   const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex items-end justify-between min-h-[32px]">
+    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
+      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
+      <div className="flex items-end justify-between min-h-[32px]">
       {/* Tags & Collections Row */}
       <div className="flex flex-wrap items-center gap-2 pr-2">
         {bookmark.tags?.map((tag, idx) => {
@@ -170,6 +173,7 @@ export function TwitterCard(props: TwitterCardProps) {
         )}
       </div>
     </div>
+  </div>
   );
 
   // ---------------------------------------------------------------------------
@@ -219,11 +223,37 @@ export function TwitterCard(props: TwitterCardProps) {
         </div>
 
         {/* Media */}
-        <div className="px-4 mt-3">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
-            <img src={bookmark.snapshot!} alt="Media" className="w-full rounded-2xl object-cover border border-slate-200 dark:border-[#2f3336] max-h-80" loading="lazy" />
-          </a>
-        </div>
+        {(() => {
+          const videoMedia = cardData?.media?.find((m: any) => m && m.type === "video" && m.url);
+          const videoUrl = videoMedia?.url;
+
+          if (videoUrl) {
+            return (
+              <div className="px-4 mt-3">
+                <video
+                  src={videoUrl}
+                  poster={bookmark.snapshot || undefined}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full rounded-2xl object-cover border border-slate-200 dark:border-[#2f3336] max-h-80 bg-black"
+                />
+              </div>
+            );
+          }
+
+          if (bookmark.snapshot) {
+            return (
+              <div className="px-4 mt-3">
+                <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
+                  <img src={bookmark.snapshot} alt="Media" className="w-full rounded-2xl object-cover border border-slate-200 dark:border-[#2f3336] max-h-80" loading="lazy" />
+                </a>
+              </div>
+            );
+          }
+
+          return null;
+        })()}
 
         <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mt-4" />
 

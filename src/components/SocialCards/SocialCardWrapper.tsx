@@ -2,6 +2,7 @@ import React from "react";
 import type { Bookmark } from "../../types/bookmark";
 import type { CollectionItem } from "../../types/collection";
 import type { TagItem } from "../../types/tag";
+import { AIContextBadge } from "../AIContextBadge";
 
 interface SocialCardWrapperProps {
   bookmark: Bookmark;
@@ -38,6 +39,9 @@ export function SocialCardWrapper({
     >
       {/* Platform Specific Content */}
       <div className="flex-1 flex flex-col">{children}</div>
+
+      {/* AI Visual Context */}
+      <AIContextBadge context={bookmark.ai_context} className="mx-5 my-2" />
 
       {/* Common Metadata Section: Tags & Collections */}
       <div className="px-5 pb-3">

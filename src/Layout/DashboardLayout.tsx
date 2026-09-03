@@ -222,9 +222,11 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
           const derivedTitle = data.title ? data.title : savedBookmark.title;
           const derivedDescription = data.description ? data.description : savedBookmark.description;
           const derivedSiteName = data.site_name ? data.site_name : savedBookmark.site_name;
+          const aiContext = data.ai_context || null;
+          const aiTags = data.ai_tags || [];
 
-          // 1. Update DB record in Supabase
-          await updateBookmarkMetadata(savedBookmark.id, {
+          // 1. Update DB record in Supabase & auto-create tags
+          const updatedTagList = await updateBookmarkMetadata(savedBookmark.id, {
             title: derivedTitle,
             description: derivedDescription,
             snapshot: snapshotUrl,
@@ -232,12 +234,20 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             site_name: derivedSiteName,
             type: data.type || null,
             card_data: data.card_data || null,
+            ai_context: aiContext,
+            ai_tags: aiTags,
+            availableTags: tags,
           });
+
+          if (updatedTagList && Array.isArray(updatedTagList)) {
+            setTags(updatedTagList);
+          }
 
           // 2. Update local state card
           setBookmarks((prev) =>
             prev.map((b) => {
               if (b.id !== savedBookmark.id) return b;
+              const combinedTags = Array.from(new Set([...b.tags, ...aiTags]));
               return {
                 ...b,
                 title: derivedTitle,
@@ -248,6 +258,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                 isFetchingMetadata: false,
                 type: data.type || undefined,
                 card_data: data.card_data || undefined,
+                ai_context: aiContext,
+                tags: combinedTags,
               };
             })
           );

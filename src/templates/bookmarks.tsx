@@ -189,6 +189,9 @@ export default function BookmarksScreen({
       const matchesDate = Boolean(
         item.created_at && item.created_at.toLowerCase().includes(cleanSearch)
       );
+      const matchesAIContext = item.ai_context
+        ? item.ai_context.toLowerCase().includes(cleanSearch)
+        : false;
 
       matchesSearch =
         matchesTitle ||
@@ -197,7 +200,8 @@ export default function BookmarksScreen({
         matchesUrl ||
         matchesCollection ||
         matchesTag ||
-        matchesDate;
+        matchesDate ||
+        matchesAIContext;
     }
 
     // 2. Multi-select Collection Filter check

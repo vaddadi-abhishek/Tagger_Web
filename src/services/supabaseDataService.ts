@@ -216,6 +216,7 @@ export async function fetchBookmarks(): Promise<Bookmark[]> {
       isFetchingMetadata: false,
       type: row.type || null,
       card_data: row.card_data || null,
+      ai_context: row.ai_context || null,
     };
   });
 }
@@ -231,6 +232,7 @@ export async function createBookmark(params: {
   tagIds?: string[];
   collectionNames?: string[];
   tagNames?: string[];
+  ai_context?: string | null;
 }): Promise<Bookmark> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error("User not authenticated");
@@ -246,6 +248,7 @@ export async function createBookmark(params: {
       snapshot_url: params.snapshot || null,
       logo_url: params.logo || null,
       site_name: params.site_name || null,
+      ai_context: params.ai_context || null,
     })
     .select()
     .single();
@@ -294,6 +297,7 @@ export async function createBookmark(params: {
     collections: collectionsList,
     created_at: bookmark.created_at || new Date().toISOString(),
     isFetchingMetadata: true,
+    ai_context: bookmark.ai_context || null,
   };
 }
 
@@ -307,8 +311,11 @@ export async function updateBookmarkMetadata(
     site_name?: string;
     type?: string | null;
     card_data?: any;
+    ai_context?: string | null;
+    ai_tags?: string[];
+    availableTags?: TagItem[];
   }
-): Promise<void> {
+): Promise<TagItem[] | void> {
   const { error } = await supabase
     .from("bookmarks")
     .update({
@@ -319,12 +326,33 @@ export async function updateBookmarkMetadata(
       site_name: metadata.site_name,
       type: metadata.type,
       card_data: metadata.card_data,
+      ai_context: metadata.ai_context,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
 
   if (error) {
     console.error("Error updating bookmark metadata in Supabase:", error);
+  }
+
+  // Auto-link AI tags if present
+  if (metadata.ai_tags && metadata.ai_tags.length > 0 && metadata.availableTags) {
+    try {
+      // Fetch current bookmark tags first
+      const { data: currentBt } = await supabase
+        .from("bookmark_tags")
+        .select("tags(tag_name)")
+        .eq("bookmark_id", id);
+
+      const existingNames: string[] = (currentBt || [])
+        .map((row: any) => row.tags?.tag_name)
+        .filter(Boolean);
+
+      const combinedTags = Array.from(new Set([...existingNames, ...metadata.ai_tags]));
+      return await updateBookmarkTags(id, combinedTags, metadata.availableTags);
+    } catch (err) {
+      console.error("Error auto-linking AI tags:", err);
+    }
   }
 }
 
