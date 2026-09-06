@@ -116,7 +116,7 @@ export interface Bookmark {
   snapshot: string | null;
   logo: string | null;
   site_name: string;
-  tags: string[];
+  tags?: string[];
   collections?: string[];
   created_at?: string;
   isFetchingMetadata?: boolean;

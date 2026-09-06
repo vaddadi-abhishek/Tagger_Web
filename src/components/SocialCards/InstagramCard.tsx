@@ -1,11 +1,8 @@
 
 import React from "react";
 import type { Bookmark, InstagramCardData } from "../../types/bookmark";
-import type { CollectionItem } from "../../types/collection";
-import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
-import { AIContextBadge } from "../AIContextBadge";
 
 interface InstagramCardProps {
   bookmark: Bookmark;
@@ -14,29 +11,33 @@ interface InstagramCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onRequestEdit?: (bookmark: Bookmark) => void;
-  onRequestEditCollections?: (bookmark: Bookmark) => void;
-  onRequestEditTags?: (bookmark: Bookmark) => void;
-  availableCollections?: CollectionItem[];
-  availableTags?: TagItem[];
 }
 
 export function InstagramCard(props: InstagramCardProps) {
   const {
     bookmark,
-    availableTags,
-    availableCollections,
     onToggleMenu,
     isMenuOpen,
     onRequestEdit,
     onRequestDelete,
-    onRequestEditCollections,
-    onRequestEditTags,
     onCloseMenu,
   } = props;
 
-  const cardData = bookmark.card_data as InstagramCardData;
-  const author = cardData?.author;
-  const metrics = cardData?.metrics;
+  const rawCardData = bookmark.card_data;
+  const cardData: InstagramCardData | null = React.useMemo(() => {
+    if (!rawCardData) return null;
+    if (typeof rawCardData === "string") {
+      try {
+        return JSON.parse(rawCardData);
+      } catch {
+        return null;
+      }
+    }
+    return rawCardData as InstagramCardData;
+  }, [rawCardData]);
+
+  const author = cardData?.author || (bookmark as any)?.author;
+  const metrics = cardData?.metrics || (bookmark as any)?.metrics;
   const logoUrl = bookmark.logo || (bookmark as any).logo_url;
 
   const ColoredInstagramLogo = () => (
@@ -91,80 +92,19 @@ export function InstagramCard(props: InstagramCardProps) {
     </svg>
   );
 
-  const MoreIcon = () => (
+  const VerticalMoreIcon = () => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M3 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9 2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm7 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path>
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
     </svg>
   );
 
   const formatNumber = (num?: number) => {
-    if (!num) return null;
+    if (!num || num <= 0) return null;
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
   };
 
-  const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
-      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
-      <div className="flex items-end justify-between min-h-[32px]">
-        {/* Tags & Collections Row */}
-        <div className="flex flex-wrap items-center gap-2 pr-2">
-          {bookmark.tags?.map((tag: string, idx: number) => {
-            const cleanTag = tag.replace(/^#/, "");
-            const tagObj = availableTags?.find(
-              (t: TagItem) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-            );
-            const color = tagObj?.color;
-            return (
-              <span
-                key={`tag-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#262626] dark:text-[#f5f5f5] dark:border-[#363636]" : ""}`}
-              >
-                #{cleanTag}
-              </span>
-            );
-          })}
-        {bookmark.collections?.map((col: string, idx: number) => {
-          const colObj = availableCollections?.find((c: CollectionItem) => c.name.toLowerCase() === col.toLowerCase());
-          const color = colObj?.color;
-          return (
-            <span
-              key={`col-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#262626] dark:text-[#f5f5f5] dark:border-[#363636]" : ""}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-              </svg>
-              {col}
-            </span>
-          );
-        })}
-      </div>
-
-      {/* 3 Dots Menu Button aligned to right */}
-      <div className="relative shrink-0 ml-auto">
-        <button
-          onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#262626] dark:hover:text-[#f5f5f5] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
-        >
-          <MoreIcon />
-        </button>
-        {isMenuOpen && (
-          <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#121212] border border-slate-200 dark:border-[#262626] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#f5f5f5] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors">Edit bookmark</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors">Edit Collections</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors">Edit Tags</button>
-            <hr className="border-slate-200 dark:border-[#262626] my-1" />
-            <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors">Delete</button>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
-  );
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#0c0f14] text-slate-900 dark:text-[#f5f5f5] font-sans rounded-[1.75rem] border border-slate-200/80 dark:border-[#21262d] overflow-hidden pb-1 shadow-md">
@@ -213,6 +153,22 @@ export function InstagramCard(props: InstagramCardProps) {
             <div style={{ display: logoUrl ? "none" : "block" }}>
               <ColoredInstagramLogo />
             </div>
+          </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => onToggleMenu?.(bookmark.id, e)}
+              className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#262626] dark:hover:text-[#f5f5f5] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
+              title="More options"
+            >
+              <VerticalMoreIcon />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#121212] border border-slate-200 dark:border-[#262626] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#f5f5f5] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors">Edit bookmark</button>
+                <hr className="border-slate-200 dark:border-[#262626] my-1" />
+                <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors">Delete</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -271,15 +227,11 @@ export function InstagramCard(props: InstagramCardProps) {
       </div>
 
       {/* Likes Count */}
-      <div className="px-4 pt-2 text-[14px] font-bold text-slate-900 dark:text-[#f5f5f5]">
-        {metrics?.likes ? (
-          <span>{formatNumber(metrics.likes)} likes</span>
-        ) : (
-          <span>
-            Liked by <span className="font-bold">igaharwar__</span> and <span className="font-bold">others</span>
-          </span>
-        )}
-      </div>
+      {formatNumber(metrics?.likes) ? (
+        <div className="px-4 pt-2 text-[14px] font-bold text-slate-900 dark:text-[#f5f5f5]">
+          <span>{formatNumber(metrics?.likes)} likes</span>
+        </div>
+      ) : null}
 
       {/* Caption with Bold Inline Username */}
       <div className="px-4 pb-2 pt-1 flex-1">
@@ -302,9 +254,6 @@ export function InstagramCard(props: InstagramCardProps) {
           />
         </a>
       </div>
-
-      <hr className="border-slate-200 dark:border-[#21262d] mx-4 my-1" />
-      <BottomMetadata />
     </div>
   );
 }

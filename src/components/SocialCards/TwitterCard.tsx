@@ -1,9 +1,7 @@
+import React, { useState } from "react";
 import type { Bookmark, XCardData } from "../../types/bookmark";
-import type { CollectionItem } from "../../types/collection";
-import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
-import { AIContextBadge } from "../AIContextBadge";
 
 interface TwitterCardProps {
   bookmark: Bookmark;
@@ -12,10 +10,55 @@ interface TwitterCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onRequestEdit?: (bookmark: Bookmark) => void;
-  onRequestEditCollections?: (bookmark: Bookmark) => void;
-  onRequestEditTags?: (bookmark: Bookmark) => void;
-  availableCollections?: CollectionItem[];
-  availableTags?: TagItem[];
+}
+
+function TwitterImageItem({
+  url,
+  alt = "X post media",
+  className = "w-full h-full object-cover",
+}: {
+  url: string;
+  alt?: string;
+  className?: string;
+}) {
+  const getProxyUrl = (raw?: string | null) => {
+    if (!raw) return "";
+    if (raw.startsWith("data:") || raw.startsWith("blob:")) return raw;
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+    return `${baseUrl}/proxy-image?url=${encodeURIComponent(raw)}`;
+  };
+
+  const [src, setSrc] = useState<string>(() => url);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (src === url && url) {
+      setSrc(getProxyUrl(url));
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div className={`bg-slate-100 dark:bg-[#16181c] flex items-center justify-center text-slate-400 dark:text-slate-600 ${className}`}>
+        <svg className="w-8 h-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={handleError}
+      loading="lazy"
+      {...({ referrerPolicy: "no-referrer" } as any)}
+      className={className}
+    />
+  );
 }
 
 export function TwitterCard(props: TwitterCardProps) {
@@ -26,15 +69,209 @@ export function TwitterCard(props: TwitterCardProps) {
     onCloseMenu,
     onRequestDelete,
     onRequestEdit,
-    onRequestEditCollections,
-    onRequestEditTags,
-    availableCollections,
-    availableTags
   } = props;
-  const cardData = bookmark.card_data as XCardData;
-  const author = cardData?.author;
-  const metrics = cardData?.metrics;
-  const hasMedia = !!bookmark.snapshot;
+
+  const rawCardData = bookmark.card_data;
+  const cardData: XCardData | null = React.useMemo(() => {
+    if (!rawCardData) return null;
+    if (typeof rawCardData === "string") {
+      try {
+        return JSON.parse(rawCardData);
+      } catch {
+        return null;
+      }
+    }
+    return rawCardData as XCardData;
+  }, [rawCardData]);
+
+  const author = cardData?.author || (bookmark as any)?.author;
+  const metrics = cardData?.metrics || (bookmark as any)?.metrics;
+  const postedAt = cardData?.posted_at || (bookmark as any)?.posted_at || bookmark.created_at;
+
+  // Extract playable video URL (supports direct video object, string array, videos array, or snapshot mp4)
+  const findVideoUrl = (): string | null => {
+    const rawMedia = cardData?.media || (bookmark as any)?.media || (bookmark as any)?.card_data?.media;
+    if (Array.isArray(rawMedia)) {
+      for (const m of rawMedia) {
+        if (!m) continue;
+        if (typeof m === "string") {
+          if (m.includes(".mp4") || m.includes("video.twimg.com") || m.includes("/vid/") || m.includes("video")) {
+            return m;
+          }
+        } else if (typeof m === "object") {
+          if (m.type === "video" && m.url) return m.url;
+          if (m.type === "gif" && m.url) return m.url;
+          if (m.url && (m.url.includes(".mp4") || m.url.includes("video.twimg.com") || m.url.includes("/vid/"))) {
+            return m.url;
+          }
+        }
+      }
+    }
+    if (Array.isArray((cardData as any)?.videos)) {
+      const v = (cardData as any).videos[0];
+      if (typeof v === "string") return v;
+      if (v?.url) return v.url;
+    }
+    if (Array.isArray((cardData as any)?.media_extended)) {
+      const v = (cardData as any).media_extended.find(
+        (m: any) => m?.type === "video" || m?.type === "gif" || (m?.url && (m.url.includes(".mp4") || m.url.includes("video.twimg.com")))
+      );
+      if (v?.url) return v.url;
+    }
+    if ((cardData as any)?.video_url) return (cardData as any).video_url;
+    if ((cardData as any)?.videoUrl) return (cardData as any).videoUrl;
+    if ((cardData as any)?.video?.url) return (cardData as any).video.url;
+    if ((bookmark as any)?.video_url) return (bookmark as any).video_url;
+    if (bookmark.snapshot && (/\.mp4(?:\?.*)?$/i.test(bookmark.snapshot) || bookmark.snapshot.includes("video.twimg.com") || bookmark.snapshot.includes("/vid/"))) {
+      return bookmark.snapshot;
+    }
+    return null;
+  };
+
+  const videoUrl = findVideoUrl();
+  const [videoError, setVideoError] = useState(false);
+
+  // Extract all valid image URLs from cardData.media, photos, mediaURLs, or bookmark.snapshot
+  const postImages: string[] = React.useMemo(() => {
+    const list: string[] = [];
+    const addUrl = (u: any) => {
+      if (!u || typeof u !== "string") return;
+      const trimmed = u.trim();
+      if (!trimmed) return;
+      if (trimmed.includes(".mp4") || trimmed.includes("video.twimg.com") || trimmed.includes("/vid/")) {
+        return;
+      }
+      if (!list.includes(trimmed)) {
+        list.push(trimmed);
+      }
+    };
+
+    const rawMedia = cardData?.media || (bookmark as any)?.media || (bookmark as any)?.card_data?.media;
+    if (Array.isArray(rawMedia)) {
+      for (const m of rawMedia) {
+        if (!m) continue;
+        if (typeof m === "string") {
+          addUrl(m);
+        } else if (typeof m === "object") {
+          if (m.type !== "video" && m.type !== "gif") {
+            addUrl(m.url);
+          }
+        }
+      }
+    }
+
+    if (Array.isArray((cardData as any)?.photos)) {
+      for (const p of (cardData as any).photos) {
+        addUrl(typeof p === "string" ? p : p?.url);
+      }
+    }
+    if (Array.isArray((cardData as any)?.images)) {
+      for (const img of (cardData as any).images) {
+        addUrl(typeof img === "string" ? img : img?.url);
+      }
+    }
+    if (Array.isArray((cardData as any)?.media_extended)) {
+      for (const item of (cardData as any).media_extended) {
+        if (item?.type !== "video" && item?.type !== "gif") {
+          addUrl(item?.url);
+        }
+      }
+    }
+    if (Array.isArray((cardData as any)?.mediaURLs)) {
+      for (const u of (cardData as any).mediaURLs) {
+        addUrl(u);
+      }
+    }
+
+    if (list.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes(".mp4") && !bookmark.snapshot.includes("video.twimg.com") && !bookmark.snapshot.includes("/vid/")) {
+      addUrl(bookmark.snapshot);
+    }
+    return list;
+  }, [cardData, bookmark]);
+
+  const hasMedia = Boolean(videoUrl || postImages.length > 0);
+
+  const renderImageGrid = () => {
+    if (postImages.length === 0) return null;
+
+    // 1 image: Display full uncropped image
+    if (postImages.length === 1) {
+      return (
+        <div className="px-4 mt-3">
+          <a
+            href={sanitizeUrl(bookmark.url)}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-zinc-900/60"
+          >
+            <TwitterImageItem
+              url={postImages[0]}
+              className="w-full h-auto max-h-[550px] object-contain mx-auto block"
+            />
+          </a>
+        </div>
+      );
+    }
+
+    // 2 images: 2 columns side-by-side
+    if (postImages.length === 2) {
+      return (
+        <div className="px-4 mt-3">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-64 sm:h-80 bg-slate-200 dark:bg-[#2f3336]">
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
+              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            </a>
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
+              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    // 3 images: 1 tall on left, 2 stacked on right
+    if (postImages.length === 3) {
+      return (
+        <div className="px-4 mt-3">
+          <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-72 sm:h-88 bg-slate-200 dark:bg-[#2f3336]">
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
+              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            </a>
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
+              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            </a>
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
+              <TwitterImageItem url={postImages[2]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    // 4+ images: 2x2 grid with +N on the 4th item if > 4
+    return (
+      <div className="px-4 mt-3">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-72 sm:h-88 bg-slate-200 dark:bg-[#2f3336]">
+          {postImages.slice(0, 4).map((imgUrl, idx) => (
+            <a
+              key={idx}
+              href={sanitizeUrl(bookmark.url)}
+              target="_blank"
+              rel="noreferrer"
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img"
+            >
+              <TwitterImageItem url={imgUrl} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+              {idx === 3 && postImages.length > 4 && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center text-white font-bold text-xl sm:text-2xl">
+                  +{postImages.length - 3}
+                </div>
+              )}
+            </a>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // Exact Twitter SVGs
   const ReplyIcon = () => (
@@ -70,38 +307,16 @@ export function TwitterCard(props: TwitterCardProps) {
     </svg>
   );
 
-  const MoreIcon = () => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-[1.125rem] h-[1.125rem] fill-current"><path d="M3 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9 2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm7 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path></svg>
-  );
 
 
   const formatNumber = (num?: number) => {
-    if (!num) return null;
+    if (!num || num <= 0) return null;
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
   };
 
   const handleText = author?.handle ? (author.handle.startsWith('@') ? author.handle : `@${author.handle}`) : '';
-
-  // Calculate relative time for feed view (e.g. "8h" or "Jul 5")
-  const getRelativeTime = (dateString?: string | null) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return null;
-
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    if (diffInSeconds < 60) return `${diffInSeconds}s`;
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    if (date.getFullYear() !== now.getFullYear()) {
-      options.year = 'numeric';
-    }
-    return date.toLocaleDateString('en-US', options);
-  };
 
   const formatDetailDate = (dateString?: string | null) => {
     if (!dateString) return null;
@@ -116,184 +331,24 @@ export function TwitterCard(props: TwitterCardProps) {
     return `${timeStr} · ${dateStr}`;
   };
 
-  const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
-      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
-      <div className="flex items-end justify-between min-h-[32px]">
-      {/* Tags & Collections Row */}
-      <div className="flex flex-wrap items-center gap-2 pr-2">
-        {bookmark.tags?.map((tag, idx) => {
-          const cleanTag = tag.replace(/^#/, "");
-          const tagObj = availableTags?.find(
-            (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-          );
-          const color = tagObj?.color;
-          return (
-            <span
-              key={`tag-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#16181c] dark:text-[#e7e9ea] dark:border-[#2f3336]" : ""}`}
-            >
-              #{cleanTag}
-            </span>
-          );
-        })}
-        {bookmark.collections?.map((col, idx) => {
-          const colObj = availableCollections?.find((c) => c.name.toLowerCase() === col.toLowerCase());
-          const color = colObj?.color;
-          return (
-            <span
-              key={`col-${idx}`}
-              style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#16181c] dark:text-[#e7e9ea] dark:border-[#2f3336]" : ""}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
-              {col}
-            </span>
-          );
-        })}
-      </div>
-
-      {/* 3 Dots Menu Button aligned to right */}
-      <div className="relative shrink-0 ml-auto">
-        <button
-          onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-          className="p-1.5 rounded-lg hover:bg-[#1d9bf0]/10 hover:text-[#1d9bf0] transition-colors cursor-pointer text-slate-500 dark:text-[#71767b] outline-none"
-        >
-          <MoreIcon />
-        </button>
-        {isMenuOpen && (
-          <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-[#2f3336] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e7e9ea] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit bookmark</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit Collections</button>
-            <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit Tags</button>
-            <hr className="border-slate-200 dark:border-[#2f3336] my-1" />
-            <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#f4212e] transition-colors">Delete</button>
-          </div>
-        )}
-      </div>
-    </div>
-  </div>
+  const VerticalMoreIcon = () => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+    </svg>
   );
 
-  // ---------------------------------------------------------------------------
-  // FEED VIEW (For Cards with Media)
-  // ---------------------------------------------------------------------------
-  if (hasMedia) {
-    return (
-      <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans pb-3 rounded-[1.75rem] border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-md">
-        {/* Header Inline */}
-        <div className="px-4 pt-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 overflow-hidden flex-1">
-            {author?.avatar_url ? (
-              <img src={author.avatar_url} alt={author.name} className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#16181c] object-cover shrink-0" />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#16181c] shrink-0" />
-            )}
-            <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap text-[15px]">
-              <span className="font-bold text-slate-900 dark:text-[#e7e9ea] truncate">{author?.name || 'X User'}</span>
-              {author?.verified && <VerifiedIcon />}
-              <span className="text-slate-500 dark:text-[#71767b] truncate">{handleText}</span>
-              {getRelativeTime(cardData?.posted_at) && (
-                <>
-                  <span className="text-slate-500 dark:text-[#71767b]">·</span>
-                  <span className="text-slate-500 dark:text-[#71767b]">{getRelativeTime(cardData?.posted_at)}</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-slate-500 dark:text-[#71767b] shrink-0">
-            <div className="p-2 transition-colors">
-              <XIcon />
-            </div>
-          </div>
-        </div>
-
-        {/* Tweet Body */}
-        <div className="px-4 mt-2">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block text-slate-900 dark:text-[#e7e9ea]">
-            <ExpandableText
-              text={bookmark.description || bookmark.title}
-              maxLength={200}
-              className="text-[15px] leading-normal whitespace-pre-wrap break-words"
-              buttonClassName="ml-1 text-[#1d9bf0] hover:underline"
-            />
-          </a>
-        </div>
-
-        {/* Media */}
-        {(() => {
-          const videoMedia = cardData?.media?.find((m: any) => m && m.type === "video" && m.url);
-          const videoUrl = videoMedia?.url;
-
-          if (videoUrl) {
-            return (
-              <div className="px-4 mt-3">
-                <video
-                  src={videoUrl}
-                  poster={bookmark.snapshot || undefined}
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="w-full rounded-2xl object-cover border border-slate-200 dark:border-[#2f3336] max-h-80 bg-black"
-                />
-              </div>
-            );
-          }
-
-          if (bookmark.snapshot) {
-            return (
-              <div className="px-4 mt-3">
-                <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
-                  <img src={bookmark.snapshot} alt="Media" className="w-full rounded-2xl object-cover border border-slate-200 dark:border-[#2f3336] max-h-80" loading="lazy" />
-                </a>
-              </div>
-            );
-          }
-
-          return null;
-        })()}
-
-        <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mt-4" />
-
-        {/* Action Row */}
-        <div className="px-4 mt-3 flex justify-between items-center text-slate-500 dark:text-[#71767b] max-w-[425px]">
-          <div className="flex items-center gap-1.5 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[13px]">
-            <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-1.5"><ReplyIcon /></div>
-            {formatNumber(metrics?.replies) && <span>{formatNumber(metrics.replies)}</span>}
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-[#00ba7c] transition-colors cursor-pointer group/action text-[13px]">
-            <div className="p-1.5 rounded-full group-hover/action:bg-[#00ba7c]/10 transition-colors -ml-1.5"><RepostIcon /></div>
-            {formatNumber(metrics?.reposts) && <span>{formatNumber(metrics.reposts)}</span>}
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-[#f91880] transition-colors cursor-pointer group/action text-[13px]">
-            <div className="p-1.5 rounded-full group-hover/action:bg-[#f91880]/10 transition-colors -ml-1.5"><LikeIcon /></div>
-            {formatNumber(metrics?.likes) && <span>{formatNumber(metrics.likes)}</span>}
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[13px]">
-            <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-1.5"><BookmarkIcon /></div>
-          </div>
-          <div className="flex items-center gap-1 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action">
-            <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors"><ShareIcon /></div>
-          </div>
-        </div>
-        <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mt-3" />
-        <BottomMetadata />
-      </div>
-    );
-  }
-
-  // ---------------------------------------------------------------------------
-  // DETAIL VIEW (For Cards without Media)
-  // ---------------------------------------------------------------------------
   return (
     <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans pb-3 rounded-[1.75rem] border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-md">
       {/* Header Stacked */}
       <div className="px-4 pt-4 flex items-center justify-between">
         <div className="flex items-center gap-3 overflow-hidden flex-1">
           {author?.avatar_url ? (
-            <img src={author.avatar_url} alt={author.name} className="w-11 h-11 rounded-full bg-slate-200 dark:bg-[#16181c] object-cover shrink-0" />
+            <img
+              src={author.avatar_url}
+              alt={author.name}
+              {...({ referrerPolicy: "no-referrer" } as any)}
+              className="w-11 h-11 rounded-full bg-slate-200 dark:bg-[#16181c] object-cover shrink-0"
+            />
           ) : (
             <div className="w-11 h-11 rounded-full bg-slate-200 dark:bg-[#16181c] shrink-0" />
           )}
@@ -306,33 +361,105 @@ export function TwitterCard(props: TwitterCardProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1 text-slate-500 dark:text-[#71767b] shrink-0 relative">
-          <div className="p-2 transition-colors hidden sm:block">
+        <div className="flex items-center gap-1 text-slate-500 dark:text-[#71767b] shrink-0">
+          <div className="p-1 transition-colors">
             <XIcon />
+          </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => onToggleMenu?.(bookmark.id, e)}
+              className="p-1.5 rounded-lg hover:bg-[#1d9bf0]/10 hover:text-[#1d9bf0] transition-colors cursor-pointer text-slate-500 dark:text-[#71767b] outline-none"
+              title="More options"
+            >
+              <VerticalMoreIcon />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-[#2f3336] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e7e9ea] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit bookmark</button>
+                <hr className="border-slate-200 dark:border-[#2f3336] my-1" />
+                <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#f4212e] transition-colors">Delete</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Tweet Body - Slightly larger for detail view */}
+      {/* Tweet Body */}
       <div className="px-4 mt-3">
         <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block text-slate-900 dark:text-[#e7e9ea]">
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={300}
-            className="text-[17px] leading-normal whitespace-pre-wrap break-words"
+            maxLength={hasMedia ? 250 : 350}
+            className={`${hasMedia ? "text-[15px]" : "text-[17px]"} leading-normal whitespace-pre-wrap break-words`}
             buttonClassName="ml-1 text-[#1d9bf0] hover:underline"
           />
         </a>
       </div>
 
-      {/* Date Row */}
-      {formatDetailDate(cardData?.posted_at) && (
+      {/* Media: Playable Video or Multi-Image Grid */}
+      {hasMedia && (
+        videoUrl && !videoError ? (
+          <div className="px-4 mt-3">
+            <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-slate-200 dark:border-[#2f3336]">
+              <video
+                key={videoUrl}
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full max-h-[520px] object-contain bg-black mx-auto block"
+                poster={
+                  bookmark.snapshot && !bookmark.snapshot.includes(".mp4") && !bookmark.snapshot.includes("video.twimg.com") && !bookmark.snapshot.includes("/vid/")
+                    ? bookmark.snapshot
+                    : postImages[0] || undefined
+                }
+                onError={() => setVideoError(true)}
+              >
+                <source src={videoUrl} type="video/mp4" />
+                Your browser does not support HTML5 video.
+              </video>
+            </div>
+          </div>
+        ) : videoUrl && videoError ? (
+          <div className="px-4 mt-3">
+            <div className="w-full rounded-2xl p-5 bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-center gap-2.5">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <p className="text-[13px] text-slate-300">Video playback unavailable in direct preview</p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <button
+                  type="button"
+                  onClick={() => setVideoError(false)}
+                  className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                >
+                  Retry
+                </button>
+                <a
+                  href={videoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs px-3 py-1 rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-medium transition cursor-pointer"
+                >
+                  Open Video ↗
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : (
+          renderImageGrid()
+        )
+      )}
+
+      {/* Date & Views Row */}
+      {(formatDetailDate(postedAt) || metrics?.views) && (
         <div className="px-4 mt-4">
           <div className="flex flex-wrap items-center gap-1 text-[15px] text-slate-500 dark:text-[#71767b]">
-            <span>{formatDetailDate(cardData?.posted_at)}</span>
+            {formatDetailDate(postedAt) && <span>{formatDetailDate(postedAt)}</span>}
             {metrics?.views ? (
               <>
-                <span>·</span>
+                {formatDetailDate(postedAt) && <span>·</span>}
                 <span className="font-bold text-slate-900 dark:text-[#e7e9ea] ml-0.5">{formatNumber(metrics.views)}</span>
                 <span>Views</span>
               </>
@@ -365,9 +492,6 @@ export function TwitterCard(props: TwitterCardProps) {
           <div className="p-2 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors"><ShareIcon /></div>
         </div>
       </div>
-
-      <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mb-1" />
-      <BottomMetadata />
     </div>
   );
 }

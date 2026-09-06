@@ -1,10 +1,8 @@
 
+import React from "react";
 import type { Bookmark, RedditCardData } from "../../types/bookmark";
-import type { CollectionItem } from "../../types/collection";
-import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
-import { AIContextBadge } from "../AIContextBadge";
 
 interface RedditCardProps {
   bookmark: Bookmark;
@@ -13,17 +11,25 @@ interface RedditCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onRequestEdit?: (bookmark: Bookmark) => void;
-  onRequestEditCollections?: (bookmark: Bookmark) => void;
-  onRequestEditTags?: (bookmark: Bookmark) => void;
-  availableCollections?: CollectionItem[];
-  availableTags?: TagItem[];
 }
 
 export function RedditCard(props: RedditCardProps) {
-  const { bookmark, availableTags, availableCollections, onToggleMenu, isMenuOpen, onRequestEdit, onRequestDelete, onRequestEditCollections, onRequestEditTags, onCloseMenu } = props;
-  const cardData = bookmark.card_data as RedditCardData;
-  const subreddit = cardData?.subreddit;
-  const metrics = cardData?.metrics;
+  const { bookmark, onToggleMenu, isMenuOpen, onRequestEdit, onRequestDelete, onCloseMenu } = props;
+  const rawCardData = bookmark.card_data;
+  const cardData: RedditCardData | null = React.useMemo(() => {
+    if (!rawCardData) return null;
+    if (typeof rawCardData === "string") {
+      try {
+        return JSON.parse(rawCardData);
+      } catch {
+        return null;
+      }
+    }
+    return rawCardData as RedditCardData;
+  }, [rawCardData]);
+
+  const subreddit = cardData?.subreddit || (bookmark as any)?.subreddit;
+  const metrics = cardData?.metrics || (bookmark as any)?.metrics;
 
   const UpvoteIcon = () => (
     <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" className="w-[1.125rem] h-[1.125rem] fill-current">
@@ -40,12 +46,6 @@ export function RedditCard(props: RedditCardProps) {
   const CommentIcon = () => (
     <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" className="w-[1.125rem] h-[1.125rem] fill-current">
       <path d="M10 19H1.871a.886.886 0 0 1-.798-.52.886.886 0 0 1 .158-.941L3.1 15.771A9 9 0 1 1 10 19Zm-6.549-1.5H10a7.5 7.5 0 1 0-5.323-2.219l.54.545L3.451 17.5Z"></path>
-    </svg>
-  );
-
-  const MoreIcon = () => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M3 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9 2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm7 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path>
     </svg>
   );
 
@@ -73,64 +73,10 @@ export function RedditCard(props: RedditCardProps) {
     return date.toLocaleDateString('en-US', options);
   };
 
-  const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
-      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
-      <div className="flex items-end justify-between min-h-[32px]">
-        {/* Tags & Collections Row */}
-        <div className="flex flex-wrap items-center gap-2 pr-2">
-          {bookmark.tags?.map((tag, idx) => {
-            const cleanTag = tag.replace(/^#/, "");
-            const tagObj = availableTags?.find(
-              (t) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-            );
-            const color = tagObj?.color;
-            return (
-              <span
-                key={`tag-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
-              >
-                #{cleanTag}
-              </span>
-            );
-          })}
-          {bookmark.collections?.map((col, idx) => {
-            const colObj = availableCollections?.find((c) => c.name.toLowerCase() === col.toLowerCase());
-            const color = colObj?.color;
-            return (
-              <span
-                key={`col-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272729] dark:text-[#d7dadc] dark:border-[#343536]" : ""}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" /></svg>
-                {col}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* 3 Dots Menu Button aligned to right */}
-        <div className="relative shrink-0 ml-auto">
-          <button
-            onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#272729] dark:hover:text-[#d7dadc] transition-colors cursor-pointer text-slate-500 dark:text-[#818384] outline-none"
-          >
-            <MoreIcon />
-          </button>
-          {isMenuOpen && (
-            <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#343536] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#d7dadc] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit bookmark</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Collections</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit Tags</button>
-              <hr className="border-slate-200 dark:border-[#343536] my-1" />
-              <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors">Delete</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+  const VerticalMoreIcon = () => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+    </svg>
   );
 
   return (
@@ -159,8 +105,8 @@ export function RedditCard(props: RedditCardProps) {
           </div>
         </div>
 
-        {/* Top Right Logo */}
-        <div className="flex items-center gap-2 text-slate-500 dark:text-[#818384] shrink-0 self-start ml-2">
+        {/* Top Right Logo & Vertical 3-dots Menu */}
+        <div className="flex items-center gap-1.5 text-slate-500 dark:text-[#818384] shrink-0 self-start ml-2">
           <div className="p-1 transition-colors">
             {bookmark.logo ? (
               <img
@@ -180,6 +126,22 @@ export function RedditCard(props: RedditCardProps) {
                 <path d="M16.67,10A1.46,1.46,0,0,0,14.2,9a7.12,7.12,0,0,0-3.85-1.23L11.46,3.5,13.71,4A1.84,1.84,0,0,0,15.8,5.36a1.85,1.85,0,1,0-1.89-2.31l-2.43-.54a.39.39,0,0,0-.47.28L9.9,7.82A7.17,7.17,0,0,0,6,9a1.46,1.46,0,1,0-2.47,1A4.77,4.77,0,0,0,3.15,13a6.11,6.11,0,0,0,14,0A4.77,4.77,0,0,0,16.67,10Zm-10,3.75A1.56,1.56,0,1,1,8.23,12.2,1.56,1.56,0,0,1,6.67,13.75Zm4,2.5a5.53,5.53,0,0,1-3.62-1.26.4.4,0,0,1,.54-.6A4.6,4.6,0,0,0,10.67,15.5a4.65,4.65,0,0,0,3.08-1.11.4.4,0,0,1,.54.6A5.53,5.53,0,0,1,10.67,16.25Zm2.66-2.5A1.56,1.56,0,1,1,14.9,12.2,1.56,1.56,0,0,1,13.33,13.75Z" />
               </svg>
             </div>
+          </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => onToggleMenu?.(bookmark.id, e)}
+              className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#272729] dark:hover:text-[#d7dadc] transition-colors cursor-pointer text-slate-500 dark:text-[#818384] outline-none"
+              title="More options"
+            >
+              <VerticalMoreIcon />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#1a1a1b] border border-slate-200 dark:border-[#343536] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#d7dadc] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272729] transition-colors">Edit bookmark</button>
+                <hr className="border-slate-200 dark:border-[#343536] my-1" />
+                <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors">Delete</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -224,8 +186,6 @@ export function RedditCard(props: RedditCardProps) {
           {formatNumber(metrics?.comments) && <span>{formatNumber(metrics.comments)}</span>}
         </div>
       </div>
-      <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mt-2 mb-3" />
-      <BottomMetadata />
     </div>
   );
 }

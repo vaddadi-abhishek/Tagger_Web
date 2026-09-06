@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import type { Bookmark, YouTubeCardData } from "../../types/bookmark";
-import type { CollectionItem } from "../../types/collection";
-import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
-import { AIContextBadge } from "../AIContextBadge";
 
 interface YouTubeCardProps {
   bookmark: Bookmark;
@@ -13,10 +10,6 @@ interface YouTubeCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onRequestEdit?: (bookmark: Bookmark) => void;
-  onRequestEditCollections?: (bookmark: Bookmark) => void;
-  onRequestEditTags?: (bookmark: Bookmark) => void;
-  availableCollections?: CollectionItem[];
-  availableTags?: TagItem[];
 }
 
 export function YouTubeCard(props: YouTubeCardProps) {
@@ -27,15 +20,23 @@ export function YouTubeCard(props: YouTubeCardProps) {
     onCloseMenu,
     onRequestDelete,
     onRequestEdit,
-    onRequestEditCollections,
-    onRequestEditTags,
-    availableCollections,
-    availableTags,
   } = props;
 
-  const cardData = bookmark.card_data as YouTubeCardData;
-  const channel = cardData?.channel;
-  const metrics = cardData?.metrics;
+  const rawCardData = bookmark.card_data;
+  const cardData: YouTubeCardData | null = React.useMemo(() => {
+    if (!rawCardData) return null;
+    if (typeof rawCardData === "string") {
+      try {
+        return JSON.parse(rawCardData);
+      } catch {
+        return null;
+      }
+    }
+    return rawCardData as YouTubeCardData;
+  }, [rawCardData]);
+
+  const channel = cardData?.channel || (bookmark as any)?.channel;
+  const metrics = cardData?.metrics || (bookmark as any)?.metrics;
 
   const [thumbSrc, setThumbSrc] = useState<string | null>(() => {
     if (cardData?.video_id) {
@@ -59,7 +60,7 @@ export function YouTubeCard(props: YouTubeCardProps) {
   };
 
   const formatNumber = (num?: number) => {
-    if (!num) return null;
+    if (!num || num <= 0) return null;
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
@@ -104,72 +105,10 @@ export function YouTubeCard(props: YouTubeCardProps) {
     </svg>
   );
 
-  const MoreIcon = () => (
+  const VerticalMoreIcon = () => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M3 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9 2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm7 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path>
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
     </svg>
-  );
-
-  const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
-      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
-      <div className="flex items-end justify-between min-h-[32px]">
-        {/* Tags & Collections Row */}
-        <div className="flex flex-wrap items-center gap-2 pr-2">
-          {bookmark.tags?.map((tag: string, idx: number) => {
-            const cleanTag = tag.replace(/^#/, "");
-            const tagObj = availableTags?.find(
-              (t: TagItem) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-            );
-            const color = tagObj?.color;
-            return (
-              <span
-                key={`tag-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272727] dark:text-[#f1f1f1] dark:border-[#3f3f3f]" : ""}`}
-              >
-                #{cleanTag}
-              </span>
-            );
-          })}
-          {bookmark.collections?.map((col: string, idx: number) => {
-            const colObj = availableCollections?.find((c: CollectionItem) => c.name.toLowerCase() === col.toLowerCase());
-            const color = colObj?.color;
-            return (
-              <span
-                key={`col-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#272727] dark:text-[#f1f1f1] dark:border-[#3f3f3f]" : ""}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                </svg>
-                {col}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* 3 Dots Menu Button aligned to right */}
-        <div className="relative shrink-0 ml-auto">
-          <button
-            onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#272727] dark:hover:text-[#f1f1f1] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
-          >
-            <MoreIcon />
-          </button>
-          {isMenuOpen && (
-            <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#f1f1f1] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors">Edit bookmark</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors">Edit Collections</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors">Edit Tags</button>
-              <hr className="border-slate-200 dark:border-[#272727] my-1" />
-              <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors">Delete</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
   );
 
   return (
@@ -191,9 +130,49 @@ export function YouTubeCard(props: YouTubeCardProps) {
             </div>
           )}
 
-          {/* YouTube Branding Tag */}
-          <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-md p-1.5 rounded-full flex items-center justify-center">
-            <YouTubeBrandLogo />
+          {/* YouTube Branding Tag + Vertical 3 Dots Menu */}
+          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+            <div className="bg-black/70 backdrop-blur-md p-1.5 rounded-full flex items-center justify-center">
+              <YouTubeBrandLogo />
+            </div>
+            <div className="relative shrink-0">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggleMenu?.(bookmark.id, e);
+                }}
+                className="bg-black/70 backdrop-blur-md p-1.5 rounded-full hover:bg-black/90 text-white transition-colors cursor-pointer outline-none flex items-center justify-center"
+                title="More options"
+              >
+                <VerticalMoreIcon />
+              </button>
+              {isMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#f1f1f1] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRequestEdit?.(bookmark);
+                      onCloseMenu?.();
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors"
+                  >
+                    Edit bookmark
+                  </button>
+                  <hr className="border-slate-200 dark:border-[#272727] my-1" />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRequestDelete?.(bookmark.id);
+                      onCloseMenu?.();
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Play Button Overlay */}
@@ -253,7 +232,11 @@ export function YouTubeCard(props: YouTubeCardProps) {
             <div className="bg-slate-100 dark:bg-[#272727] rounded-full flex items-center text-xs font-medium text-slate-800 dark:text-[#f1f1f1] shrink-0 border border-slate-200 dark:border-white/5 overflow-hidden">
               <button className="px-3 py-1.5 flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
                 <LikeIcon />
-                <span>{formatNumber(metrics?.likes) || (metrics?.views ? formatNumber(metrics.views) : "33K")}</span>
+                {formatNumber(metrics?.likes) ? (
+                  <span>{formatNumber(metrics.likes)}</span>
+                ) : formatNumber(metrics?.views) ? (
+                  <span>{formatNumber(metrics.views)}</span>
+                ) : null}
               </button>
               <div className="h-4 w-[1px] bg-slate-300 dark:bg-white/20" />
               <button className="px-3 py-1.5 flex items-center hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
@@ -287,9 +270,6 @@ export function YouTubeCard(props: YouTubeCardProps) {
           </div>
         )}
       </div>
-
-      <hr className="border-slate-200 dark:border-[#272727] mx-4 my-1" />
-      <BottomMetadata />
     </div>
   );
 }

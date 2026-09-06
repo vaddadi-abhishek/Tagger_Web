@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import type { Bookmark, FacebookCardData } from "../../types/bookmark";
-import type { CollectionItem } from "../../types/collection";
-import type { TagItem } from "../../types/tag";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
-import { AIContextBadge } from "../AIContextBadge";
 
 interface FacebookCardProps {
   bookmark: Bookmark;
@@ -13,10 +10,54 @@ interface FacebookCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onRequestEdit?: (bookmark: Bookmark) => void;
-  onRequestEditCollections?: (bookmark: Bookmark) => void;
-  onRequestEditTags?: (bookmark: Bookmark) => void;
-  availableCollections?: CollectionItem[];
-  availableTags?: TagItem[];
+}
+
+function FacebookImageItem({
+  url,
+  alt = "Facebook media",
+  className = "w-full h-full object-cover",
+}: {
+  url: string;
+  alt?: string;
+  className?: string;
+}) {
+  const getProxyUrl = (raw?: string | null) => {
+    if (!raw) return "";
+    if (raw.startsWith("data:") || raw.startsWith("blob:")) return raw;
+    return `http://localhost:3000/api/v1/proxy-image?url=${encodeURIComponent(raw)}`;
+  };
+
+  const [src, setSrc] = useState<string>(() => getProxyUrl(url));
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (src.includes("/proxy-image?url=") && url) {
+      setSrc(url);
+    } else {
+      setHasError(true);
+    }
+  };
+
+  if (hasError) {
+    return (
+      <div className={`bg-slate-100 dark:bg-[#242526] flex items-center justify-center text-slate-400 dark:text-slate-600 ${className}`}>
+        <svg className="w-8 h-8 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={handleError}
+      loading="lazy"
+      {...({ referrerPolicy: "no-referrer" } as any)}
+      className={className}
+    />
+  );
 }
 
 export function FacebookCard(props: FacebookCardProps) {
@@ -27,33 +68,31 @@ export function FacebookCard(props: FacebookCardProps) {
     onCloseMenu,
     onRequestDelete,
     onRequestEdit,
-    onRequestEditCollections,
-    onRequestEditTags,
-    availableCollections,
-    availableTags,
   } = props;
 
-  const cardData = bookmark.card_data as FacebookCardData;
-  const author = cardData?.author;
+  const rawCardData = bookmark.card_data;
+  const cardData: FacebookCardData | null = React.useMemo(() => {
+    if (!rawCardData) return null;
+    if (typeof rawCardData === "string") {
+      try {
+        return JSON.parse(rawCardData);
+      } catch {
+        return null;
+      }
+    }
+    return rawCardData as FacebookCardData;
+  }, [rawCardData]);
+
+  const author = cardData?.author || (bookmark as any)?.author;
 
   const getProxyUrl = (url?: string | null) => {
     if (!url) return "";
     if (url.startsWith("data:") || url.startsWith("blob:")) return url;
-    return `http://localhost:3000/api/v1/proxy-image?url=${encodeURIComponent(url)}`;
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+    return `${baseUrl}/proxy-image?url=${encodeURIComponent(url)}`;
   };
 
-  const [snapshotSrc, setSnapshotSrc] = useState<string>(() =>
-    bookmark.snapshot ? getProxyUrl(bookmark.snapshot) : ""
-  );
-  const [snapshotError, setSnapshotError] = useState(false);
 
-  const handleSnapshotError = () => {
-    if (snapshotSrc.includes("/proxy-image?url=") && bookmark.snapshot) {
-      setSnapshotSrc(bookmark.snapshot);
-    } else {
-      setSnapshotError(true);
-    }
-  };
 
   const [avatarSrc, setAvatarSrc] = useState<string>(() =>
     author?.avatar_url ? getProxyUrl(author.avatar_url) : ""
@@ -68,24 +107,41 @@ export function FacebookCard(props: FacebookCardProps) {
     }
   };
 
-  // Exact Facebook Action SVGs matching reference image
-  const LikeIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
+  // Detect playable video URL for Facebook reels and video posts
+  const findVideoUrl = (): string | null => {
+    const rawMedia = cardData?.media || (bookmark as any)?.media || (bookmark as any)?.card_data?.media;
+    if (Array.isArray(rawMedia)) {
+      const v = rawMedia.find(
+        (m: any) =>
+          m &&
+          (m.type === "video" ||
+            (typeof m === "string" && (m.includes(".mp4") || m.includes("video"))))
+      );
+      if (v) {
+        return typeof v === "string" ? v : v.url || null;
+      }
+    }
 
-  const CommentIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    </svg>
-  );
+    if ((cardData as any)?.video_url) return (cardData as any).video_url;
+    if ((cardData as any)?.videoUrl) return (cardData as any).videoUrl;
+    if ((bookmark as any)?.video_url) return (bookmark as any).video_url;
 
-  const ShareIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M15 14l5-5-5-5" />
-      <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5V18" />
-    </svg>
+    if (bookmark.snapshot && /\.mp4(?:\?.*)?$/i.test(bookmark.snapshot)) {
+      return bookmark.snapshot;
+    }
+
+    return null;
+  };
+
+  const videoUrl = findVideoUrl();
+  const [videoError, setVideoError] = useState(false);
+
+  const FacebookLikeBadge = () => (
+    <div className="w-[18px] h-[18px] rounded-full bg-[#1877F2] flex items-center justify-center text-white shrink-0 shadow-sm">
+      <svg viewBox="0 0 16 16" className="w-2.5 h-2.5 fill-white">
+        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.317.733-.51 1.058-.29.488-.682.996-1.15 1.504a11.144 11.144 0 0 1-.954.914l-.066.057C3.593 7.828 3.25 8.1 3 8.35v6.516c.38.163.85.284 1.417.38 1.135.19 2.658.254 4.583.254h.478c1.378 0 2.548-.823 3.003-2.022l1.39-3.707A2.8 2.8 0 0 0 14 8.78V7.5a2.5 2.5 0 0 0-2.5-2.5H9.72c.117-.728.175-1.507.144-2.316a5.534 5.534 0 0 0-.464-2.122 2.03 2.03 0 0 0-.536-.516zM2 8.5a.5.5 0 0 0-.5.5v5.5a.5.5 0 0 0 .5.5h.5V8.5H2z" />
+      </svg>
+    </div>
   );
 
   const FacebookBrandLogo = () => (
@@ -94,73 +150,175 @@ export function FacebookCard(props: FacebookCardProps) {
     </svg>
   );
 
-  const MoreIcon = () => (
+  const VerticalMoreIcon = () => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M3 12c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm9 2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm7 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path>
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
     </svg>
   );
 
-  const BottomMetadata = () => (
-    <div className="px-4 mt-2 mb-1 flex flex-col gap-2">
-      <AIContextBadge context={bookmark.ai_context} className="mx-0 my-1" />
-      <div className="flex items-end justify-between min-h-[32px]">
-        {/* Tags & Collections Row */}
-        <div className="flex flex-wrap items-center gap-2 pr-2">
-          {bookmark.tags?.map((tag: string, idx: number) => {
-            const cleanTag = tag.replace(/^#/, "");
-            const tagObj = availableTags?.find(
-              (t: TagItem) => t.name.toLowerCase().replace(/^#/, "") === cleanTag.toLowerCase()
-            );
-            const color = tagObj?.color;
-            return (
-              <span
-                key={`tag-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1 px-3 py-1 text-[11px] font-medium rounded-full border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#242526] dark:text-[#e4e6eb] dark:border-[#3a3b3c]" : ""}`}
-              >
-                #{cleanTag}
-              </span>
-            );
-          })}
-          {bookmark.collections?.map((col: string, idx: number) => {
-            const colObj = availableCollections?.find((c: CollectionItem) => c.name.toLowerCase() === col.toLowerCase());
-            const color = colObj?.color;
-            return (
-              <span
-                key={`col-${idx}`}
-                style={color ? { backgroundColor: `${color}18`, borderColor: `${color}50`, color: color } : undefined}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium rounded-xl border ${!color ? "bg-slate-100 text-slate-800 border-slate-200 dark:bg-[#242526] dark:text-[#e4e6eb] dark:border-[#3a3b3c]" : ""}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3 shrink-0">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                </svg>
-                {col}
-              </span>
-            );
-          })}
-        </div>
-
-        {/* 3 Dots Menu Button aligned to right */}
-        <div className="relative shrink-0 ml-auto">
-          <button
-            onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-            className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#242526] dark:hover:text-[#e4e6eb] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none"
-          >
-            <MoreIcon />
-          </button>
-          {isMenuOpen && (
-            <div className="absolute right-0 bottom-8 w-48 rounded-xl bg-white dark:bg-[#242526] border border-slate-200 dark:border-[#3a3b3c] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e4e6eb] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-              <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors">Edit bookmark</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditCollections?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors">Edit Collections</button>
-              <button onClick={(e) => { e.stopPropagation(); onRequestEditTags?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors">Edit Tags</button>
-              <hr className="border-slate-200 dark:border-[#3a3b3c] my-1" />
-              <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors">Delete</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+  const CommentIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
   );
+
+  const ShareIcon = () => (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
+      <path d="M15 14l5-5-5-5" />
+      <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5V18" />
+    </svg>
+  );
+
+  const formatNumber = (num?: number): string | null => {
+    if (num === undefined || num === null || num <= 0) return null;
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toString();
+  };
+
+  const formatFacebookDate = (dateString?: string | null): string | null => {
+    if (!dateString) return null;
+    let s = dateString.trim();
+    if (/^\d{3}-\d{2}-\d{2}/.test(s)) {
+      s = "2" + s;
+    }
+    const date = new Date(s);
+    if (isNaN(date.getTime())) return dateString;
+
+    const timeStr = date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const dateStr = date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    return `${dateStr} at ${timeStr}`;
+  };
+
+  const metrics = cardData?.metrics;
+
+  // Extract all valid image URLs from cardData.media or bookmark.snapshot
+  const postImages: string[] = (() => {
+    const list: string[] = [];
+    if (Array.isArray(cardData?.media)) {
+      for (const m of cardData.media) {
+        if (!m) continue;
+        const url = typeof m === "string" ? m : m.url;
+        const type = typeof m === "object" ? m.type : "";
+        if (url && typeof url === "string" && type !== "video" && !url.includes(".mp4")) {
+          if (!list.includes(url)) {
+            list.push(url);
+          }
+        }
+      }
+    }
+    if (list.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes(".mp4")) {
+      list.push(bookmark.snapshot);
+    }
+    return list;
+  })();
+
+  const renderImageGrid = () => {
+    if (postImages.length === 0) return null;
+
+    if (postImages.length === 1) {
+      return (
+        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-[#242526] flex items-center justify-center">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block w-full">
+            <FacebookImageItem
+              url={postImages[0]}
+              className="w-full h-auto max-h-[85vh] object-contain mx-auto block"
+            />
+          </a>
+        </div>
+      );
+    }
+
+    if (postImages.length === 2) {
+      return (
+        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 gap-0.5 w-full h-72 sm:h-80">
+            <div className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[0]} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[1]} className="w-full h-full object-cover" />
+            </div>
+          </a>
+        </div>
+      );
+    }
+
+    if (postImages.length === 3) {
+      return (
+        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-80 sm:h-96">
+            <div className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[0]} className="w-full h-full object-cover" />
+            </div>
+            <div className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[1]} className="w-full h-full object-cover" />
+            </div>
+            <div className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[2]} className="w-full h-full object-cover" />
+            </div>
+          </a>
+        </div>
+      );
+    }
+
+    if (postImages.length === 4) {
+      return (
+        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-80 sm:h-96">
+            {postImages.slice(0, 4).map((imgUrl, idx) => (
+              <div key={idx} className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+                <FacebookImageItem url={imgUrl} className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </a>
+        </div>
+      );
+    }
+
+    // 5 or more images: Classic Facebook 2-on-top, 3-on-bottom layout
+    return (
+      <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
+        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="flex flex-col gap-0.5 w-full h-88 sm:h-[420px]">
+          {/* Top row: 2 images */}
+          <div className="flex flex-row gap-0.5 w-full h-[55%]">
+            <div className="relative w-1/2 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[0]} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative w-1/2 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[1]} className="w-full h-full object-cover" />
+            </div>
+          </div>
+          {/* Bottom row: 3 images */}
+          <div className="flex flex-row gap-0.5 w-full h-[45%]">
+            <div className="relative w-1/3 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[2]} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative w-1/3 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[3]} className="w-full h-full object-cover" />
+            </div>
+            <div className="relative w-1/3 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
+              <FacebookImageItem url={postImages[4]} className="w-full h-full object-cover" />
+              {postImages.length > 5 && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center text-white font-bold text-xl sm:text-2xl">
+                  +{postImages.length - 4}
+                </div>
+              )}
+            </div>
+          </div>
+        </a>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#18191a] text-slate-900 dark:text-[#e4e6eb] font-sans rounded-[1.75rem] border border-slate-200/80 dark:border-[#2f3336] overflow-hidden pb-2 shadow-md">
@@ -183,15 +341,53 @@ export function FacebookCard(props: FacebookCardProps) {
           )}
           <div className="flex flex-col leading-tight overflow-hidden">
             <span className="font-bold text-slate-900 dark:text-[#e4e6eb] text-[15px] truncate">{author?.name || "Facebook User"}</span>
-            {cardData?.posted_at && (
-              <span className="text-[12px] text-slate-500 dark:text-[#b0b3b8] truncate mt-0.5">{cardData.posted_at}</span>
+            {formatFacebookDate(cardData?.posted_at || bookmark.created_at) && (
+              <span className="text-[12px] text-slate-500 dark:text-[#b0b3b8] truncate mt-0.5">
+                {formatFacebookDate(cardData?.posted_at || bookmark.created_at)}
+              </span>
             )}
           </div>
         </div>
 
-        {/* Facebook Brand Logo */}
-        <div className="p-1 shrink-0">
-          <FacebookBrandLogo />
+        {/* Top Right: Facebook Brand Logo + Vertical 3 Dots Menu Button */}
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          <div className="p-1 shrink-0">
+            <FacebookBrandLogo />
+          </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => onToggleMenu?.(bookmark.id, e)}
+              className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#242526] dark:hover:text-[#e4e6eb] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none"
+              title="More options"
+            >
+              <VerticalMoreIcon />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#242526] border border-slate-200 dark:border-[#3a3b3c] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e4e6eb] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestEdit?.(bookmark);
+                    onCloseMenu?.();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors"
+                >
+                  Edit bookmark
+                </button>
+                <hr className="border-slate-200 dark:border-[#3a3b3c] my-1" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestDelete?.(bookmark.id);
+                    onCloseMenu?.();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -207,47 +403,83 @@ export function FacebookCard(props: FacebookCardProps) {
         </a>
       </div>
 
-      {/* Media Snapshot */}
-      {!snapshotError && snapshotSrc && (
-        <div className="px-0 pb-2">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block">
-            <img
-              src={snapshotSrc}
-              alt="Media"
-              onError={handleSnapshotError}
-              className="w-full object-cover max-h-80 border-y border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-[#242526]"
-              loading="lazy"
-            />
-          </a>
+      {/* Media Section: Playable Video for Reels & Videos, or Facebook Multi-Image Grid */}
+      {videoUrl && !videoError ? (
+        <div className="w-full bg-black overflow-hidden border-y border-slate-200 dark:border-[#2f3336] flex items-center justify-center">
+          <video
+            key={videoUrl}
+            controls
+            playsInline
+            preload="metadata"
+            onError={() => setVideoError(true)}
+            className="w-full max-h-[600px] object-contain bg-black"
+            poster={bookmark.snapshot ? getProxyUrl(bookmark.snapshot) : postImages[0] ? getProxyUrl(postImages[0]) : undefined}
+          >
+            <source src={videoUrl} type="video/mp4" />
+            Your browser does not support HTML5 video.
+          </video>
         </div>
+      ) : videoUrl && videoError ? (
+        <div className="w-full p-5 bg-slate-900 border-y border-slate-700 flex flex-col items-center justify-center text-center gap-2.5">
+          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+          <p className="text-[13px] text-slate-300">Video playback unavailable in direct preview</p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <button
+              type="button"
+              onClick={() => setVideoError(false)}
+              className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+            >
+              Retry
+            </button>
+            <a
+              href={videoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs px-3 py-1 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium transition cursor-pointer"
+            >
+              Open Video ↗
+            </a>
+          </div>
+        </div>
+      ) : (
+        renderImageGrid()
       )}
 
-      {/* Facebook Action Bar */}
-      <div className="px-4 flex items-center gap-6 text-slate-500 dark:text-[#b0b3b8] mt-auto">
-        <button
-          title="Like"
-          className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#3a3b3c]/50 hover:text-[#1877F2] transition-colors cursor-pointer outline-none"
-        >
-          <LikeIcon />
-        </button>
+      {/* Graphic Metrics Row: Like, Comment, and Share icons always displayed; numbers hidden if 0 */}
+      <div className="px-4 py-3 flex items-center justify-between text-slate-500 dark:text-[#b0b3b8] mt-auto border-t border-slate-100 dark:border-[#2f3336]/40">
+        <div className="flex items-center gap-1.5 hover:text-[#1877F2] transition-colors cursor-pointer text-[13px]">
+          <FacebookLikeBadge />
+          {formatNumber(metrics?.likes) ? (
+            <span className="font-normal text-slate-700 dark:text-[#e4e6eb] text-[13px]">
+              {formatNumber(metrics?.likes)}
+            </span>
+          ) : null}
+        </div>
 
-        <button
-          title="Comment"
-          className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#3a3b3c]/50 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer outline-none"
-        >
-          <CommentIcon />
-        </button>
+        <div className="flex items-center gap-4 text-[13px]">
+          <div className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Comments">
+            <CommentIcon />
+            {formatNumber(metrics?.comments) ? (
+              <span className="font-normal text-slate-700 dark:text-[#e4e6eb]">
+                {formatNumber(metrics?.comments)}
+              </span>
+            ) : null}
+          </div>
 
-        <button
-          title="Share"
-          className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#3a3b3c]/50 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer outline-none"
-        >
-          <ShareIcon />
-        </button>
+          <div className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Shares">
+            <ShareIcon />
+            {formatNumber(metrics?.shares) ? (
+              <span className="font-normal text-slate-700 dark:text-[#e4e6eb]">
+                {formatNumber(metrics?.shares)}
+              </span>
+            ) : null}
+          </div>
+        </div>
       </div>
-
-      <hr className="border-slate-200 dark:border-[#2f3336] mx-4 my-1" />
-      <BottomMetadata />
     </div>
   );
 }
