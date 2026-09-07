@@ -5,8 +5,8 @@
 :root {
   --text-h: #0f172a;
   --text: #334155;
-  --bg: #f8fafc;
-  --border: rgba(226, 232, 240, 0.8);
+  --bg: #d8e2ed;
+  --border: rgba(203, 213, 225, 0.85);
   --code-bg: rgba(255, 255, 255, 0.75);
   --primary: #2563eb;
   --secondary: #60a5fa;
@@ -106,38 +106,109 @@
   border: 1px solid var(--border);
 }
 
-/* iOS Liquid Glassmorphism Utilities */
+/* Hyper-Realistic Optical Liquid Mirror Glassmorphism Utilities */
+.ultra-liquid-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.05) 45%,
+    rgba(255, 255, 255, 0.14) 100%
+  );
+  backdrop-filter: blur(14px) saturate(190%) contrast(112%) brightness(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(190%) contrast(112%) brightness(104%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 16px 36px -10px rgba(0, 0, 0, 0.16),
+    0 4px 12px -2px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.12),
+    inset 1px 0 0.5px 0 rgba(255, 255, 255, 0.3),
+    inset -1px 0 0.5px 0 rgba(255, 255, 255, 0.3);
+  position: relative;
+}
+
+.dark .ultra-liquid-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    rgba(10, 14, 26, 0.32) 100%
+  );
+  backdrop-filter: blur(14px) saturate(190%) contrast(112%) brightness(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(190%) contrast(112%) brightness(104%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 20px 45px -10px rgba(0, 0, 0, 0.7),
+    0 6px 16px -3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
 .ios-liquid-glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.12), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.85);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  backdrop-filter: blur(16px) saturate(190%) contrast(110%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) contrast(110%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 16px 36px -10px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.1);
 }
 
 .dark .ios-liquid-glass {
-  background: rgba(15, 18, 26, 0.7);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65), inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(15, 18, 26, 0.35) 45%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  backdrop-filter: blur(16px) saturate(190%) contrast(110%);
+  -webkit-backdrop-filter: blur(16px) saturate(190%) contrast(110%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 22px 48px -10px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 0.5px 0 rgba(0, 0, 0, 0.5);
 }
 
 .ios-liquid-navbar-scrolled {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
-  box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(255, 255, 255, 0.62) 100%
+  );
+  backdrop-filter: blur(28px) saturate(200%) brightness(108%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(108%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow:
+    0 8px 32px -8px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
 }
 
 .dark .ios-liquid-navbar-scrolled {
-  background: rgba(3, 7, 18, 0.65);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(
+    180deg,
+    rgba(3, 7, 18, 0.72) 0%,
+    rgba(10, 15, 28, 0.62) 100%
+  );
+  backdrop-filter: blur(28px) saturate(200%) brightness(108%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%) brightness(108%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 12px 36px -8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
 .search-mind-input {

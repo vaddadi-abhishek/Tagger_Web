@@ -188,6 +188,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     { id: "all", label: "All" },
     { id: "x", label: "Twitter / X" },
     { id: "instagram", label: "Instagram" },
+    { id: "facebook", label: "Facebook" },
     { id: "linkedin", label: "LinkedIn" },
     { id: "reddit", label: "Reddit" },
   ];

@@ -137,6 +137,9 @@ export default function BookmarksScreen({
       } else if (activePlatform === "instagram") {
         const isIg = type.includes("instagram") || url.includes("instagram.com") || site.includes("instagram");
         if (!isIg) return false;
+      } else if (activePlatform === "facebook") {
+        const isFb = type.includes("facebook") || url.includes("facebook.com") || url.includes("fb.watch") || url.includes("fb.com") || site.includes("facebook");
+        if (!isFb) return false;
       } else if (activePlatform === "linkedin") {
         const isLi = type.includes("linkedin") || url.includes("linkedin.com") || site.includes("linkedin");
         if (!isLi) return false;
