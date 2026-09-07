@@ -33,6 +33,7 @@ export interface InstagramCardData {
     comments?: number;
   };
   media: MediaItem[];
+  images?: Array<string | { url?: string; src?: string; display_url?: string; [key: string]: any }>;
   posted_at: string;
 }
 
@@ -53,7 +54,6 @@ export interface FacebookCardData {
 export interface LinkedInCardData {
   author: {
     name: string;
-    headline: string;
     avatar_url: string | null;
   };
   metrics: {
@@ -61,6 +61,7 @@ export interface LinkedInCardData {
     comments?: number;
     reposts?: number;
   };
+  media?: MediaItem[];
   posted_at: string | null;
 }
 
@@ -96,6 +97,7 @@ export interface GlobalWebCardData {
   published_at: string | null;
   site_name: string | null;
   type: string | null;
+  snapshot?: string | null;
 }
 
 export type AnyCardData =
@@ -113,7 +115,7 @@ export interface Bookmark {
   url: string;
   title: string;
   description: string;
-  snapshot: string | null;
+  snapshot?: string | null;
   logo: string | null;
   site_name: string;
   tags?: string[];

@@ -2,7 +2,7 @@ export interface MetadataResponse {
   url: string;
   title: string;
   description: string;
-  snapshot: string | null;
+  snapshot?: string | null;
   logo: string | null;
   site_name: string;
   type?: string;

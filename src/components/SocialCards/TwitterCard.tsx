@@ -197,16 +197,16 @@ export function TwitterCard(props: TwitterCardProps) {
     // 1 image: Display full uncropped image
     if (postImages.length === 1) {
       return (
-        <div className="px-4 mt-3">
+        <div className="px-3.5 mt-2">
           <a
             href={sanitizeUrl(bookmark.url)}
             target="_blank"
             rel="noreferrer"
-            className="block w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-zinc-900/60"
+            className="block w-full overflow-hidden rounded-xl border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-black"
           >
             <TwitterImageItem
               url={postImages[0]}
-              className="w-full h-auto max-h-[550px] object-contain mx-auto block"
+              className="w-full h-auto max-h-[360px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
           </a>
         </div>
@@ -216,13 +216,13 @@ export function TwitterCard(props: TwitterCardProps) {
     // 2 images: 2 columns side-by-side
     if (postImages.length === 2) {
       return (
-        <div className="px-4 mt-3">
-          <div className="grid grid-cols-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-64 sm:h-80 bg-slate-200 dark:bg-[#2f3336]">
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
-              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+        <div className="px-3.5 mt-2">
+          <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-44 sm:h-52 bg-slate-200 dark:bg-[#2f3336]">
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover" />
             </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
-              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover" />
             </a>
           </div>
         </div>
@@ -232,16 +232,16 @@ export function TwitterCard(props: TwitterCardProps) {
     // 3 images: 1 tall on left, 2 stacked on right
     if (postImages.length === 3) {
       return (
-        <div className="px-4 mt-3">
-          <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-72 sm:h-88 bg-slate-200 dark:bg-[#2f3336]">
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
-              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+        <div className="px-3.5 mt-2">
+          <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-48 sm:h-56 bg-slate-200 dark:bg-[#2f3336]">
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+              <TwitterImageItem url={postImages[0]} className="w-full h-full object-cover" />
             </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
-              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+              <TwitterImageItem url={postImages[1]} className="w-full h-full object-cover" />
             </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img">
-              <TwitterImageItem url={postImages[2]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+              <TwitterImageItem url={postImages[2]} className="w-full h-full object-cover" />
             </a>
           </div>
         </div>
@@ -250,17 +250,17 @@ export function TwitterCard(props: TwitterCardProps) {
 
     // 4+ images: 2x2 grid with +N on the 4th item if > 4
     return (
-      <div className="px-4 mt-3">
-        <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-2xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-72 sm:h-88 bg-slate-200 dark:bg-[#2f3336]">
+      <div className="px-3.5 mt-2">
+        <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-48 sm:h-56 bg-slate-200 dark:bg-[#2f3336]">
           {postImages.slice(0, 4).map((imgUrl, idx) => (
             <a
               key={idx}
               href={sanitizeUrl(bookmark.url)}
               target="_blank"
               rel="noreferrer"
-              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block group/img"
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block"
             >
-              <TwitterImageItem url={imgUrl} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-200" />
+              <TwitterImageItem url={imgUrl} className="w-full h-full object-cover" />
               {idx === 3 && postImages.length > 4 && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center text-white font-bold text-xl sm:text-2xl">
                   +{postImages.length - 3}
@@ -338,26 +338,26 @@ export function TwitterCard(props: TwitterCardProps) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans pb-3 rounded-[1.75rem] border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-md">
+    <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans pb-2 rounded-2xl border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-sm">
       {/* Header Stacked */}
-      <div className="px-4 pt-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 overflow-hidden flex-1">
+      <div className="px-3.5 pt-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 overflow-hidden flex-1">
           {author?.avatar_url ? (
             <img
               src={author.avatar_url}
               alt={author.name}
               {...({ referrerPolicy: "no-referrer" } as any)}
-              className="w-11 h-11 rounded-full bg-slate-200 dark:bg-[#16181c] object-cover shrink-0"
+              className="w-9 h-9 rounded-full bg-slate-200 dark:bg-[#16181c] object-cover shrink-0"
             />
           ) : (
-            <div className="w-11 h-11 rounded-full bg-slate-200 dark:bg-[#16181c] shrink-0" />
+            <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-[#16181c] shrink-0" />
           )}
           <div className="flex flex-col justify-center overflow-hidden">
             <div className="flex items-center gap-1">
-              <span className="font-bold text-slate-900 dark:text-[#e7e9ea] text-[15px] truncate">{author?.name || 'X User'}</span>
+              <span className="font-bold text-slate-900 dark:text-[#e7e9ea] text-[13.5px] truncate">{author?.name || 'X User'}</span>
               {author?.verified && <VerifiedIcon />}
             </div>
-            <span className="text-slate-500 dark:text-[#71767b] text-[15px] leading-tight truncate">{handleText}</span>
+            <span className="text-slate-500 dark:text-[#71767b] text-[12.5px] leading-tight truncate">{handleText}</span>
           </div>
         </div>
 
@@ -368,16 +368,16 @@ export function TwitterCard(props: TwitterCardProps) {
           <div className="relative shrink-0">
             <button
               onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-              className="p-1.5 rounded-lg hover:bg-[#1d9bf0]/10 hover:text-[#1d9bf0] transition-colors cursor-pointer text-slate-500 dark:text-[#71767b] outline-none"
+              className="p-1 rounded-lg hover:bg-[#1d9bf0]/10 hover:text-[#1d9bf0] transition-colors cursor-pointer text-slate-500 dark:text-[#71767b] outline-none"
               title="More options"
             >
               <VerticalMoreIcon />
             </button>
             {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-[#2f3336] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e7e9ea] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit bookmark</button>
+              <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-[#2f3336] shadow-lg z-40 text-[13px] font-medium text-slate-900 dark:text-[#e7e9ea] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                <button onClick={(e) => { e.stopPropagation(); onRequestEdit?.(bookmark); onCloseMenu?.(); }} className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#16181c] transition-colors">Edit bookmark</button>
                 <hr className="border-slate-200 dark:border-[#2f3336] my-1" />
-                <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#f4212e] transition-colors">Delete</button>
+                <button onClick={(e) => { e.stopPropagation(); onRequestDelete?.(bookmark.id); onCloseMenu?.(); }} className="w-full text-left px-3.5 py-1.5 hover:bg-red-500/10 text-[#f4212e] transition-colors">Delete</button>
               </div>
             )}
           </div>
@@ -385,12 +385,12 @@ export function TwitterCard(props: TwitterCardProps) {
       </div>
 
       {/* Tweet Body */}
-      <div className="px-4 mt-3">
+      <div className="px-3.5 mt-2">
         <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block text-slate-900 dark:text-[#e7e9ea]">
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={hasMedia ? 250 : 350}
-            className={`${hasMedia ? "text-[15px]" : "text-[17px]"} leading-normal whitespace-pre-wrap break-words`}
+            maxLength={hasMedia ? 200 : 300}
+            className={`${hasMedia ? "text-[13.5px]" : "text-[15px]"} leading-normal whitespace-pre-wrap break-words`}
             buttonClassName="ml-1 text-[#1d9bf0] hover:underline"
           />
         </a>
@@ -399,14 +399,14 @@ export function TwitterCard(props: TwitterCardProps) {
       {/* Media: Playable Video or Multi-Image Grid */}
       {hasMedia && (
         videoUrl && !videoError ? (
-          <div className="px-4 mt-3">
-            <div className="relative w-full rounded-2xl overflow-hidden bg-black border border-slate-200 dark:border-[#2f3336]">
+          <div className="px-3.5 mt-2">
+            <div className="relative w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-black border border-slate-200 dark:border-[#2f3336]">
               <video
                 key={videoUrl}
                 controls
                 playsInline
                 preload="metadata"
-                className="w-full max-h-[520px] object-contain bg-black mx-auto block"
+                className="w-full max-h-[360px] object-contain bg-slate-100 dark:bg-black mx-auto block"
                 poster={
                   bookmark.snapshot && !bookmark.snapshot.includes(".mp4") && !bookmark.snapshot.includes("video.twimg.com") && !bookmark.snapshot.includes("/vid/")
                     ? bookmark.snapshot
@@ -420,19 +420,19 @@ export function TwitterCard(props: TwitterCardProps) {
             </div>
           </div>
         ) : videoUrl && videoError ? (
-          <div className="px-4 mt-3">
-            <div className="w-full rounded-2xl p-5 bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-center gap-2.5">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
-                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+          <div className="px-3.5 mt-2">
+            <div className="w-full rounded-xl p-4 bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
-              <p className="text-[13px] text-slate-300">Video playback unavailable in direct preview</p>
+              <p className="text-[12px] text-slate-300">Video playback unavailable in direct preview</p>
               <div className="flex items-center gap-2 mt-0.5">
                 <button
                   type="button"
                   onClick={() => setVideoError(false)}
-                  className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                  className="text-xs px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
                 >
                   Retry
                 </button>
@@ -440,7 +440,7 @@ export function TwitterCard(props: TwitterCardProps) {
                   href={videoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs px-3 py-1 rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-medium transition cursor-pointer"
+                  className="text-xs px-2.5 py-1 rounded-full bg-[#1d9bf0] hover:bg-[#1a8cd8] text-white font-medium transition cursor-pointer"
                 >
                   Open Video ↗
                 </a>
@@ -454,8 +454,8 @@ export function TwitterCard(props: TwitterCardProps) {
 
       {/* Date & Views Row */}
       {(formatDetailDate(postedAt) || metrics?.views) && (
-        <div className="px-4 mt-4">
-          <div className="flex flex-wrap items-center gap-1 text-[15px] text-slate-500 dark:text-[#71767b]">
+        <div className="px-3.5 mt-2.5">
+          <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-500 dark:text-[#71767b]">
             {formatDetailDate(postedAt) && <span>{formatDetailDate(postedAt)}</span>}
             {metrics?.views ? (
               <>
@@ -468,28 +468,28 @@ export function TwitterCard(props: TwitterCardProps) {
         </div>
       )}
 
-      <hr className="border-slate-200 dark:border-[#2f3336] mx-4 mt-3" />
+      <hr className="border-slate-200 dark:border-[#2f3336] mx-3.5 mt-2" />
 
       {/* Action Row */}
-      <div className="px-4 py-3 flex justify-between items-center text-slate-500 dark:text-[#71767b]">
-        <div className="flex items-center gap-1.5 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[15px]">
-          <div className="p-2 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-2"><ReplyIcon /></div>
+      <div className="px-3.5 py-2 flex justify-between items-center text-slate-500 dark:text-[#71767b]">
+        <div className="flex items-center gap-1 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[12px]">
+          <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-1.5"><ReplyIcon /></div>
           {formatNumber(metrics?.replies) && <span>{formatNumber(metrics.replies)}</span>}
         </div>
-        <div className="flex items-center gap-1.5 hover:text-[#00ba7c] transition-colors cursor-pointer group/action text-[15px]">
-          <div className="p-2 rounded-full group-hover/action:bg-[#00ba7c]/10 transition-colors -ml-2"><RepostIcon /></div>
+        <div className="flex items-center gap-1 hover:text-[#00ba7c] transition-colors cursor-pointer group/action text-[12px]">
+          <div className="p-1.5 rounded-full group-hover/action:bg-[#00ba7c]/10 transition-colors -ml-1.5"><RepostIcon /></div>
           {formatNumber(metrics?.reposts) && <span>{formatNumber(metrics.reposts)}</span>}
         </div>
-        <div className="flex items-center gap-1.5 hover:text-[#f91880] transition-colors cursor-pointer group/action text-[15px]">
-          <div className="p-2 rounded-full group-hover/action:bg-[#f91880]/10 transition-colors -ml-2"><LikeIcon /></div>
+        <div className="flex items-center gap-1 hover:text-[#f91880] transition-colors cursor-pointer group/action text-[12px]">
+          <div className="p-1.5 rounded-full group-hover/action:bg-[#f91880]/10 transition-colors -ml-1.5"><LikeIcon /></div>
           {formatNumber(metrics?.likes) && <span>{formatNumber(metrics.likes)}</span>}
         </div>
-        <div className="flex items-center gap-1.5 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[15px]">
-          <div className="p-2 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-2"><BookmarkIcon /></div>
+        <div className="flex items-center gap-1 hover:text-[#1d9bf0] transition-colors cursor-pointer group/action text-[12px]">
+          <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors -ml-1.5"><BookmarkIcon /></div>
           {formatNumber(metrics?.bookmarks) && <span>{formatNumber(metrics.bookmarks)}</span>}
         </div>
         <div className="flex items-center hover:text-[#1d9bf0] transition-colors cursor-pointer group/action">
-          <div className="p-2 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors"><ShareIcon /></div>
+          <div className="p-1.5 rounded-full group-hover/action:bg-[#1d9bf0]/10 transition-colors"><ShareIcon /></div>
         </div>
       </div>
     </div>

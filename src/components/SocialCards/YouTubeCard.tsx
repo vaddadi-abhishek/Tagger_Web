@@ -112,9 +112,9 @@ export function YouTubeCard(props: YouTubeCardProps) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#0f0f0f] text-slate-900 dark:text-[#f1f1f1] font-sans rounded-[1.75rem] border border-slate-200/80 dark:border-[#272727] overflow-hidden pb-2 shadow-md">
+    <div className="flex flex-col h-full bg-white dark:bg-[#0f0f0f] text-slate-900 dark:text-[#f1f1f1] font-sans rounded-2xl border border-slate-200/80 dark:border-[#272727] overflow-hidden pb-1 shadow-sm">
       {/* Video Thumbnail Header */}
-      <div className="relative w-full aspect-video bg-black overflow-hidden group/video">
+      <div className="relative w-full aspect-video bg-slate-100 dark:bg-black overflow-hidden group/video">
         <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block w-full h-full">
           {thumbSrc ? (
             <img
@@ -131,7 +131,7 @@ export function YouTubeCard(props: YouTubeCardProps) {
           )}
 
           {/* YouTube Branding Tag + Vertical 3 Dots Menu */}
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
             <div className="bg-black/70 backdrop-blur-md p-1.5 rounded-full flex items-center justify-center">
               <YouTubeBrandLogo />
             </div>
@@ -148,14 +148,14 @@ export function YouTubeCard(props: YouTubeCardProps) {
                 <VerticalMoreIcon />
               </button>
               {isMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#f1f1f1] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
+                <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-lg z-40 text-[13px] font-medium text-slate-900 dark:text-[#f1f1f1] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onRequestEdit?.(bookmark);
                       onCloseMenu?.();
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors"
+                    className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors"
                   >
                     Edit bookmark
                   </button>
@@ -166,7 +166,7 @@ export function YouTubeCard(props: YouTubeCardProps) {
                       onRequestDelete?.(bookmark.id);
                       onCloseMenu?.();
                     }}
-                    className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff4500] transition-colors"
+                    className="w-full text-left px-3.5 py-1.5 hover:bg-red-500/10 text-[#ff4500] transition-colors"
                   >
                     Delete
                   </button>
@@ -177,8 +177,8 @@ export function YouTubeCard(props: YouTubeCardProps) {
 
           {/* Play Button Overlay */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm group-hover/video:bg-[#FF0000] transition-all duration-300 transform group-hover/video:scale-110 shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="size-6 ml-0.5">
+            <div className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm group-hover/video:bg-[#FF0000] transition-all duration-300 transform group-hover/video:scale-110 shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="size-5 ml-0.5">
                 <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
               </svg>
             </div>
@@ -187,50 +187,50 @@ export function YouTubeCard(props: YouTubeCardProps) {
       </div>
 
       {/* Video Details Container */}
-      <div className="p-4 flex flex-col flex-1">
+      <div className="px-3.5 py-2.5 flex flex-col flex-1">
         {/* Video Title */}
         <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block group">
-          <h3 className="font-bold text-[16px] sm:text-[17px] text-slate-900 dark:text-[#f1f1f1] leading-snug line-clamp-2 group-hover:text-[#065fd4] dark:group-hover:text-[#3ea6ff] transition-colors">
+          <h3 className="font-bold text-[14px] text-slate-900 dark:text-[#f1f1f1] leading-snug line-clamp-2 group-hover:text-[#065fd4] dark:group-hover:text-[#3ea6ff] transition-colors">
             {bookmark.title}
           </h3>
         </a>
 
-        {/* Channel Info & Action Bar (Matching Uploaded Design) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 mt-auto">
+        {/* Channel Info & Action Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-auto">
           {/* Left Side: Avatar + Channel Name + Verified Badge + Subscribe Button */}
-          <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             {!avatarError && channel?.avatar_url ? (
               <img
                 src={channel.avatar_url}
                 alt={channel.name}
                 onError={() => setAvatarError(true)}
-                className="w-9 h-9 rounded-full bg-slate-200 dark:bg-[#272727] object-cover shrink-0"
+                className="w-7.5 h-7.5 rounded-full bg-slate-200 dark:bg-[#272727] object-cover shrink-0"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-slate-200 dark:bg-[#272727] flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 opacity-60">
+              <div className="w-7.5 h-7.5 rounded-full bg-slate-200 dark:bg-[#272727] flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 opacity-60">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
               </div>
             )}
 
-            <div className="flex items-center gap-1">
-              <span className="font-bold text-[14px] text-slate-900 dark:text-[#f1f1f1] truncate">
+            <div className="flex items-center gap-1 min-w-0">
+              <span className="font-bold text-[12.5px] text-slate-900 dark:text-[#f1f1f1] truncate max-w-[120px]">
                 {channel?.name || "YouTube Channel"}
               </span>
               <VerifiedBadge />
             </div>
 
-            <button className="rounded-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-black font-semibold text-[12px] px-3.5 py-1.5 dark:hover:bg-[#d9d9d9] active:scale-95 transition-all shrink-0 cursor-pointer shadow-xs ml-1">
+            <button className="rounded-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-black font-semibold text-[11px] px-2.5 py-1 dark:hover:bg-[#d9d9d9] active:scale-95 transition-all shrink-0 cursor-pointer shadow-xs ml-0.5">
               Subscribe
             </button>
           </div>
 
           {/* Right Side: Action Pills */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {/* Like / Dislike Split Pill */}
-            <div className="bg-slate-100 dark:bg-[#272727] rounded-full flex items-center text-xs font-medium text-slate-800 dark:text-[#f1f1f1] shrink-0 border border-slate-200 dark:border-white/5 overflow-hidden">
-              <button className="px-3 py-1.5 flex items-center gap-1.5 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
+            <div className="bg-slate-100 dark:bg-[#272727] rounded-full flex items-center text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] shrink-0 border border-slate-200 dark:border-white/5 overflow-hidden">
+              <button className="px-2.5 py-1 flex items-center gap-1 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
                 <LikeIcon />
                 {formatNumber(metrics?.likes) ? (
                   <span>{formatNumber(metrics.likes)}</span>
@@ -238,20 +238,20 @@ export function YouTubeCard(props: YouTubeCardProps) {
                   <span>{formatNumber(metrics.views)}</span>
                 ) : null}
               </button>
-              <div className="h-4 w-[1px] bg-slate-300 dark:bg-white/20" />
-              <button className="px-3 py-1.5 flex items-center hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
+              <div className="h-3.5 w-[1px] bg-slate-300 dark:bg-white/20" />
+              <button className="px-2 py-1 flex items-center hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
                 <DislikeIcon />
               </button>
             </div>
 
             {/* Share Pill */}
-            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
+            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
               <ShareIcon />
               <span>Share</span>
             </button>
 
             {/* Ask Pill */}
-            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-3 py-1.5 text-xs font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
+            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
               <SparkleIcon />
               <span>Ask</span>
             </button>

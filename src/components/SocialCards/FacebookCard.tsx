@@ -227,11 +227,11 @@ export function FacebookCard(props: FacebookCardProps) {
 
     if (postImages.length === 1) {
       return (
-        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-[#242526] flex items-center justify-center">
+        <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-black flex items-center justify-center">
           <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block w-full">
             <FacebookImageItem
               url={postImages[0]}
-              className="w-full h-auto max-h-[85vh] object-contain mx-auto block"
+              className="w-full h-auto max-h-[360px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
           </a>
         </div>
@@ -241,7 +241,7 @@ export function FacebookCard(props: FacebookCardProps) {
     if (postImages.length === 2) {
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 gap-0.5 w-full h-72 sm:h-80">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 gap-0.5 w-full h-44 sm:h-52">
             <div className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
               <FacebookImageItem url={postImages[0]} className="w-full h-full object-cover" />
             </div>
@@ -256,7 +256,7 @@ export function FacebookCard(props: FacebookCardProps) {
     if (postImages.length === 3) {
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-80 sm:h-96">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-48 sm:h-56">
             <div className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
               <FacebookImageItem url={postImages[0]} className="w-full h-full object-cover" />
             </div>
@@ -274,7 +274,7 @@ export function FacebookCard(props: FacebookCardProps) {
     if (postImages.length === 4) {
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-80 sm:h-96">
+          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-48 sm:h-56">
             {postImages.slice(0, 4).map((imgUrl, idx) => (
               <div key={idx} className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
                 <FacebookImageItem url={imgUrl} className="w-full h-full object-cover" />
@@ -288,7 +288,7 @@ export function FacebookCard(props: FacebookCardProps) {
     // 5 or more images: Classic Facebook 2-on-top, 3-on-bottom layout
     return (
       <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#2f3336] bg-slate-200 dark:bg-[#2f3336]">
-        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="flex flex-col gap-0.5 w-full h-88 sm:h-[420px]">
+        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="flex flex-col gap-0.5 w-full h-52 sm:h-60">
           {/* Top row: 2 images */}
           <div className="flex flex-row gap-0.5 w-full h-[55%]">
             <div className="relative w-1/2 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
@@ -309,7 +309,7 @@ export function FacebookCard(props: FacebookCardProps) {
             <div className="relative w-1/3 h-full overflow-hidden bg-slate-100 dark:bg-[#242526]">
               <FacebookImageItem url={postImages[4]} className="w-full h-full object-cover" />
               {postImages.length > 5 && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center text-white font-bold text-xl sm:text-2xl">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center text-white font-bold text-lg sm:text-xl">
                   +{postImages.length - 4}
                 </div>
               )}
@@ -321,28 +321,28 @@ export function FacebookCard(props: FacebookCardProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#18191a] text-slate-900 dark:text-[#e4e6eb] font-sans rounded-[1.75rem] border border-slate-200/80 dark:border-[#2f3336] overflow-hidden pb-2 shadow-md">
+    <div className="flex flex-col h-full bg-white dark:bg-[#18191a] text-slate-900 dark:text-[#e4e6eb] font-sans rounded-2xl border border-slate-200/80 dark:border-[#2f3336] overflow-hidden pb-1 shadow-sm">
       {/* Author Header */}
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 overflow-hidden flex-1">
+      <div className="px-3.5 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 overflow-hidden flex-1">
           {!avatarError && avatarSrc ? (
             <img
               src={avatarSrc}
               alt={author?.name || "Facebook User"}
               onError={handleAvatarError}
-              className="w-10 h-10 rounded-full bg-slate-200 dark:bg-[#242526] object-cover shrink-0"
+              className="w-8.5 h-8.5 rounded-full bg-slate-200 dark:bg-[#242526] object-cover shrink-0"
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-[#1877F2] flex items-center justify-center text-white shrink-0 font-bold">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+            <div className="w-8.5 h-8.5 rounded-full bg-[#1877F2] flex items-center justify-center text-white shrink-0 font-bold">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-5">
                 <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V2.14c-.326-.043-1.557-.14-2.857-.14C11.928 2 10 3.657 10 6.7v2.8H7v4h3V22h4v-8.5z" />
               </svg>
             </div>
           )}
           <div className="flex flex-col leading-tight overflow-hidden">
-            <span className="font-bold text-slate-900 dark:text-[#e4e6eb] text-[15px] truncate">{author?.name || "Facebook User"}</span>
+            <span className="font-bold text-slate-900 dark:text-[#e4e6eb] text-[13.5px] truncate">{author?.name || "Facebook User"}</span>
             {formatFacebookDate(cardData?.posted_at || bookmark.created_at) && (
-              <span className="text-[12px] text-slate-500 dark:text-[#b0b3b8] truncate mt-0.5">
+              <span className="text-[11px] text-slate-500 dark:text-[#b0b3b8] truncate mt-0.5">
                 {formatFacebookDate(cardData?.posted_at || bookmark.created_at)}
               </span>
             )}
@@ -351,26 +351,26 @@ export function FacebookCard(props: FacebookCardProps) {
 
         {/* Top Right: Facebook Brand Logo + Vertical 3 Dots Menu Button */}
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
-          <div className="p-1 shrink-0">
+          <div className="p-0.5 shrink-0">
             <FacebookBrandLogo />
           </div>
           <div className="relative shrink-0">
             <button
               onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-              className="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#242526] dark:hover:text-[#e4e6eb] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none"
+              className="p-1 rounded-lg hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#242526] dark:hover:text-[#e4e6eb] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none"
               title="More options"
             >
               <VerticalMoreIcon />
             </button>
             {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#242526] border border-slate-200 dark:border-[#3a3b3c] shadow-lg z-40 text-[14px] font-medium text-slate-900 dark:text-[#e4e6eb] py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-[#242526] border border-slate-200 dark:border-[#3a3b3c] shadow-lg z-40 text-[13px] font-medium text-slate-900 dark:text-[#e4e6eb] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onRequestEdit?.(bookmark);
                     onCloseMenu?.();
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors"
+                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors"
                 >
                   Edit bookmark
                 </button>
@@ -381,7 +381,7 @@ export function FacebookCard(props: FacebookCardProps) {
                     onRequestDelete?.(bookmark.id);
                     onCloseMenu?.();
                   }}
-                  className="w-full text-left px-4 py-2 hover:bg-red-500/10 text-[#ff3040] transition-colors"
+                  className="w-full text-left px-3.5 py-1.5 hover:bg-red-500/10 text-[#ff3040] transition-colors"
                 >
                   Delete
                 </button>
@@ -392,12 +392,12 @@ export function FacebookCard(props: FacebookCardProps) {
       </div>
 
       {/* Post Text Body */}
-      <div className="px-4 pb-3 flex-1">
+      <div className="px-3.5 pb-2 flex-1">
         <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block text-slate-900 dark:text-[#e4e6eb]">
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={180}
-            className="text-[15px] leading-relaxed whitespace-pre-wrap break-words"
+            maxLength={150}
+            className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words"
             buttonClassName="ml-1 text-[#1877F2] hover:underline"
           />
         </a>
@@ -405,14 +405,14 @@ export function FacebookCard(props: FacebookCardProps) {
 
       {/* Media Section: Playable Video for Reels & Videos, or Facebook Multi-Image Grid */}
       {videoUrl && !videoError ? (
-        <div className="w-full bg-black overflow-hidden border-y border-slate-200 dark:border-[#2f3336] flex items-center justify-center">
+        <div className="w-full bg-slate-100 dark:bg-black overflow-hidden border-y border-slate-200 dark:border-[#2f3336] flex items-center justify-center">
           <video
             key={videoUrl}
             controls
             playsInline
             preload="metadata"
             onError={() => setVideoError(true)}
-            className="w-full max-h-[600px] object-contain bg-black"
+            className="w-full max-h-[360px] object-contain bg-slate-100 dark:bg-black"
             poster={bookmark.snapshot ? getProxyUrl(bookmark.snapshot) : postImages[0] ? getProxyUrl(postImages[0]) : undefined}
           >
             <source src={videoUrl} type="video/mp4" />
@@ -420,18 +420,18 @@ export function FacebookCard(props: FacebookCardProps) {
           </video>
         </div>
       ) : videoUrl && videoError ? (
-        <div className="w-full p-5 bg-slate-900 border-y border-slate-700 flex flex-col items-center justify-center text-center gap-2.5">
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white">
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+        <div className="w-full p-4 bg-slate-900 border-y border-slate-700 flex flex-col items-center justify-center text-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z" />
             </svg>
           </div>
-          <p className="text-[13px] text-slate-300">Video playback unavailable in direct preview</p>
+          <p className="text-[12px] text-slate-300">Video playback unavailable in direct preview</p>
           <div className="flex items-center gap-2 mt-0.5">
             <button
               type="button"
               onClick={() => setVideoError(false)}
-              className="text-xs px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+              className="text-xs px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
             >
               Retry
             </button>
@@ -439,7 +439,7 @@ export function FacebookCard(props: FacebookCardProps) {
               href={videoUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-xs px-3 py-1 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium transition cursor-pointer"
+              className="text-xs px-2.5 py-1 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium transition cursor-pointer"
             >
               Open Video ↗
             </a>
@@ -450,18 +450,18 @@ export function FacebookCard(props: FacebookCardProps) {
       )}
 
       {/* Graphic Metrics Row: Like, Comment, and Share icons always displayed; numbers hidden if 0 */}
-      <div className="px-4 py-3 flex items-center justify-between text-slate-500 dark:text-[#b0b3b8] mt-auto border-t border-slate-100 dark:border-[#2f3336]/40">
-        <div className="flex items-center gap-1.5 hover:text-[#1877F2] transition-colors cursor-pointer text-[13px]">
+      <div className="px-3.5 py-2 flex items-center justify-between text-slate-500 dark:text-[#b0b3b8] mt-auto border-t border-slate-100 dark:border-[#2f3336]/40">
+        <div className="flex items-center gap-1.5 hover:text-[#1877F2] transition-colors cursor-pointer text-[12px]">
           <FacebookLikeBadge />
           {formatNumber(metrics?.likes) ? (
-            <span className="font-normal text-slate-700 dark:text-[#e4e6eb] text-[13px]">
+            <span className="font-normal text-slate-700 dark:text-[#e4e6eb] text-[12px]">
               {formatNumber(metrics?.likes)}
             </span>
           ) : null}
         </div>
 
-        <div className="flex items-center gap-4 text-[13px]">
-          <div className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Comments">
+        <div className="flex items-center gap-3.5 text-[12px]">
+          <div className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Comments">
             <CommentIcon />
             {formatNumber(metrics?.comments) ? (
               <span className="font-normal text-slate-700 dark:text-[#e4e6eb]">
@@ -470,7 +470,7 @@ export function FacebookCard(props: FacebookCardProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Shares">
+          <div className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-[#e4e6eb] transition-colors cursor-pointer" title="Shares">
             <ShareIcon />
             {formatNumber(metrics?.shares) ? (
               <span className="font-normal text-slate-700 dark:text-[#e4e6eb]">

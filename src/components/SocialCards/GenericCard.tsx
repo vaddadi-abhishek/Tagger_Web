@@ -26,7 +26,9 @@ export function GenericCard(props: GenericCardProps) {
   const [logoError, setLogoError] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const mediaUrl = bookmark.snapshot || bookmark.logo;
+  const cardData = bookmark.card_data as GlobalWebCardData | undefined;
+  const snapshotUrl = cardData?.snapshot || bookmark.snapshot;
+  const mediaUrl = snapshotUrl || bookmark.logo;
   const descriptionText = bookmark.description || "";
   const DESCRIPTION_LIMIT = 130;
   const isLongDescription = descriptionText.length > DESCRIPTION_LIMIT;
@@ -39,7 +41,6 @@ export function GenericCard(props: GenericCardProps) {
     } catch {}
   }
   const logoSrc = !logoError && bookmark.logo ? bookmark.logo : domainFavicon;
-  const cardData = bookmark.card_data as GlobalWebCardData | undefined;
 
   const VerticalMoreIcon = () => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
@@ -48,10 +49,10 @@ export function GenericCard(props: GenericCardProps) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#18181b] text-slate-900 dark:text-zinc-100 font-sans rounded-[1.75rem] border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-md pb-1">
+    <div className="flex flex-col h-full bg-white dark:bg-[#18181b] text-slate-900 dark:text-zinc-100 font-sans rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-sm pb-1">
       {/* Media Image Section */}
       {mediaUrl && !imgError ? (
-        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 shrink-0">
+        <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 shrink-0">
           {!imgLoaded && (
             <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 opacity-60 animate-pulse" />
           )}
@@ -70,9 +71,9 @@ export function GenericCard(props: GenericCardProps) {
           </a>
 
           {/* Top Right Source Logo Badge & Vertical 3-dots Menu */}
-          <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
             {logoSrc ? (
-              <div className="size-8 rounded-full bg-white/90 dark:bg-black/75 backdrop-blur-md p-1.5 shadow-md flex items-center justify-center border border-white/20">
+              <div className="size-7 rounded-full bg-white/90 dark:bg-black/75 backdrop-blur-md p-1 shadow-sm flex items-center justify-center border border-white/20">
                 <img
                   src={logoSrc}
                   alt={bookmark.site_name || "Source Logo"}
@@ -81,7 +82,7 @@ export function GenericCard(props: GenericCardProps) {
                 />
               </div>
             ) : (
-              <div className="rounded-full px-2.5 py-1 bg-black/60 backdrop-blur-md text-[10px] font-semibold text-white shadow-md">
+              <div className="rounded-full px-2 py-0.5 bg-black/60 backdrop-blur-md text-[9.5px] font-semibold text-white shadow-sm">
                 <span>{bookmark.site_name}</span>
               </div>
             )}
@@ -93,19 +94,19 @@ export function GenericCard(props: GenericCardProps) {
                   onToggleMenu?.(bookmark.id, e);
                 }}
                 title="More options"
-                className="size-8 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer outline-none border border-white/20 shadow-md flex items-center justify-center"
+                className="size-7 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer outline-none border border-white/20 shadow-sm flex items-center justify-center"
               >
                 <VerticalMoreIcon />
               </button>
               {isMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xl z-40 text-[13px] font-medium text-slate-900 dark:text-zinc-200 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
+                <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xl z-40 text-[12.5px] font-medium text-slate-900 dark:text-zinc-200 py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onRequestEdit?.(bookmark);
                       onCloseMenu?.();
                     }}
-                    className="w-full text-left px-3.5 py-2 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2"
                   >
                     <span>Edit bookmark</span>
                   </button>
@@ -116,7 +117,7 @@ export function GenericCard(props: GenericCardProps) {
                       onRequestDelete?.(bookmark.id);
                       onCloseMenu?.();
                     }}
-                    className="w-full text-left px-3.5 py-2 hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2 font-medium"
+                    className="w-full text-left px-3 py-1.5 hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2 font-medium"
                   >
                     <span>Delete</span>
                   </button>
@@ -128,18 +129,18 @@ export function GenericCard(props: GenericCardProps) {
       ) : null}
 
       {/* Card Body Content */}
-      <div className="p-5 flex-1 flex flex-col justify-start space-y-2.5">
+      <div className="p-3.5 flex-1 flex flex-col justify-start space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {logoSrc && (!mediaUrl || imgError) && (
               <img
                 src={logoSrc}
                 alt=""
-                className="size-4 object-contain rounded-full"
+                className="size-3.5 object-contain rounded-full"
                 onError={() => setLogoError(true)}
               />
             )}
-            <span className="font-semibold uppercase tracking-wider text-[11px] text-[var(--primary)]">
+            <span className="font-semibold uppercase tracking-wider text-[10.5px] text-[var(--primary)]">
               {bookmark.site_name || "Web"}
             </span>
           </div>
@@ -191,7 +192,7 @@ export function GenericCard(props: GenericCardProps) {
           href={sanitizeUrl(bookmark.url)}
           target="_blank"
           rel="noreferrer"
-          className="text-base font-bold text-slate-900 dark:text-white hover:text-[var(--primary)] dark:hover:text-[var(--primary)] transition-colors leading-snug block line-clamp-2"
+          className="text-[14px] font-bold text-slate-900 dark:text-white hover:text-[var(--primary)] dark:hover:text-[var(--primary)] transition-colors leading-snug block line-clamp-2"
         >
           {bookmark.title}
         </a>
@@ -199,9 +200,9 @@ export function GenericCard(props: GenericCardProps) {
         {descriptionText && (
           <div className="relative">
             <div
-              className={`text-[13px] text-slate-600 dark:text-zinc-300 leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`text-[12px] text-slate-600 dark:text-zinc-300 leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${
                 isLongDescription && !isDescriptionExpanded
-                  ? "max-h-14"
+                  ? "max-h-12"
                   : "max-h-[600px]"
               }`}
             >
@@ -215,7 +216,7 @@ export function GenericCard(props: GenericCardProps) {
                   e.stopPropagation();
                   setIsDescriptionExpanded((prev) => !prev);
                 }}
-                className="text-[var(--primary)] font-semibold text-xs mt-1 hover:underline cursor-pointer transition-all duration-200 active:scale-95 inline-flex items-center gap-1"
+                className="text-[var(--primary)] font-semibold text-[11px] mt-0.5 hover:underline cursor-pointer transition-all duration-200 active:scale-95 inline-flex items-center gap-1"
               >
                 <span>
                   {isDescriptionExpanded ? "show less" : "show more..."}
@@ -227,8 +228,8 @@ export function GenericCard(props: GenericCardProps) {
 
         {/* Render Author if available from GlobalWebCardData */}
         {cardData?.author && (
-          <div className="text-[11px] text-slate-500 dark:text-zinc-400 mt-2 flex items-center gap-1.5 font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-3.5">
+          <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5 font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-3">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
             </svg>
             <span>{cardData.author}</span>

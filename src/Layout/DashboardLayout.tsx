@@ -106,7 +106,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       const targetUrl = savedBookmark.url;
       fetchUrlMetadata(targetUrl)
         .then(async (data) => {
-          const snapshotUrl = data.snapshot ? data.snapshot : null;
+          const snapshotUrl = data.card_data?.snapshot || data.snapshot || null;
           const logoUrl = data.logo ? data.logo : null;
           const derivedTitle = data.title ? data.title : savedBookmark.title;
           const derivedDescription = data.description ? data.description : savedBookmark.description;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
@@ -18,9 +18,10 @@ interface BookmarksScreenProps {
 }
 
 function getColumns<T>(items: T[], numCols: number): T[][] {
-  const cols: T[][] = Array.from({ length: numCols }, () => []);
+  const safeCols = Math.max(1, numCols);
+  const cols: T[][] = Array.from({ length: safeCols }, () => []);
   items.forEach((item, index) => {
-    cols[index % numCols].push(item);
+    cols[index % safeCols].push(item);
   });
   return cols;
 }
@@ -42,6 +43,63 @@ export default function BookmarksScreen({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [internalIsAddModalOpen, setInternalIsAddModalOpen] = useState(false);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [numCols, setNumCols] = useState<number>(() => {
+    if (typeof window === "undefined") return 4;
+    const w = window.innerWidth;
+    const pad = w >= 1024 ? 64 : w >= 640 ? 48 : 32;
+    const available = Math.max(300, w - pad);
+    return Math.max(1, Math.round((available + 16) / 336));
+  });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let rafId: number;
+    const calculateCols = (width: number) => {
+      const gap = 16;
+      const targetSlot = 336; // 320px target card width + 16px gap
+      return Math.max(1, Math.round((width + gap) / targetSlot));
+    };
+
+    const updateCols = (width: number) => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const nextCols = calculateCols(width);
+        setNumCols((prev) => (prev !== nextCols ? nextCols : prev));
+      });
+    };
+
+    if (container.clientWidth > 0) {
+      updateCols(container.clientWidth);
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        if (width > 0) {
+          updateCols(width);
+        }
+      }
+    });
+
+    observer.observe(container);
+
+    const handleResize = () => {
+      if (containerRef.current?.clientWidth) {
+        updateCols(containerRef.current.clientWidth);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const isAddModalOpen =
     externalIsAddModalOpen !== undefined
@@ -145,71 +203,34 @@ export default function BookmarksScreen({
         />
       )}
 
-      {/* Bookmarks Fixed-Column Masonry Grid Layout */}
+      {/* Bookmarks Dynamic Auto-Fitting Masonry Grid Layout */}
       {filteredBookmarks.length > 0 ? (
-        <>
-          {/* Mobile View: 1 Column */}
-          <div className="flex flex-col gap-6 sm:hidden">
-            {filteredBookmarks.map((bookmark) => (
-              <BookmarkCard
-                key={bookmark.id}
-                bookmark={bookmark}
-                isMenuOpen={openMenuId === bookmark.id}
-                onToggleMenu={(id, e) => {
-                  e.stopPropagation();
-                  setOpenMenuId((prev) => (prev === id ? null : id));
-                }}
-                onCloseMenu={() => setOpenMenuId(null)}
-                onRequestDelete={(id) => setDeleteConfirmId(id)}
-                onRequestEdit={(b) => setEditingBookmark(b)}
-              />
-            ))}
-          </div>
-
-          {/* Tablet View: 2 Fixed Columns */}
-          <div className="hidden sm:grid lg:hidden grid-cols-2 gap-6 items-start">
-            {getColumns(filteredBookmarks, 2).map((colItems, colIdx) => (
-              <div key={`tab_col_${colIdx}`} className="flex flex-col gap-6">
-                {colItems.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    isMenuOpen={openMenuId === bookmark.id}
-                    onToggleMenu={(id, e) => {
-                      e.stopPropagation();
-                      setOpenMenuId((prev) => (prev === id ? null : id));
-                    }}
-                    onCloseMenu={() => setOpenMenuId(null)}
-                    onRequestDelete={(id) => setDeleteConfirmId(id)}
-                    onRequestEdit={(b) => setEditingBookmark(b)}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop View: 3 Fixed Columns */}
-          <div className="hidden lg:grid grid-cols-3 gap-6 items-start">
-            {getColumns(filteredBookmarks, 3).map((colItems, colIdx) => (
-              <div key={`desk_col_${colIdx}`} className="flex flex-col gap-6">
-                {colItems.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    isMenuOpen={openMenuId === bookmark.id}
-                    onToggleMenu={(id, e) => {
-                      e.stopPropagation();
-                      setOpenMenuId((prev) => (prev === id ? null : id));
-                    }}
-                    onCloseMenu={() => setOpenMenuId(null)}
-                    onRequestDelete={(id) => setDeleteConfirmId(id)}
-                    onRequestEdit={(b) => setEditingBookmark(b)}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        </>
+        <div
+          ref={containerRef}
+          className="w-full grid gap-4 items-start"
+          style={{
+            gridTemplateColumns: `repeat(${numCols}, minmax(0, 1fr))`,
+          }}
+        >
+          {getColumns(filteredBookmarks, numCols).map((colItems, colIdx) => (
+            <div key={`col_${numCols}_${colIdx}`} className="flex flex-col gap-4 min-w-0">
+              {colItems.map((bookmark) => (
+                <BookmarkCard
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  isMenuOpen={openMenuId === bookmark.id}
+                  onToggleMenu={(id, e) => {
+                    e.stopPropagation();
+                    setOpenMenuId((prev) => (prev === id ? null : id));
+                  }}
+                  onCloseMenu={() => setOpenMenuId(null)}
+                  onRequestDelete={(id) => setDeleteConfirmId(id)}
+                  onRequestEdit={(b) => setEditingBookmark(b)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="text-center py-24 px-4 text-[var(--text)] space-y-2">
           <p className="text-sm font-medium text-[var(--text-h)]">

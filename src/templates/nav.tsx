@@ -65,17 +65,17 @@ function Nav({
           : "bg-transparent border-b border-transparent shadow-none backdrop-blur-none"
       }`}
     >
-      <div className="w-full flex items-center justify-between px-4 sm:px-8 h-20 gap-4">
-        {/* Left Section: Minimalist Serif Italic Searchbar matching Image 2 */}
-        <div className="flex-1 max-w-md sm:max-w-lg min-w-0">
-          <div className="relative flex items-center border-b border-black/20 dark:border-white/25 focus-within:border-black/70 dark:focus-within:border-white/80 transition-all duration-300 pb-1.5 group">
+      <div className="w-full flex items-center justify-between px-4 sm:px-8 h-20 gap-4 sm:gap-6">
+        {/* Searchbar stretching all the way to top-right icons */}
+        <div className="flex-1 min-w-0">
+          <div className="relative flex items-center border-b border-black/20 dark:border-white/25 focus-within:border-black/70 dark:focus-within:border-white/80 transition-all duration-300 pb-1.5 group w-full">
             <input
               type="text"
               id="top-search-mind"
               placeholder="Search my mind..."
               value={searchTerm}
               onChange={(e) => onSearchChange?.(e.target.value)}
-              className="search-mind-input w-full bg-transparent outline-none text-lg sm:text-xl md:text-2xl text-[var(--text-h)] placeholder-zinc-400/70 dark:placeholder-zinc-500/70 transition-colors pr-6"
+              className="search-mind-input w-full bg-transparent outline-none text-lg sm:text-xl md:text-2xl text-[var(--text-h)] placeholder-zinc-400/70 dark:placeholder-zinc-500/70 transition-colors pr-7"
             />
             {searchTerm && (
               <button

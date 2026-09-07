@@ -22,7 +22,7 @@ export function SocialCardWrapper({
 }: SocialCardWrapperProps) {
   return (
     <div
-      className={`group relative glass-panel rounded-[1.75rem] transition-all duration-300 flex flex-col justify-between overflow-hidden ${
+      className={`group relative glass-panel rounded-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden shadow-sm ${
         isMenuOpen ? "z-30" : "z-0"
       }`}
     >
