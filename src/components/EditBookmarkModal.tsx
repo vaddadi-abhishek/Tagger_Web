@@ -8,32 +8,15 @@ interface EditBookmarkModalProps {
   onSave: (id: string, newTitle: string, newDescription: string) => void;
 }
 
-export function EditBookmarkModal({
-  isOpen,
-  bookmark,
-  onClose,
-  onSave,
-}: EditBookmarkModalProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+interface EditBookmarkFormProps {
+  bookmark: Bookmark;
+  onClose: () => void;
+  onSave: (id: string, newTitle: string, newDescription: string) => void;
+}
 
-  useEffect(() => {
-    if (bookmark) {
-      setTitle(bookmark.title || "");
-      setDescription(bookmark.description || "");
-    }
-  }, [bookmark]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !bookmark) return null;
+function EditBookmarkForm({ bookmark, onClose, onSave }: EditBookmarkFormProps) {
+  const [title, setTitle] = useState(bookmark.title || "");
+  const [description, setDescription] = useState(bookmark.description || "");
 
   const initialTitle = bookmark.title || "";
   const initialDescription = bookmark.description || "";
@@ -144,5 +127,32 @@ export function EditBookmarkModal({
         </form>
       </div>
     </div>
+  );
+}
+
+export function EditBookmarkModal({
+  isOpen,
+  bookmark,
+  onClose,
+  onSave,
+}: EditBookmarkModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !bookmark) return null;
+
+  return (
+    <EditBookmarkForm
+      key={bookmark.id}
+      bookmark={bookmark}
+      onClose={onClose}
+      onSave={onSave}
+    />
   );
 }

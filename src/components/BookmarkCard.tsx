@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { Bookmark } from "../types/bookmark";
 import { GenericCard } from "./SocialCards/GenericCard";
 import { TwitterCard } from "./SocialCards/TwitterCard";
@@ -39,8 +39,9 @@ function resolveCardType(bookmark: Bookmark): string {
   return "generic";
 }
 
-export function BookmarkCard(props: BookmarkCardProps) {
+export const BookmarkCard = React.memo(function BookmarkCard(props: BookmarkCardProps) {
   const { bookmark } = props;
+  const cardType = useMemo(() => resolveCardType(bookmark), [bookmark]);
 
   // If metadata is actively being fetched in the background, render wireframe skeleton
   if (bookmark.isFetchingMetadata) {
@@ -67,8 +68,6 @@ export function BookmarkCard(props: BookmarkCardProps) {
     );
   }
 
-  const cardType = resolveCardType(bookmark);
-
   // Dispatch to specific cards - all render natively without any outer box wrapper
   const renderCardBody = () => {
     switch (cardType) {
@@ -90,8 +89,8 @@ export function BookmarkCard(props: BookmarkCardProps) {
   };
 
   return (
-    <div className={`relative ${props.isMenuOpen ? "z-30" : "z-0"}`}>
+    <div className={`relative ${props.isMenuOpen ? "z-30" : "z-0"} content-auto`}>
       {renderCardBody()}
     </div>
   );
-}
+});

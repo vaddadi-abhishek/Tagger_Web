@@ -33,7 +33,7 @@ export interface InstagramCardData {
     comments?: number;
   };
   media: MediaItem[];
-  images?: Array<string | { url?: string; src?: string; display_url?: string; [key: string]: any }>;
+  images?: Array<string | { url?: string; src?: string; display_url?: string; [key: string]: unknown }>;
   posted_at: string;
 }
 
@@ -108,7 +108,7 @@ export type AnyCardData =
   | RedditCardData
   | YouTubeCardData
   | GlobalWebCardData
-  | any;
+  | Record<string, unknown>;
 
 export interface Bookmark {
   id: string;

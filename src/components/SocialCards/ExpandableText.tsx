@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 
 interface ExpandableTextProps {
   text: string;
@@ -8,7 +8,7 @@ interface ExpandableTextProps {
   buttonClassName?: string;
 }
 
-export function ExpandableText({
+export const ExpandableText = React.memo(function ExpandableText({
   text,
   prefix,
   maxLength = 200,
@@ -16,33 +16,15 @@ export function ExpandableText({
   buttonClassName = "",
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number | undefined>(undefined);
-
   const isLong = Boolean(text && text.length > maxLength);
 
-  useEffect(() => {
-    if (contentRef.current) {
-      setContentHeight(contentRef.current.scrollHeight);
-    }
-  }, [text]);
-
   if (!text) return null;
-
-  const collapsedHeight = "4.5em";
 
   return (
     <div className={className}>
       <div
-        ref={contentRef}
         style={{
-          maxHeight: isLong
-            ? isExpanded
-              ? contentHeight
-                ? `${contentHeight}px`
-                : "1000px"
-              : collapsedHeight
-            : "none",
+          maxHeight: isLong ? (isExpanded ? "2000px" : "4.5em") : "none",
         }}
         className="transition-[max-height] duration-500 ease-in-out overflow-hidden"
       >
@@ -75,5 +57,4 @@ export function ExpandableText({
       )}
     </div>
   );
-}
-
+});

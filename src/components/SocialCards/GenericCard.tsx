@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import type { Bookmark, GlobalWebCardData } from "../../types/bookmark";
 import { sanitizeUrl } from "../../lib/utils";
+import { VerticalMoreIcon } from "./SocialCardIcons";
+import { SafeImage } from "./SafeImage";
 
 interface GenericCardProps {
   bookmark: Bookmark;
@@ -11,7 +13,7 @@ interface GenericCardProps {
   onRequestEdit?: (bookmark: Bookmark) => void;
 }
 
-export function GenericCard(props: GenericCardProps) {
+export const GenericCard = React.memo(function GenericCard(props: GenericCardProps) {
   const {
     bookmark,
     isMenuOpen,
@@ -21,8 +23,6 @@ export function GenericCard(props: GenericCardProps) {
     onRequestEdit,
   } = props;
 
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [imgError, setImgError] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
@@ -38,35 +38,27 @@ export function GenericCard(props: GenericCardProps) {
     try {
       const hostname = new URL(bookmark.url).hostname;
       domainFavicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
-    } catch {}
+    } catch {
+      // ignore parsing error
+    }
   }
   const logoSrc = !logoError && bookmark.logo ? bookmark.logo : domainFavicon;
-
-  const VerticalMoreIcon = () => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-    </svg>
-  );
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#18181b] text-slate-900 dark:text-zinc-100 font-sans rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-sm pb-1">
       {/* Media Image Section */}
-      {mediaUrl && !imgError ? (
+      {mediaUrl ? (
         <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 shrink-0">
-          {!imgLoaded && (
-            <div className="absolute inset-0 bg-slate-200 dark:bg-zinc-800 opacity-60 animate-pulse" />
-          )}
-
-          <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block w-full h-full">
-            <img
-              src={mediaUrl}
+          <a
+            href={sanitizeUrl(bookmark.url)}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full h-full"
+          >
+            <SafeImage
+              url={mediaUrl}
               alt={bookmark.title}
-              loading="lazy"
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgError(true)}
-              className={`w-full h-full object-cover transition-all duration-500 ${
-                imgLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
-              }`}
+              className="w-full h-full object-cover"
             />
           </a>
 
@@ -78,6 +70,9 @@ export function GenericCard(props: GenericCardProps) {
                   src={logoSrc}
                   alt={bookmark.site_name || "Source Logo"}
                   onError={() => setLogoError(true)}
+                  loading="lazy"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
@@ -132,12 +127,15 @@ export function GenericCard(props: GenericCardProps) {
       <div className="p-3.5 flex-1 flex flex-col justify-start space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-zinc-400">
           <div className="flex items-center gap-1.5">
-            {logoSrc && (!mediaUrl || imgError) && (
+            {logoSrc && !mediaUrl && (
               <img
                 src={logoSrc}
                 alt=""
                 className="size-3.5 object-contain rounded-full"
                 onError={() => setLogoError(true)}
+                loading="lazy"
+                decoding="async"
+                referrerPolicy="no-referrer"
               />
             )}
             <span className="font-semibold uppercase tracking-wider text-[10.5px] text-[var(--primary)]">
@@ -146,7 +144,7 @@ export function GenericCard(props: GenericCardProps) {
           </div>
 
           {/* If no media image, show 3-dots button in header */}
-          {(!mediaUrl || imgError) && (
+          {!mediaUrl && (
             <div className="relative shrink-0">
               <button
                 onClick={(e) => {
@@ -229,8 +227,19 @@ export function GenericCard(props: GenericCardProps) {
         {/* Render Author if available from GlobalWebCardData */}
         {cardData?.author && (
           <div className="text-[10.5px] text-slate-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5 font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-3">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="size-3"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+              />
             </svg>
             <span>{cardData.author}</span>
           </div>
@@ -238,4 +247,4 @@ export function GenericCard(props: GenericCardProps) {
       </div>
     </div>
   );
-}
+});

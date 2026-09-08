@@ -10,13 +10,10 @@ export default function App() {
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [initializing, setInitializing] = useState(true);
+  const [initializing, setInitializing] = useState(() => isSupabaseConfigured);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setInitializing(false);
-      return;
-    }
+    if (!isSupabaseConfigured) return;
 
     // Restore existing session from localStorage/cookies on page reload
     supabase.auth.getSession().then(({ data: { session } }) => {

@@ -353,3 +353,9 @@
     rgba(147, 197, 253, 0.65) 100%
   );
 }
+
+/* Off-screen card layout & paint optimization */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 360px;
+}

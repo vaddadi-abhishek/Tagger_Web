@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { Bookmark } from "../types/bookmark";
 
 interface AddBookmarkModalProps {
@@ -14,24 +14,22 @@ export function AddBookmarkModal({
 }: AddBookmarkModalProps) {
   const [url, setUrl] = useState("");
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setUrl("");
-    }
-  }, [isOpen]);
+  const handleClose = useCallback(() => {
+    setUrl("");
+    onClose();
+  }, [onClose]);
 
   // Keyboard shortcut listener for Escape key
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
@@ -71,6 +69,7 @@ export function AddBookmarkModal({
       isFetchingMetadata: true,
     };
 
+    setUrl("");
     onAddBookmark(newBookmark);
     onClose();
   };
@@ -103,7 +102,7 @@ export function AddBookmarkModal({
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-[var(--text)] hover:text-[var(--text-h)] cursor-pointer p-1"
           >
             <svg
@@ -156,7 +155,7 @@ export function AddBookmarkModal({
           <div className="flex items-center gap-3 pt-3 border-t border-[var(--border)]">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-4 py-2.5 text-xs font-semibold rounded-xl bg-[var(--bg)] text-[var(--text-h)] border border-[var(--border)] hover:bg-[var(--accent-bg)] transition-colors cursor-pointer"
             >
               Cancel

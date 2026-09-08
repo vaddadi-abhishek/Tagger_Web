@@ -41,7 +41,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleMainScroll = (e: React.UIEvent<HTMLElement>) => {
-    setIsScrolled(e.currentTarget.scrollTop > 10);
+    const nextScrolled = e.currentTarget.scrollTop > 10;
+    setIsScrolled((prev) => (prev !== nextScrolled ? nextScrolled : prev));
   };
 
   // Floating Toast Notifications State
@@ -73,8 +74,9 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         if (isMounted) {
           setBookmarks(fetchedBms);
         }
-      } catch (err: any) {
-        addToast(`Failed to load data from Supabase: ${err?.message || "Unknown error"}`);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        addToast(`Failed to load data from Supabase: ${message}`);
       } finally {
         if (isMounted) setLoadingData(false);
       }
@@ -106,7 +108,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       const targetUrl = savedBookmark.url;
       fetchUrlMetadata(targetUrl)
         .then(async (data) => {
-          const snapshotUrl = data.card_data?.snapshot || data.snapshot || null;
+          const rawSnapshot = (data.card_data as { snapshot?: string } | undefined)?.snapshot;
+          const snapshotUrl = rawSnapshot || data.snapshot || null;
           const logoUrl = data.logo ? data.logo : null;
           const derivedTitle = data.title ? data.title : savedBookmark.title;
           const derivedDescription = data.description ? data.description : savedBookmark.description;
@@ -119,7 +122,9 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             logo: logoUrl,
             site_name: derivedSiteName,
             type: data.type || null,
-            card_data: data.card_data || null,
+            card_data: data.card_data || undefined,
+            ai_context: data.ai_context,
+            ai_tags: data.ai_tags,
           });
 
           // Update local state card
@@ -136,22 +141,25 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                 isFetchingMetadata: false,
                 type: data.type || undefined,
                 card_data: data.card_data || undefined,
+                ai_context: data.ai_context,
+                ai_tags: data.ai_tags,
               };
             })
           );
         })
-        .catch((err: any) => {
+        .catch((err: unknown) => {
           setBookmarks((prev) =>
             prev.map((b) =>
               b.id === savedBookmark.id ? { ...b, isFetchingMetadata: false } : b
             )
           );
-          const errorMessage = err?.message || "Metadata API server unreachable";
+          const errorMessage = err instanceof Error ? err.message : "Metadata API server unreachable";
           addToast(`Failed to fetch metadata for ${savedBookmark.title}: ${errorMessage}`);
         });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to add bookmark to Supabase:", err);
-      addToast(`Error adding bookmark: ${err?.message || "Database insert failed"}`);
+      const errorMessage = err instanceof Error ? err.message : "Database insert failed";
+      addToast(`Error adding bookmark: ${errorMessage}`);
     }
   };
 
@@ -160,9 +168,10 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     try {
       await deleteBookmark(id);
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting bookmark:", err);
-      addToast(`Failed to delete bookmark: ${err?.message || "Database operation failed"}`);
+      const errorMessage = err instanceof Error ? err.message : "Database operation failed";
+      addToast(`Failed to delete bookmark: ${errorMessage}`);
     }
   };
 
@@ -178,9 +187,10 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       );
       await updateBookmarkDetails(id, title, description);
       addToast("Bookmark updated successfully!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating bookmark details:", err);
-      addToast(`Failed to update bookmark: ${err?.message || "Database update failed"}`);
+      const errorMessage = err instanceof Error ? err.message : "Database update failed";
+      addToast(`Failed to update bookmark: ${errorMessage}`);
     }
   };
 

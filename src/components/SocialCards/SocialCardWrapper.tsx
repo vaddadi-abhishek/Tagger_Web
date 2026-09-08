@@ -1,5 +1,6 @@
 import React from "react";
 import type { Bookmark } from "../../types/bookmark";
+import { HorizontalMoreIcon } from "./SocialCardIcons";
 
 interface SocialCardWrapperProps {
   bookmark: Bookmark;
@@ -11,7 +12,7 @@ interface SocialCardWrapperProps {
   children: React.ReactNode;
 }
 
-export function SocialCardWrapper({
+export const SocialCardWrapper = React.memo(function SocialCardWrapper({
   bookmark,
   isMenuOpen,
   onToggleMenu,
@@ -39,20 +40,7 @@ export function SocialCardWrapper({
               title="More options"
               className="p-1.5 rounded-lg hover:bg-[var(--bg)] hover:text-[var(--text-h)] transition-colors cursor-pointer"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                stroke="currentColor"
-                className="size-4 pointer-events-none"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                />
-              </svg>
+              <HorizontalMoreIcon />
             </button>
 
             {isMenuOpen && (
@@ -85,4 +73,4 @@ export function SocialCardWrapper({
       </div>
     </div>
   );
-}
+});

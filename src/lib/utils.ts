@@ -2,23 +2,34 @@ export function cn(...classes: (string | undefined | null | false)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-/**
- * Sanitizes a URL string to ensure it uses safe http:// or https:// protocols.
- * Prevents javascript: or data: XSS attacks.
- */
 export function sanitizeUrl(url?: string): string {
   if (!url) return "#";
-  const trimmed = url.trim();
+  // Filter out non-printable ASCII control characters without regex range
+  const clean = Array.from(url)
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code >= 32 && code !== 127;
+    })
+    .join("")
+    .trim();
+
+  if (!clean) return "#";
+
+  const lower = clean.toLowerCase();
   if (
-    trimmed.startsWith("javascript:") ||
-    trimmed.startsWith("data:") ||
-    trimmed.startsWith("vbscript:")
+    lower.startsWith("javascript:") ||
+    lower.startsWith("data:") ||
+    lower.startsWith("vbscript:") ||
+    lower.startsWith("file:")
   ) {
     return "#";
   }
-  if (!/^https?:\/\//i.test(trimmed)) {
-    return `https://${trimmed}`;
+
+  if (!/^https?:\/\//i.test(clean)) {
+    return `https://${clean}`;
   }
-  return trimmed;
+
+  return clean;
 }
+
 

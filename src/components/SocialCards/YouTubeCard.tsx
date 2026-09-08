@@ -1,7 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import type { Bookmark, YouTubeCardData } from "../../types/bookmark";
 import { sanitizeUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
+import { SafeImage } from "./SafeImage";
+import {
+  YouTubeBrandLogo,
+  YouTubeLikeIcon,
+  YouTubeDislikeIcon,
+  ShareIcon,
+  SparkleIcon,
+  VerifiedBadge,
+  VerticalMoreIcon,
+} from "./SocialCardIcons";
 
 interface YouTubeCardProps {
   bookmark: Bookmark;
@@ -12,7 +22,14 @@ interface YouTubeCardProps {
   onRequestEdit?: (bookmark: Bookmark) => void;
 }
 
-export function YouTubeCard(props: YouTubeCardProps) {
+function formatNumber(num?: number): string | null {
+  if (!num || num <= 0) return null;
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+  return num.toString();
+}
+
+export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardProps) {
   const {
     bookmark,
     isMenuOpen,
@@ -23,11 +40,11 @@ export function YouTubeCard(props: YouTubeCardProps) {
   } = props;
 
   const rawCardData = bookmark.card_data;
-  const cardData: YouTubeCardData | null = React.useMemo(() => {
+  const cardData: YouTubeCardData | null = useMemo(() => {
     if (!rawCardData) return null;
     if (typeof rawCardData === "string") {
       try {
-        return JSON.parse(rawCardData);
+        return JSON.parse(rawCardData) as YouTubeCardData;
       } catch {
         return null;
       }
@@ -35,8 +52,8 @@ export function YouTubeCard(props: YouTubeCardProps) {
     return rawCardData as YouTubeCardData;
   }, [rawCardData]);
 
-  const channel = cardData?.channel || (bookmark as any)?.channel;
-  const metrics = cardData?.metrics || (bookmark as any)?.metrics;
+  const channel = cardData?.channel;
+  const metrics = cardData?.metrics;
 
   const [thumbSrc, setThumbSrc] = useState<string | null>(() => {
     if (cardData?.video_id) {
@@ -44,8 +61,6 @@ export function YouTubeCard(props: YouTubeCardProps) {
     }
     return bookmark.snapshot || null;
   });
-
-  const [avatarError, setAvatarError] = useState(false);
 
   const handleThumbError = () => {
     if (cardData?.video_id && thumbSrc?.includes("maxresdefault.jpg")) {
@@ -59,217 +74,166 @@ export function YouTubeCard(props: YouTubeCardProps) {
     }
   };
 
-  const formatNumber = (num?: number) => {
-    if (!num || num <= 0) return null;
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-    return num.toString();
-  };
-
-  // SVG Icons
-  const VerifiedBadge = () => (
-    <svg viewBox="0 0 24 24" aria-label="Verified account" className="w-4 h-4 fill-slate-500 dark:fill-[#a8a8a8] shrink-0">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1.88 14.8L5.34 12.02l1.41-1.41 3.37 3.37 7.37-7.37 1.41 1.41-8.78 8.78z" />
-    </svg>
-  );
-
-  const LikeIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-
-  const DislikeIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3" />
-    </svg>
-  );
-
-  const ShareIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round">
-      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-      <polyline points="16 6 12 2 8 6" />
-      <line x1="12" y1="2" x2="12" y2="15" />
-    </svg>
-  );
-
-  const SparkleIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-      <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-    </svg>
-  );
-
-  const YouTubeBrandLogo = () => (
-    <svg viewBox="0 0 24 24" className="w-6 h-6 fill-[#FF0000] shrink-0">
-      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-    </svg>
-  );
-
-  const VerticalMoreIcon = () => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="w-5 h-5 fill-current">
-      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-    </svg>
-  );
-
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#0f0f0f] text-slate-900 dark:text-[#f1f1f1] font-sans rounded-2xl border border-slate-200/80 dark:border-[#272727] overflow-hidden pb-1 shadow-sm">
-      {/* Video Thumbnail Header */}
+      {/* 1. Video Thumbnail Header */}
       <div className="relative w-full aspect-video bg-slate-100 dark:bg-black overflow-hidden group/video">
-        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block w-full h-full">
+        <a
+          href={sanitizeUrl(bookmark.url)}
+          target="_blank"
+          rel="noreferrer"
+          className="block w-full h-full"
+        >
           {thumbSrc ? (
             <img
               src={thumbSrc}
               alt={bookmark.title}
               onError={handleThumbError}
-              className="w-full h-full object-cover"
               loading="lazy"
+              decoding="async"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover/video:scale-105"
             />
           ) : (
-            <div className="w-full h-full bg-slate-200 dark:bg-[#272727] flex items-center justify-center text-slate-500 dark:text-[#a8a8a8] text-xs font-medium">
-              <span>{bookmark.site_name || "YouTube"}</span>
+            <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-zinc-800">
+              <YouTubeBrandLogo className="w-12 h-12" />
             </div>
           )}
 
-          {/* YouTube Branding Tag + Vertical 3 Dots Menu */}
-          <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
-            <div className="bg-black/70 backdrop-blur-md p-1.5 rounded-full flex items-center justify-center">
-              <YouTubeBrandLogo />
-            </div>
-            <div className="relative shrink-0">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onToggleMenu?.(bookmark.id, e);
-                }}
-                className="bg-black/70 backdrop-blur-md p-1.5 rounded-full hover:bg-black/90 text-white transition-colors cursor-pointer outline-none flex items-center justify-center"
-                title="More options"
-              >
-                <VerticalMoreIcon />
-              </button>
-              {isMenuOpen && (
-                <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-lg z-40 text-[13px] font-medium text-slate-900 dark:text-[#f1f1f1] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRequestEdit?.(bookmark);
-                      onCloseMenu?.();
-                    }}
-                    className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors"
-                  >
-                    Edit bookmark
-                  </button>
-                  <hr className="border-slate-200 dark:border-[#272727] my-1" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRequestDelete?.(bookmark.id);
-                      onCloseMenu?.();
-                    }}
-                    className="w-full text-left px-3.5 py-1.5 hover:bg-red-500/10 text-[#ff4500] transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Play Button Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm group-hover/video:bg-[#FF0000] transition-all duration-300 transform group-hover/video:scale-110 shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="size-5 ml-0.5">
-                <path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" />
+          {/* Central Play Badge Overlay */}
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover/video:opacity-100 transition-opacity">
+            <div className="w-12 h-12 rounded-full bg-red-600/90 text-white flex items-center justify-center shadow-lg transform scale-90 group-hover/video:scale-100 transition-transform">
+              <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current translate-x-0.5">
+                <path d="M8 5v14l11-7z" />
               </svg>
             </div>
           </div>
         </a>
-      </div>
 
-      {/* Video Details Container */}
-      <div className="px-3.5 py-2.5 flex flex-col flex-1">
-        {/* Video Title */}
-        <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="block group">
-          <h3 className="font-bold text-[14px] text-slate-900 dark:text-[#f1f1f1] leading-snug line-clamp-2 group-hover:text-[#065fd4] dark:group-hover:text-[#3ea6ff] transition-colors">
-            {bookmark.title}
-          </h3>
-        </a>
-
-        {/* Channel Info & Action Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 mt-auto">
-          {/* Left Side: Avatar + Channel Name + Verified Badge + Subscribe Button */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {!avatarError && channel?.avatar_url ? (
-              <img
-                src={channel.avatar_url}
-                alt={channel.name}
-                onError={() => setAvatarError(true)}
-                className="w-7.5 h-7.5 rounded-full bg-slate-200 dark:bg-[#272727] object-cover shrink-0"
-              />
-            ) : (
-              <div className="w-7.5 h-7.5 rounded-full bg-slate-200 dark:bg-[#272727] flex items-center justify-center shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-4 opacity-60">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-                </svg>
+        {/* Top-Right Logo & 3-dots Menu */}
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+          <div className="bg-black/70 backdrop-blur-md p-1 rounded-full border border-white/20">
+            <YouTubeBrandLogo className="w-4 h-4" />
+          </div>
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleMenu?.(bookmark.id, e);
+              }}
+              title="More options"
+              className="size-6 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer outline-none border border-white/20 shadow-sm flex items-center justify-center"
+            >
+              <VerticalMoreIcon className="w-4 h-4 fill-current" />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-[#0f0f0f] border border-slate-200 dark:border-[#272727] shadow-xl z-40 text-[12.5px] font-medium text-slate-900 dark:text-[#f1f1f1] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestEdit?.(bookmark);
+                    onCloseMenu?.();
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors flex items-center gap-2"
+                >
+                  <span>Edit bookmark</span>
+                </button>
+                <hr className="border-slate-200 dark:border-[#272727] my-1" />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRequestDelete?.(bookmark.id);
+                    onCloseMenu?.();
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-red-500/10 text-red-500 transition-colors flex items-center gap-2 font-medium"
+                >
+                  <span>Delete</span>
+                </button>
               </div>
             )}
-
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="font-bold text-[12.5px] text-slate-900 dark:text-[#f1f1f1] truncate max-w-[120px]">
-                {channel?.name || "YouTube Channel"}
-              </span>
-              <VerifiedBadge />
-            </div>
-
-            <button className="rounded-full bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-black font-semibold text-[11px] px-2.5 py-1 dark:hover:bg-[#d9d9d9] active:scale-95 transition-all shrink-0 cursor-pointer shadow-xs ml-0.5">
-              Subscribe
-            </button>
-          </div>
-
-          {/* Right Side: Action Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {/* Like / Dislike Split Pill */}
-            <div className="bg-slate-100 dark:bg-[#272727] rounded-full flex items-center text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] shrink-0 border border-slate-200 dark:border-white/5 overflow-hidden">
-              <button className="px-2.5 py-1 flex items-center gap-1 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
-                <LikeIcon />
-                {formatNumber(metrics?.likes) ? (
-                  <span>{formatNumber(metrics.likes)}</span>
-                ) : formatNumber(metrics?.views) ? (
-                  <span>{formatNumber(metrics.views)}</span>
-                ) : null}
-              </button>
-              <div className="h-3.5 w-[1px] bg-slate-300 dark:bg-white/20" />
-              <button className="px-2 py-1 flex items-center hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
-                <DislikeIcon />
-              </button>
-            </div>
-
-            {/* Share Pill */}
-            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
-              <ShareIcon />
-              <span>Share</span>
-            </button>
-
-            {/* Ask Pill */}
-            <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
-              <SparkleIcon />
-              <span>Ask</span>
-            </button>
           </div>
         </div>
+      </div>
 
-        {/* Expandable Description (Optional preview) */}
-        {bookmark.description && (
-          <div className="mt-3 pt-2 text-[13px] text-slate-600 dark:text-[#a8a8a8] leading-relaxed border-t border-slate-200 dark:border-[#272727]/60">
-            <ExpandableText
-              text={bookmark.description}
-              maxLength={150}
-              className="text-[13px] leading-snug break-words text-slate-600 dark:text-[#a8a8a8]"
-              buttonClassName="ml-1 text-slate-900 dark:text-white font-semibold hover:underline"
-            />
+      {/* 2. Video Title & Channel Info */}
+      <div className="p-3 flex-1 flex flex-col justify-between space-y-2">
+        <div>
+          <a
+            href={sanitizeUrl(bookmark.url)}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[13.5px] font-bold text-slate-900 dark:text-[#f1f1f1] hover:text-red-500 transition-colors leading-snug line-clamp-2 block"
+          >
+            {bookmark.title}
+          </a>
+
+          {/* Channel Name & Metrics */}
+          <div className="flex items-center gap-2 mt-2">
+            {channel?.avatar_url && (
+              <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 bg-slate-200 dark:bg-zinc-800">
+                <SafeImage
+                  url={channel.avatar_url}
+                  alt={channel.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="flex flex-col leading-tight overflow-hidden">
+              <div className="flex items-center gap-1">
+                <span className="text-[12px] font-medium text-slate-700 dark:text-[#aaaaaa] truncate">
+                  {channel?.name || bookmark.site_name || "YouTube"}
+                </span>
+                <VerifiedBadge className="w-3.5 h-3.5 fill-slate-500 dark:fill-[#aaaaaa] shrink-0" />
+              </div>
+              {metrics?.views ? (
+                <span className="text-[11px] text-slate-500 dark:text-[#717171]">
+                  {formatNumber(metrics.views)} views
+                </span>
+              ) : null}
+            </div>
           </div>
-        )}
+
+          {/* Description snippet */}
+          {bookmark.description && (
+            <div className="mt-2 text-[12px] text-slate-600 dark:text-[#aaaaaa] leading-relaxed">
+              <ExpandableText
+                text={bookmark.description}
+                maxLength={110}
+                className="text-[12px]"
+                buttonClassName="text-[var(--primary)] font-medium hover:underline ml-1"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 3. Action Pill Buttons */}
+        <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between gap-1.5 overflow-x-auto no-scrollbar">
+          {/* Like/Dislike Joint Pill */}
+          <div className="flex items-center bg-slate-100 dark:bg-[#272727] rounded-full text-slate-800 dark:text-[#f1f1f1] text-[11px] font-medium shrink-0">
+            <button className="px-2.5 py-1 flex items-center gap-1 hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
+              <YouTubeLikeIcon />
+              {metrics?.likes ? <span>{formatNumber(metrics.likes)}</span> : <span>Like</span>}
+            </button>
+            <div className="h-3.5 w-[1px] bg-slate-300 dark:bg-white/20" />
+            <button className="px-2 py-1 flex items-center hover:bg-slate-200 dark:hover:bg-white/10 cursor-pointer transition-colors">
+              <YouTubeDislikeIcon />
+            </button>
+          </div>
+
+          {/* Share Pill */}
+          <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
+            <ShareIcon className="w-3.5 h-3.5" />
+            <span>Share</span>
+          </button>
+
+          {/* Ask/Sparkle Pill */}
+          <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
+            <SparkleIcon />
+            <span>Ask</span>
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+});
