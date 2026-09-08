@@ -96,7 +96,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-zinc-800">
-              <YouTubeBrandLogo className="w-12 h-12" />
+              <YouTubeBrandLogo className="w-16 h-11" />
             </div>
           )}
 
@@ -112,8 +112,8 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
 
         {/* Top-Right Logo & 3-dots Menu */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
-          <div className="bg-black/70 backdrop-blur-md p-1 rounded-full border border-white/20">
-            <YouTubeBrandLogo className="w-4 h-4" />
+          <div className="bg-black/60 backdrop-blur-md px-1.5 py-1 rounded-full border border-white/20 shadow-sm flex items-center justify-center">
+            <YouTubeBrandLogo className="w-5 h-3.5" />
           </div>
           <div className="relative shrink-0">
             <button

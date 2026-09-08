@@ -197,21 +197,20 @@ export default function BookmarksScreen({
         />
       )}
 
-      {/* Bookmarks Native CSS Multi-Column Masonry Grid:
-          Keeps all cards inside a single container so matching cards never unmount or reload images on filter changes */}
+      {/* Bookmarks Responsive CSS Grid:
+          Grid with items-start ensures cards stay in their deterministic columns and expanding cards do not trigger column re-balancing or empty gaps */}
       {filteredBookmarks.length > 0 ? (
-        <div className="w-full columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [column-fill:_balance]">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
           {filteredBookmarks.map((bookmark) => (
-            <div key={bookmark.id} className="break-inside-avoid mb-4">
-              <BookmarkCard
-                bookmark={bookmark}
-                isMenuOpen={openMenuId === bookmark.id}
-                onToggleMenu={handleToggleMenu}
-                onCloseMenu={handleCloseMenu}
-                onRequestDelete={handleRequestDelete}
-                onViewAiContext={handleViewAiContext}
-              />
-            </div>
+            <BookmarkCard
+              key={bookmark.id}
+              bookmark={bookmark}
+              isMenuOpen={openMenuId === bookmark.id}
+              onToggleMenu={handleToggleMenu}
+              onCloseMenu={handleCloseMenu}
+              onRequestDelete={handleRequestDelete}
+              onViewAiContext={handleViewAiContext}
+            />
           ))}
         </div>
       ) : (

@@ -1,3 +1,4 @@
+import { Glass } from "@samasante/liquid-glass";
 
 export interface BottomNavbarTab {
   id: string;
@@ -31,20 +32,31 @@ export function BottomNavbar({
       aria-label="Bottom Navigation"
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-[95vw] sm:max-w-max pointer-events-auto select-none"
     >
-      {/* Main Liquid Mirror Glass Capsule - High clarity, mirror bevels, zero milky blur */}
-      <div className="ultra-liquid-glass rounded-full p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar relative transition-all duration-300">
-        {/* Specular Liquid Meniscus Curve Highlight */}
-        <div
-          className="absolute inset-x-2 top-0 h-[38%] rounded-t-full pointer-events-none bg-gradient-to-b from-white/35 via-white/5 to-transparent dark:from-white/15 dark:via-transparent to-transparent"
-          aria-hidden="true"
-        />
-
-        {/* Hairline Mirror Rim Edge Reflection */}
-        <div
-          className="absolute inset-x-5 top-0 h-[1px] pointer-events-none bg-gradient-to-r from-transparent via-white/90 to-transparent dark:via-white/60"
-          aria-hidden="true"
-        />
-
+      {/* Real Liquid Glass Capsule via @samasante/liquid-glass */}
+      <Glass
+        className="rounded-full p-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar relative transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.25)]"
+        style={{
+          display: "flex",
+        }}
+        optics={{
+          mapSize: 256,
+          clipToShape: true,
+          softEdge: true,
+          depth: 0.95,
+          curvature: 0.52,
+          dispersion: 0.65,
+          strength: 0.22,
+          bend: 0.75,
+          bendWidth: 0.12,
+          frost: 2,
+          brightness: 0,
+          specular: 1.45,
+          sheenAngle: 50,
+          sheen: 1.3,
+          sheenWidth: 3.5,
+          glow: 0.25,
+        }}
+      >
         {/* Tab Items (Text Only, No Logos) */}
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -54,10 +66,11 @@ export function BottomNavbar({
               key={tab.id}
               type="button"
               onClick={() => onTabChange?.(tab.id)}
-              className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center justify-center z-10 ${isActive
-                  ? "bg-white dark:bg-white text-[#000000] dark:text-[#000000] shadow-[0_2px_10px_rgba(0,0,0,0.16),inset_0_1px_0.5px_rgba(255,255,255,1)] scale-100 backdrop-blur-md"
-                  : "text-[#000000] dark:text-white hover:text-[#000000] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/15 active:scale-95"
-                }`}
+              className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center justify-center z-10 ${
+                isActive
+                  ? "bg-white/85 dark:bg-white/20 text-black dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] backdrop-blur-xs scale-100"
+                  : "text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white hover:bg-white/20 dark:hover:bg-white/10 active:scale-95"
+              }`}
             >
               <span>{tab.label}</span>
             </button>
@@ -67,8 +80,8 @@ export function BottomNavbar({
         {/* Floating Create Bookmark Button at End of List */}
         {onAddClick && (
           <>
-            {/* Mirror Glass Incision Divider */}
-            <div className="h-4 w-[1px] bg-gradient-to-b from-transparent via-black/20 dark:via-white/25 to-transparent mx-1 shrink-0 z-10" />
+            {/* Clean Neutral Glass Incision Divider */}
+            <div className="h-4 w-[1px] bg-white/20 mx-1 shrink-0 z-10" />
 
             <button
               type="button"
@@ -91,7 +104,7 @@ export function BottomNavbar({
             </button>
           </>
         )}
-      </div>
+      </Glass>
     </nav>
   );
 }

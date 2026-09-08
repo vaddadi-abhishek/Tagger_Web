@@ -1,5 +1,6 @@
 import Nav from "../templates/nav.tsx";
 import { useState, useEffect, lazy, Suspense } from "react";
+import { Glass } from "@samasante/liquid-glass";
 import { ScreenSkeleton } from "../components/ui/ScreenSkeleton.tsx";
 import { BottomNavbar, type BottomNavbarTab } from "../components/ui/BottomNavbar.tsx";
 
@@ -197,9 +198,28 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             /failed|error|unreachable/i.test(toast.message);
 
           return (
-            <div
+            <Glass
               key={toast.id}
-              className="pointer-events-auto glass-modal px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200 border border-black/10 dark:border-white/15 bg-white/85 dark:bg-zinc-900/85 text-[var(--text-h)] whitespace-nowrap max-w-full"
+              className="pointer-events-auto px-4 py-2.5 rounded-full shadow-[0_16px_40px_rgba(0,0,0,0.25)] flex items-center gap-2.5 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200 text-[var(--text-h)] whitespace-nowrap max-w-full"
+              style={{ display: "inline-flex" }}
+              optics={{
+                mapSize: 256,
+                clipToShape: true,
+                softEdge: true,
+                depth: 0.95,
+                curvature: 0.45,
+                dispersion: 0.5,
+                strength: 0.18,
+                bend: 0.7,
+                bendWidth: 0.12,
+                frost: 2.5,
+                brightness: 0,
+                specular: 1.4,
+                sheenAngle: 50,
+                sheen: 1.25,
+                sheenWidth: 3.5,
+                glow: 0.2,
+              }}
             >
               {isError ? (
                 <svg
@@ -242,7 +262,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
               >
                 ✕
               </button>
-            </div>
+            </Glass>
           );
         })}
       </div>
