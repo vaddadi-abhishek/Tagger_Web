@@ -54,11 +54,10 @@ export function BottomNavbar({
               key={tab.id}
               type="button"
               onClick={() => onTabChange?.(tab.id)}
-              className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center justify-center z-10 ${
-                isActive
+              className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center justify-center z-10 ${isActive
                   ? "bg-white dark:bg-white text-[#000000] dark:text-[#000000] shadow-[0_2px_10px_rgba(0,0,0,0.16),inset_0_1px_0.5px_rgba(255,255,255,1)] scale-100 backdrop-blur-md"
                   : "text-[#000000] dark:text-white hover:text-[#000000] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/15 active:scale-95"
-              }`}
+                }`}
             >
               <span>{tab.label}</span>
             </button>

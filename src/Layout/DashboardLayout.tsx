@@ -9,7 +9,6 @@ import {
   fetchBookmarks,
   createBookmark,
   updateBookmarkMetadata,
-  updateBookmarkDetails,
   deleteBookmark,
 } from "../services/supabaseDataService.ts";
 
@@ -125,6 +124,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             card_data: data.card_data || undefined,
             ai_context: data.ai_context,
             ai_tags: data.ai_tags,
+            visual_entities: data.visual_entities,
+            ocr_text: data.ocr_text,
           });
 
           // Update local state card
@@ -143,6 +144,8 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                 card_data: data.card_data || undefined,
                 ai_context: data.ai_context,
                 ai_tags: data.ai_tags,
+                visual_entities: data.visual_entities,
+                ocr_text: data.ocr_text,
               };
             })
           );
@@ -172,25 +175,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       console.error("Error deleting bookmark:", err);
       const errorMessage = err instanceof Error ? err.message : "Database operation failed";
       addToast(`Failed to delete bookmark: ${errorMessage}`);
-    }
-  };
-
-  // Update Bookmark Title & Description Handler
-  const handleUpdateBookmarkDetails = async (
-    id: string,
-    title: string,
-    description: string
-  ) => {
-    try {
-      setBookmarks((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, title, description } : b))
-      );
-      await updateBookmarkDetails(id, title, description);
-      addToast("Bookmark updated successfully!");
-    } catch (err: unknown) {
-      console.error("Error updating bookmark details:", err);
-      const errorMessage = err instanceof Error ? err.message : "Database update failed";
-      addToast(`Failed to update bookmark: ${errorMessage}`);
     }
   };
 
@@ -285,7 +269,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                   bookmarks={bookmarks}
                   onAddBookmark={handleAddBookmark}
                   onDeleteBookmark={handleDeleteBookmark}
-                  onUpdateBookmarkDetails={handleUpdateBookmarkDetails}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                   activePlatform={activePlatform}

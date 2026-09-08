@@ -126,4 +126,6 @@ export interface Bookmark {
   card_data?: AnyCardData;
   ai_context?: string | null;
   ai_tags?: string[];
+  visual_entities?: string[];
+  ocr_text?: string;
 }

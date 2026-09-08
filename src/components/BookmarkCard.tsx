@@ -14,7 +14,7 @@ interface BookmarkCardProps {
   onToggleMenu: (id: string, e: React.MouseEvent) => void;
   onCloseMenu: () => void;
   onRequestDelete: (id: string) => void;
-  onRequestEdit?: (bookmark: Bookmark) => void;
+  onViewAiContext?: (bookmark: Bookmark) => void;
 }
 
 function resolveCardType(bookmark: Bookmark): string {

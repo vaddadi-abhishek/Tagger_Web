@@ -3,13 +3,12 @@ import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
-import { EditBookmarkModal } from "../components/EditBookmarkModal";
+import { AiContextModal } from "../components/AiContextModal";
 
 interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
   onAddBookmark?: (newBookmark: Bookmark) => void;
   onDeleteBookmark?: (id: string) => void;
-  onUpdateBookmarkDetails?: (id: string, title: string, description: string) => void;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
   activePlatform?: string;
@@ -21,7 +20,6 @@ export default function BookmarksScreen({
   bookmarks: externalBookmarks,
   onAddBookmark: externalAddBookmark,
   onDeleteBookmark,
-  onUpdateBookmarkDetails,
   searchTerm: externalSearchTerm,
   onSearchChange: externalOnSearchChange,
   activePlatform = "all",
@@ -30,7 +28,7 @@ export default function BookmarksScreen({
 }: BookmarksScreenProps) {
   const [internalBookmarks, setInternalBookmarks] = useState<Bookmark[]>([]);
   const [internalSearchTerm, setInternalSearchTerm] = useState("");
-  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [selectedAiBookmark, setSelectedAiBookmark] = useState<Bookmark | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [internalIsAddModalOpen, setInternalIsAddModalOpen] = useState(false);
@@ -122,8 +120,30 @@ export default function BookmarksScreen({
       const matchesDate = Boolean(
         item.created_at && item.created_at.toLowerCase().includes(cleanSearch)
       );
+      const matchesAiContext = item.ai_context
+        ? item.ai_context.toLowerCase().includes(cleanSearch)
+        : false;
+      const matchesAiTags = item.ai_tags
+        ? item.ai_tags.some((tag) => tag.toLowerCase().includes(cleanSearch))
+        : false;
+      const matchesVisualEntities = item.visual_entities
+        ? item.visual_entities.some((entity) => entity.toLowerCase().includes(cleanSearch))
+        : false;
+      const matchesOcrText = item.ocr_text
+        ? item.ocr_text.toLowerCase().includes(cleanSearch)
+        : false;
 
-      return matchesTitle || matchesDescription || matchesSite || matchesUrl || matchesDate;
+      return (
+        matchesTitle ||
+        matchesDescription ||
+        matchesSite ||
+        matchesUrl ||
+        matchesDate ||
+        matchesAiContext ||
+        matchesAiTags ||
+        matchesVisualEntities ||
+        matchesOcrText
+      );
     });
   }, [bookmarks, activePlatform, deferredSearchTerm]);
 
@@ -141,8 +161,8 @@ export default function BookmarksScreen({
     setDeleteConfirmId(id);
   }, []);
 
-  const handleRequestEdit = useCallback((bookmark: Bookmark) => {
-    setEditingBookmark(bookmark);
+  const handleViewAiContext = useCallback((bookmark: Bookmark) => {
+    setSelectedAiBookmark(bookmark);
   }, []);
 
   const handleDeleteConfirm = useCallback(() => {
@@ -167,19 +187,6 @@ export default function BookmarksScreen({
     [externalAddBookmark]
   );
 
-  const handleSaveBookmarkDetails = useCallback(
-    (id: string, title: string, description: string) => {
-      if (onUpdateBookmarkDetails) {
-        onUpdateBookmarkDetails(id, title, description);
-      } else {
-        setInternalBookmarks((prev) =>
-          prev.map((b) => (b.id === id ? { ...b, title, description } : b))
-        );
-      }
-    },
-    [onUpdateBookmarkDetails]
-  );
-
   return (
     <div className="w-full relative pb-8">
       {/* Invisible backdrop to dismiss open card dropdown menus */}
@@ -202,7 +209,7 @@ export default function BookmarksScreen({
                 onToggleMenu={handleToggleMenu}
                 onCloseMenu={handleCloseMenu}
                 onRequestDelete={handleRequestDelete}
-                onRequestEdit={handleRequestEdit}
+                onViewAiContext={handleViewAiContext}
               />
             </div>
           ))}
@@ -230,12 +237,11 @@ export default function BookmarksScreen({
         onAddBookmark={handleAddBookmark}
       />
 
-      {/* Edit Bookmark Title & Description Modal */}
-      <EditBookmarkModal
-        isOpen={Boolean(editingBookmark)}
-        bookmark={editingBookmark}
-        onClose={() => setEditingBookmark(null)}
-        onSave={handleSaveBookmarkDetails}
+      {/* AI Context Intelligence Modal */}
+      <AiContextModal
+        isOpen={Boolean(selectedAiBookmark)}
+        bookmark={selectedAiBookmark}
+        onClose={() => setSelectedAiBookmark(null)}
       />
 
       {/* Delete Confirmation Modal */}

@@ -108,46 +108,76 @@ export function InstagramBrandLogo({ className = "w-6 h-6 shrink-0" }: { classNa
   );
 }
 
-export function InstagramLikeIcon({ className = "w-6 h-6 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round" }: { className?: string }) {
+export function InstagramLikeIcon({ className = "w-6 h-6 fill-current shrink-0" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className}>
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    <svg viewBox="0 0 24 24" className={className} width="24" height="24" aria-label="Like" role="img">
+      <path
+        d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.071 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }
 
-export function InstagramCommentIcon({ className = "w-6 h-6 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round" }: { className?: string }) {
+export function InstagramCommentIcon({ className = "w-6 h-6 stroke-current fill-none shrink-0" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className}>
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    <svg viewBox="0 0 24 24" className={className} width="24" height="24" aria-label="Comment" role="img">
+      <path
+        d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
     </svg>
   );
 }
 
-export function InstagramRepostIcon({ className = "w-6 h-6 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round" }: { className?: string }) {
+export function InstagramRepostIcon({ className = "w-6 h-6 stroke-current fill-none shrink-0" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className}>
-      <path d="M17 1l4 4-4 4" />
-      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-      <path d="M7 23l-4-4 4-4" />
-      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+    <svg viewBox="0 0 24 24" className={className} width="24" height="24">
+      <path d="M17 1l4 4-4 4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M7 23l-4-4 4-4" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" stroke="currentColor" strokeWidth="2" fill="none" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   );
 }
 
-export function InstagramShareAirplaneIcon({ className = "w-6 h-6 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round" }: { className?: string }) {
+export function InstagramShareAirplaneIcon({ className = "w-6 h-6 stroke-current fill-none shrink-0" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className}>
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    <svg viewBox="0 0 24 24" className={className} width="24" height="24" aria-label="Share" role="img">
+      <line
+        x1="22"
+        y1="3"
+        x2="9.218"
+        y2="10.083"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+      <polygon
+        points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334"
+        fill="none"
+        stroke="currentColor"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
     </svg>
   );
 }
 
-export function InstagramBookmarkRibbonIcon({ className = "w-6 h-6 fill-none stroke-current stroke-[2] stroke-linecap-round stroke-linejoin-round" }: { className?: string }) {
+export function InstagramBookmarkRibbonIcon({ className = "w-6 h-6 stroke-current fill-none shrink-0" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className}>
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    <svg viewBox="0 0 24 24" className={className} width="24" height="24" aria-label="Save" role="img">
+      <polygon
+        points="20 21 12 13.44 4 21 4 3 20 3 20 21"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
     </svg>
   );
 }

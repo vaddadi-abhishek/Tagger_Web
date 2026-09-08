@@ -21,7 +21,7 @@ interface InstagramCardProps {
   onToggleMenu?: (id: string, e: React.MouseEvent) => void;
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
-  onRequestEdit?: (bookmark: Bookmark) => void;
+  onViewAiContext?: (bookmark: Bookmark) => void;
 }
 
 function formatInstagramDate(dateStr?: string | null): string | null {
@@ -70,7 +70,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
     bookmark,
     onToggleMenu,
     isMenuOpen,
-    onRequestEdit,
+    onViewAiContext,
     onRequestDelete,
     onCloseMenu,
   } = props;
@@ -256,12 +256,26 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    onRequestEdit?.(bookmark);
+                    onViewAiContext?.(bookmark);
                     onCloseMenu?.();
                   }}
-                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-colors"
+                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-colors flex items-center gap-2 text-slate-800 dark:text-[#f5f5f5] hover:text-black dark:hover:text-white font-medium"
                 >
-                  Edit bookmark
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.8"
+                    stroke="currentColor"
+                    className="size-3.5 shrink-0 opacity-70"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+                    />
+                  </svg>
+                  <span>AI Context</span>
                 </button>
                 <hr className="border-slate-200 dark:border-[#262626] my-1" />
                 <button
@@ -327,54 +341,65 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
         </div>
       )}
 
-      {/* 3. Action Buttons & Carousel Dots */}
-      <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
-        <div className="flex items-center gap-3.5 text-slate-900 dark:text-white">
-          <button className="hover:opacity-60 transition-opacity cursor-pointer">
-            <InstagramLikeIcon />
+      {/* 3. Carousel Dots (Row 1 - Centered with comfortable breathing room below media) */}
+      {mediaItems.length > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-3.5 pb-2">
+          {mediaItems.map((_, idx) => (
+            <span
+              key={idx}
+              className={`w-1.5 h-1.5 rounded-full aspect-square shrink-0 transition-all duration-150 ${
+                idx === activeMediaIdx
+                  ? "bg-[#0095f6]"
+                  : "bg-slate-300 dark:bg-zinc-600 opacity-60"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* 4. Action Buttons (Row 2 - Under the dots with comfortable breathing room) */}
+      <div className={`px-4 ${mediaItems.length > 1 ? "pt-1" : "pt-3.5"} pb-2.5 flex items-center justify-between`}>
+        <div className="flex items-center gap-4 text-slate-900 dark:text-white">
+          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center justify-center" aria-label="Like">
+            <InstagramLikeIcon className="w-[22px] h-[22px] fill-current shrink-0" />
           </button>
-          <button className="hover:opacity-60 transition-opacity cursor-pointer">
-            <InstagramCommentIcon />
+          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center gap-1.5 justify-center" aria-label="Comment">
+            <InstagramCommentIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
+            {metrics?.comments && metrics.comments > 0 ? (
+              <span className="text-[13px] font-semibold text-slate-900 dark:text-white">
+                {formatNumber(metrics.comments)}
+              </span>
+            ) : null}
           </button>
-          <button className="hover:opacity-60 transition-opacity cursor-pointer">
-            <InstagramShareAirplaneIcon />
+          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center gap-1.5 justify-center" aria-label="Repost">
+            <InstagramRepostIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
+            {(metrics as any)?.reposts && (metrics as any).reposts > 0 ? (
+              <span className="text-[13px] font-semibold text-slate-900 dark:text-white">
+                {formatNumber((metrics as any).reposts)}
+              </span>
+            ) : null}
           </button>
-          <button className="hover:opacity-60 transition-opacity cursor-pointer">
-            <InstagramRepostIcon />
+          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center justify-center" aria-label="Share">
+            <InstagramShareAirplaneIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
           </button>
         </div>
 
-        {mediaItems.length > 1 && (
-          <div className="flex items-center gap-1">
-            {mediaItems.map((_, idx) => (
-              <span
-                key={idx}
-                className={`size-1.5 rounded-full transition-all ${
-                  idx === activeMediaIdx
-                    ? "bg-[#0095f6] w-2.5"
-                    : "bg-slate-300 dark:bg-zinc-700"
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
-        <button className="hover:opacity-60 transition-opacity cursor-pointer text-slate-900 dark:text-white">
-          <InstagramBookmarkRibbonIcon />
+        <button className="hover:opacity-60 transition-opacity cursor-pointer text-slate-900 dark:text-white flex items-center justify-center ml-auto" aria-label="Save">
+          <InstagramBookmarkRibbonIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
         </button>
       </div>
 
-      {/* 4. Likes Count */}
+      {/* 5. Likes Count */}
       {metrics?.likes ? (
-        <div className="px-3 pt-0.5">
-          <span className="font-bold text-[12.5px] text-slate-900 dark:text-[#f5f5f5]">
+        <div className="px-4 pt-1 pb-0.5">
+          <span className="font-bold text-[13px] text-slate-900 dark:text-[#f5f5f5]">
             {formatNumber(metrics.likes)} likes
           </span>
         </div>
       ) : null}
 
-      {/* 5. Caption / Title */}
-      <div className="px-3 mt-1 text-[13px] leading-relaxed text-slate-900 dark:text-[#f5f5f5]">
+      {/* 6. Caption / Title */}
+      <div className="px-4 mt-1 text-[13px] leading-relaxed text-slate-900 dark:text-[#f5f5f5]">
         <ExpandableText
           prefix={
             author?.username ? (
@@ -390,8 +415,8 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
         />
       </div>
 
-      {/* 6. Comments link & Timestamp */}
-      <div className="px-3 mt-1.5 space-y-1">
+      {/* 7. Comments link & Timestamp */}
+      <div className="px-4 mt-2 space-y-1 pb-1">
         {metrics?.comments ? (
           <a
             href={sanitizeUrl(bookmark.url)}
