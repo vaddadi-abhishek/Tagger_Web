@@ -1,9 +1,90 @@
-import { useState, useMemo, useCallback, useDeferredValue } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useEffect, memo } from "react";
+import React from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
 import { AiContextModal } from "../components/AiContextModal";
+
+/** Responsive column count matching Tailwind breakpoints: 1 / sm:2 / lg:3 / xl:4 */
+function useColumnCount() {
+  const getCount = () => {
+    const w = window.innerWidth;
+    if (w >= 1280) return 4;
+    if (w >= 1024) return 3;
+    if (w >= 640) return 2;
+    return 1;
+  };
+
+  const [cols, setCols] = useState(getCount);
+
+  useEffect(() => {
+    const onResize = () => setCols(getCount());
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  return cols;
+}
+
+/**
+ * Tight-packing waterfall layout that distributes cards into fixed columns
+ * in row-first reading order (card1→col1, card2→col2, card3→col3, card4→col4, card5→col1, ...).
+ *
+ * Each column is an independent flex container so:
+ *  - Cards pack tightly with no vertical gaps between rows
+ *  - Expanding a card only pushes items below it in the same column
+ *  - Cards never jump between columns on expand/collapse/add/remove
+ */
+const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
+  bookmarks,
+  openMenuId,
+  onToggleMenu,
+  onCloseMenu,
+  onRequestDelete,
+  onViewAiContext,
+}: {
+  bookmarks: Bookmark[];
+  openMenuId: string | null;
+  onToggleMenu: (id: string, e: React.MouseEvent) => void;
+  onCloseMenu: () => void;
+  onRequestDelete: (id: string) => void;
+  onViewAiContext: (bookmark: Bookmark) => void;
+}) {
+  const colCount = useColumnCount();
+
+  // Distribute bookmarks round-robin across columns (row-first order)
+  const columns = useMemo(() => {
+    const cols: Bookmark[][] = Array.from({ length: colCount }, () => []);
+    bookmarks.forEach((bm, i) => {
+      cols[i % colCount].push(bm);
+    });
+    return cols;
+  }, [bookmarks, colCount]);
+
+  return (
+    <div
+      className="w-full grid gap-4"
+      style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
+    >
+      {columns.map((colBookmarks, colIdx) => (
+        <div key={colIdx} className="flex flex-col gap-4">
+          {colBookmarks.map((bookmark) => (
+            <BookmarkCard
+              key={bookmark.id}
+              bookmark={bookmark}
+              isMenuOpen={openMenuId === bookmark.id}
+              onToggleMenu={onToggleMenu}
+              onCloseMenu={onCloseMenu}
+              onRequestDelete={onRequestDelete}
+              onViewAiContext={onViewAiContext}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+});
 
 interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
@@ -200,19 +281,14 @@ export default function BookmarksScreen({
       {/* Bookmarks Responsive CSS Grid:
           Grid with items-start ensures cards stay in their deterministic columns and expanding cards do not trigger column re-balancing or empty gaps */}
       {filteredBookmarks.length > 0 ? (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
-          {filteredBookmarks.map((bookmark) => (
-            <BookmarkCard
-              key={bookmark.id}
-              bookmark={bookmark}
-              isMenuOpen={openMenuId === bookmark.id}
-              onToggleMenu={handleToggleMenu}
-              onCloseMenu={handleCloseMenu}
-              onRequestDelete={handleRequestDelete}
-              onViewAiContext={handleViewAiContext}
-            />
-          ))}
-        </div>
+        <BookmarkColumnsLayout
+          bookmarks={filteredBookmarks}
+          openMenuId={openMenuId}
+          onToggleMenu={handleToggleMenu}
+          onCloseMenu={handleCloseMenu}
+          onRequestDelete={handleRequestDelete}
+          onViewAiContext={handleViewAiContext}
+        />
       ) : (
         <div className="text-center py-24 px-4 text-[var(--text)] space-y-2">
           <p className="text-sm font-medium text-[var(--text-h)]">
