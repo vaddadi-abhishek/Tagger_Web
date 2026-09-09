@@ -31,6 +31,7 @@ export interface InstagramCardData {
   metrics: {
     likes?: number;
     comments?: number;
+    reposts?: number;
   };
   media: MediaItem[];
   images?: Array<string | { url?: string; src?: string; display_url?: string; [key: string]: unknown }>;

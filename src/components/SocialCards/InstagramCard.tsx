@@ -12,8 +12,8 @@ import {
   InstagramShareAirplaneIcon,
   InstagramBookmarkRibbonIcon,
   VerifiedBadge,
-  VerticalMoreIcon,
 } from "./SocialCardIcons";
+import { CardActionMenu } from "./CardActionMenu";
 
 interface InstagramCardProps {
   bookmark: Bookmark;
@@ -243,54 +243,17 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           <div className="p-0.5 shrink-0">
             <InstagramBrandLogo />
           </div>
-          <div className="relative shrink-0">
-            <button
-              onClick={(e) => onToggleMenu?.(bookmark.id, e)}
-              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
-              title="More options"
-            >
-              <VerticalMoreIcon />
-            </button>
-            {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-white dark:bg-black border border-slate-200 dark:border-[#262626] shadow-lg z-40 text-[13px] font-medium text-slate-900 dark:text-[#f5f5f5] py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewAiContext?.(bookmark);
-                    onCloseMenu?.();
-                  }}
-                  className="w-full text-left px-3.5 py-1.5 hover:bg-slate-100 dark:hover:bg-[#1a1a1a] transition-colors flex items-center gap-2 text-slate-800 dark:text-[#f5f5f5] hover:text-black dark:hover:text-white font-medium"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.8"
-                    stroke="currentColor"
-                    className="size-3.5 shrink-0 opacity-70"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
-                    />
-                  </svg>
-                  <span>AI Context</span>
-                </button>
-                <hr className="border-slate-200 dark:border-[#262626] my-1" />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRequestDelete?.(bookmark.id);
-                    onCloseMenu?.();
-                  }}
-                  className="w-full text-left px-3.5 py-1.5 hover:bg-red-500/10 text-[#ed4956] transition-colors font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          </div>
+          <CardActionMenu
+            bookmark={bookmark}
+            isOpen={Boolean(isMenuOpen)}
+            onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
+            onClose={onCloseMenu || (() => {})}
+            onViewAiContext={onViewAiContext}
+            onRequestDelete={onRequestDelete}
+            theme="instagram"
+            icon="vertical"
+            buttonClassName="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
+          />
         </div>
       </div>
 
@@ -373,9 +336,9 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           </button>
           <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center gap-1.5 justify-center" aria-label="Repost">
             <InstagramRepostIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
-            {(metrics as any)?.reposts && (metrics as any).reposts > 0 ? (
+            {metrics?.reposts && metrics.reposts > 0 ? (
               <span className="text-[13px] font-semibold text-slate-900 dark:text-white">
-                {formatNumber((metrics as any).reposts)}
+                {formatNumber(metrics.reposts)}
               </span>
             ) : null}
           </button>

@@ -45,7 +45,7 @@ export async function fetchBookmarks(): Promise<Bookmark[]> {
   }
 
   // Attempt to select bookmarks along with dedicated ai_context table relation
-  let rawData: SupabaseBookmarkRow[] = [];
+  let rawData: SupabaseBookmarkRow[];
   const { data, error } = await supabase
     .from("bookmarks")
     .select(`
