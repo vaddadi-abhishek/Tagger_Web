@@ -65,7 +65,7 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
           {/* Top Right Source Logo Badge & Vertical 3-dots Menu */}
           <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
             {logoSrc ? (
-              <div className="size-7 rounded-full bg-white/90 dark:bg-black/75 backdrop-blur-md p-1 shadow-sm flex items-center justify-center border border-white/20">
+              <div className="size-6">
                 <img
                   src={logoSrc}
                   alt={bookmark.site_name || "Source Logo"}
@@ -85,12 +85,12 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
               bookmark={bookmark}
               isOpen={Boolean(isMenuOpen)}
               onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-              onClose={onCloseMenu || (() => {})}
+              onClose={onCloseMenu || (() => { })}
               onViewAiContext={onViewAiContext}
               onRequestDelete={onRequestDelete}
               theme="generic"
               icon="vertical"
-              buttonClassName="size-7 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer outline-none border border-white/20 shadow-sm flex items-center justify-center"
+              buttonClassName="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
               bookmark={bookmark}
               isOpen={Boolean(isMenuOpen)}
               onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-              onClose={onCloseMenu || (() => {})}
+              onClose={onCloseMenu || (() => { })}
               onViewAiContext={onViewAiContext}
               onRequestDelete={onRequestDelete}
               theme="generic"
@@ -144,11 +144,10 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
         {descriptionText && (
           <div className="relative">
             <div
-              className={`text-[12px] text-slate-600 dark:text-zinc-300 leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${
-                isLongDescription && !isDescriptionExpanded
-                  ? "max-h-12"
-                  : "max-h-[600px]"
-              }`}
+              className={`text-[12px] text-slate-600 dark:text-zinc-300 leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${isLongDescription && !isDescriptionExpanded
+                ? "max-h-12"
+                : "max-h-[600px]"
+                }`}
             >
               <p>{descriptionText}</p>
             </div>

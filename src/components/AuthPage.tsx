@@ -40,7 +40,7 @@ export function AuthPage({
 
       if (!isSupabaseConfigured) {
         setError(
-          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in tagger-frontend/.env"
+          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in mindspace-frontend/.env"
         );
         return;
       }
@@ -84,7 +84,7 @@ export function AuthPage({
     } else {
       if (!isSupabaseConfigured) {
         setError(
-          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in tagger-frontend/.env"
+          "Supabase credentials are missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in mindspace-frontend/.env"
         );
         return;
       }
@@ -132,13 +132,13 @@ export function AuthPage({
       <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
         <button
           onClick={onGoToLanding}
-          className="flex items-center gap-2.5 group cursor-pointer"
+          className="flex items-center gap-3 group cursor-pointer"
         >
-          <div className="size-9 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center font-bold text-xl shadow-md group-hover:scale-105 transition-transform">
-            T
-          </div>
-          <span className="font-bold text-xl text-[var(--text-h)] tracking-tight">
-            Tagger
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2160 2160" fill="currentColor" className="size-10 text-[var(--text-h)]">
+            <path fillRule="evenodd" d="M1889.99,1579.72c-101.01,6.82-157.15-183.89-157.15-183.89-163.74-418.741-462.55-489.4-462.55-489.4C1030.34,815.759,825.519,918.3,825.519,918.3c7.825-21.526,77.093-74.152,77.093-74.152C1213.45,691.364,1546.04,944.989,1546.04,944.989c296.98,211.521,385.47,501.261,385.47,501.261C1985.47,1592.57,1889.99,1579.72,1889.99,1579.72ZM1305.87,725.5c-277.9-143.8-501.106,169.064-501.106,169.064s-73.451,100.6-133.43,222.454c-54.219,110.15-118.6,246.18-118.6,246.18-103.081,217.82-225.348,186.86-225.348,186.86-174.893-28.28-100.814-228.38-100.814-228.38s18.661-78.27,145.29-222.46C536.669,911.564,617.962,909.4,617.962,909.4L546.8,1036.94c-74.869,51.9-177.907,174.99-177.907,174.99-133.986,194.84-38.546,204.66-38.546,204.66,69.124,7.23,148.848-148.52,189.767-252.11,75.054-190.014,234.244-394.488,234.244-394.488C1017.7,485.069,1246.57,606.86,1246.57,606.86,1479.51,687.5,1626.1,977.615,1626.1,977.615,1354.98,721.611,1305.87,725.5,1305.87,725.5Z" />
+          </svg>
+          <span className="font-bold font-[--font-title] text-xl text-[var(--text-h)] tracking-tight">
+            mindspace
           </span>
         </button>
 
@@ -168,11 +168,10 @@ export function AuthPage({
                 setError("");
                 setSuccess("");
               }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                mode === "login"
-                  ? "bg-[var(--code-bg)] text-[var(--primary)] shadow-sm"
-                  : "text-[var(--text)] hover:text-[var(--text-h)] opacity-80"
-              }`}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${mode === "login"
+                ? "bg-[var(--code-bg)] text-[var(--primary)] shadow-sm"
+                : "text-[var(--text)] hover:text-[var(--text-h)] opacity-80"
+                }`}
             >
               Sign In
             </button>
@@ -183,11 +182,10 @@ export function AuthPage({
                 setError("");
                 setSuccess("");
               }}
-              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                mode === "signup"
-                  ? "bg-[var(--code-bg)] text-[var(--primary)] shadow-sm"
-                  : "text-[var(--text)] hover:text-[var(--text-h)] opacity-80"
-              }`}
+              className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${mode === "signup"
+                ? "bg-[var(--code-bg)] text-[var(--primary)] shadow-sm"
+                : "text-[var(--text)] hover:text-[var(--text-h)] opacity-80"
+                }`}
             >
               Create Account
             </button>
@@ -196,7 +194,7 @@ export function AuthPage({
           {/* Header Title */}
           <div className="space-y-1 text-center">
             <h1 className="text-2xl font-extrabold text-[var(--text-h)] tracking-tight">
-              {mode === "login" ? "Welcome back" : "Get started with Tagger"}
+              {mode === "login" ? "Welcome back" : "Get started with mindspace"}
             </h1>
             <p className="text-xs text-[var(--text)] opacity-80">
               {mode === "login"
@@ -346,7 +344,7 @@ export function AuthPage({
                   <span>{mode === "login" ? "Signing In..." : "Creating Account..."}</span>
                 </>
               ) : mode === "login" ? (
-                "Sign In to Tagger"
+                "Sign In to mindspace"
               ) : (
                 "Create Free Account"
               )}
@@ -392,7 +390,7 @@ export function AuthPage({
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-6 text-center text-xs text-[var(--text)] opacity-60">
-        © {new Date().getFullYear()} Tagger Inc. All rights reserved.
+        © {new Date().getFullYear()} mindspace Inc. All rights reserved.
       </footer>
     </div>
   );

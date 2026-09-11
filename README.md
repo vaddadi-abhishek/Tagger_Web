@@ -1,8 +1,8 @@
-# Tagger Frontend (`tagger-frontend`)
+# mindspace Frontend (`mindspace-frontend`)
 
 A modern, responsive, high-performance social bookmark and web media curator built with **React 19**, **TypeScript**, **Vite**, **Tailwind CSS v4**, and **Supabase**.
 
-Tagger transforms bookmarked links from major social networks and arbitrary websites into rich, platform-native cards with auto-extracted metadata, media galleries, expandable captions, engagement metrics, and multimodal AI visual context.
+mindspace transforms bookmarked links from major social networks and arbitrary websites into rich, platform-native cards with auto-extracted metadata, media galleries, expandable captions, engagement metrics, and multimodal AI visual context.
 
 ---
 
@@ -28,7 +28,7 @@ Tagger transforms bookmarked links from major social networks and arbitrary webs
 - **Framework**: React 19 + TypeScript on Vite 8.
 - **Styling**: Tailwind CSS v4 + Vanilla CSS Design Tokens (`src/index.css`) with curated light and dark modes, radial gradients, glassmorphism (`@liquidglass/react`), and backdrop filters.
 - **State & Rendering**: React 18/19 Concurrent primitives (`useDeferredValue`), memoized components (`React.memo`), callback stabilization (`useCallback`), and session-level in-memory media caching.
-- **Backend & Persistence**: Dual backend integration — Supabase for user auth and data storage; Stateless Node.js microservice (`tagger-node-backend`) for scraping, proxying, and AI visual intelligence.
+- **Backend & Persistence**: Dual backend integration — Supabase for user auth and data storage; Stateless Node.js microservice (`mindspace-node-backend`) for scraping, proxying, and AI visual intelligence.
 
 ---
 
@@ -121,7 +121,7 @@ Moved away from generic box layouts to pixel-perfect, native-resembling cards ta
 ## Component & Directory Structure
 
 ```
-tagger-frontend/
+mindspace-frontend/
 ├── src/
 │   ├── components/
 │   │   ├── SocialCards/
@@ -153,7 +153,7 @@ tagger-frontend/
 │   │   ├── supabase.ts                  # Supabase client initialization
 │   │   └── utils.ts                     # URL sanitizer, class merging (cn)
 │   ├── services/
-│   │   ├── api.ts                       # REST client for tagger-node-backend
+│   │   ├── api.ts                       # REST client for mindspace-node-backend
 │   │   └── supabaseDataService.ts       # Supabase CRUD operations & mapping
 │   ├── templates/
 │   │   ├── bookmarks.tsx                # Bookmark card masonry grid & filter logic
@@ -175,7 +175,7 @@ tagger-frontend/
 sequenceDiagram
     autonumber
     actor User
-    participant Frontend as Tagger Frontend
+    participant Frontend as mindspace Frontend
     participant Supabase as Supabase DB & Auth
     participant Backend as Node.js Extractor API
 
@@ -196,14 +196,14 @@ sequenceDiagram
 
 ## Environment Variables
 
-Create a `.env` file in `tagger-frontend/`:
+Create a `.env` file in `mindspace-frontend/`:
 
 ```env
 # Supabase Configuration
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
 
-# Tagger Node Backend URL
+# mindspace Node Backend URL
 VITE_API_URL=http://localhost:3000/api/v1
 ```
 

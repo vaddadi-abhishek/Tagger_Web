@@ -247,7 +247,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
             bookmark={bookmark}
             isOpen={Boolean(isMenuOpen)}
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-            onClose={onCloseMenu || (() => {})}
+            onClose={onCloseMenu || (() => { })}
             onViewAiContext={onViewAiContext}
             onRequestDelete={onRequestDelete}
             theme="instagram"
@@ -310,11 +310,10 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           {mediaItems.map((_, idx) => (
             <span
               key={idx}
-              className={`w-1.5 h-1.5 rounded-full aspect-square shrink-0 transition-all duration-150 ${
-                idx === activeMediaIdx
+              className={`w-1.5 h-1.5 rounded-full aspect-square shrink-0 transition-all duration-150 ${idx === activeMediaIdx
                   ? "bg-[#0095f6]"
                   : "bg-slate-300 dark:bg-zinc-600 opacity-60"
-              }`}
+                }`}
             />
           ))}
         </div>
