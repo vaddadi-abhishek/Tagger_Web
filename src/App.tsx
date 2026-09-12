@@ -3,63 +3,30 @@ import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { AuthPage } from "./components/AuthPage";
 import DashboardLayout from "./Layout/DashboardLayout";
-import { supabase, isSupabaseConfigured } from "./lib/supabase";
+import { getCurrentUser, logoutUser } from "./services/api";
 
 export default function App() {
   const navigate = useNavigate();
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [initializing, setInitializing] = useState(() => isSupabaseConfigured);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) return;
-
-    // Restore existing session from localStorage/cookies on page reload
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const metadata = session.user.user_metadata || {};
-        const displayName =
-          metadata.username ||
-          metadata.name ||
-          session.user.email?.split("@")[0] ||
-          "User";
-
-        setIsLoggedIn(true);
-        setUser({
-          name: displayName,
-          email: session.user.email || "",
-        });
-      }
-      setInitializing(false);
-    });
-
-    // Listen for auth state changes (sign in, sign out, token refresh)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        const metadata = session.user.user_metadata || {};
-        const displayName =
-          metadata.username ||
-          metadata.name ||
-          session.user.email?.split("@")[0] ||
-          "User";
-
-        setIsLoggedIn(true);
-        setUser({
-          name: displayName,
-          email: session.user.email || "",
-        });
-      } else {
-        setIsLoggedIn(false);
-        setUser(null);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    // Restore session via Node backend
+    getCurrentUser()
+      .then((currentUser) => {
+        if (currentUser) {
+          setIsLoggedIn(true);
+          setUser({
+            name: currentUser.name,
+            email: currentUser.email,
+          });
+        }
+      })
+      .finally(() => {
+        setInitializing(false);
+      });
   }, []);
 
   const handleNavigateToAuth = (mode: "login" | "signup" = "login") => {
@@ -82,10 +49,8 @@ export default function App() {
     navigate("/my/app");
   };
 
-  const handleSignOut = async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    }
+  const handleSignOut = () => {
+    logoutUser();
     setIsLoggedIn(false);
     setUser(null);
     navigate("/");
@@ -95,10 +60,10 @@ export default function App() {
     return (
       <div className="min-h-screen w-full bg-[var(--bg)] flex items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="size-8 rounded-xl bg-[var(--primary)] text-white flex items-center justify-center font-bold text-lg animate-pulse">
-            T
+          <div className="size-8 rounded-xl bg-gradient-to-tr from-[#B5814C] to-[#996533] text-[#FAF8F5] flex items-center justify-center font-bold text-base shadow-md shadow-[#B5814C]/20 animate-pulse">
+            M
           </div>
-          <span className="text-sm font-medium text-[var(--text)]">Loading workspace...</span>
+          <span className="text-sm font-medium text-[var(--text)]">Loading mindspace...</span>
         </div>
       </div>
     );

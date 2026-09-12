@@ -21,6 +21,8 @@ interface TwitterCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function formatNumber(num?: number): string | null {
@@ -51,6 +53,8 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
     onCloseMenu,
     onRequestDelete,
     onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
   } = props;
 
   const rawCardData = bookmark.card_data;
@@ -258,6 +262,8 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
             onClose={onCloseMenu || (() => {})}
             onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="twitter"
             icon="vertical"

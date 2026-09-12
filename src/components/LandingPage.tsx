@@ -27,8 +27,10 @@ export function LandingPage({
     }
     return false;
   });
+  const [navVisible, setNavVisible] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
 
-  // Initialize Lenis Smooth Scrolling
+  // Initialize Lenis Smooth Scrolling & Auto-hiding Navbar on Scroll
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -43,8 +45,46 @@ export function LandingPage({
     }
     rafId = requestAnimationFrame(raf);
 
+    let lastScrollY = window.scrollY;
+
+    const handleScroll = (currentScroll: number) => {
+      const diff = currentScroll - lastScrollY;
+
+      if (currentScroll <= 30) {
+        setNavVisible(true);
+        setIsScrolled(false);
+      } else {
+        setIsScrolled(true);
+        if (diff > 8) {
+          // Scrolling down: pop away / slide off screen
+          setNavVisible(false);
+        } else if (diff < -8) {
+          // Scrolling up: pop out from top
+          setNavVisible(true);
+        }
+      }
+
+      lastScrollY = currentScroll;
+    };
+
+    // Listen to Lenis smooth scroll
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const onLenisScroll = (e: any) => {
+      handleScroll(e.scroll ?? window.scrollY);
+    };
+
+    lenis.on("scroll", onLenisScroll);
+
+    // Fallback native scroll listener for mobile/touch or external jumps
+    const onNativeScroll = () => {
+      handleScroll(window.scrollY);
+    };
+    window.addEventListener("scroll", onNativeScroll, { passive: true });
+
     return () => {
       cancelAnimationFrame(rafId);
+      lenis.off("scroll", onLenisScroll);
+      window.removeEventListener("scroll", onNativeScroll);
       lenis.destroy();
     };
   }, []);
@@ -71,10 +111,22 @@ export function LandingPage({
   return (
     <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0B0907] text-[#211D1A] dark:text-[#FAF8F5] font-sans selection:bg-amber-500/20 selection:text-amber-900 transition-colors duration-1000 ease-in-out relative overflow-x-clip">
       {/* ══════════════════════════════════════════════════════════════
-          1. FLOATING NAVIGATION BAR (Pill Header)
+          1. FLOATING NAVIGATION BAR (Pill Header with Pop-in / Pop-out Physics)
       ══════════════════════════════════════════════════════════════ */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-4xl">
-        <nav className="backdrop-blur-md bg-[#FAF8F5]/85 dark:bg-neutral-900/80 border border-[#EBE5DC] dark:border-neutral-800/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)] rounded-full px-5 py-2.5 flex items-center justify-between transition-all">
+      <header
+        className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-4xl origin-top transition-all ${
+          navVisible
+            ? "translate-y-0 scale-100 opacity-100 pointer-events-auto duration-350 ease-[cubic-bezier(0.34,1.45,0.64,1)]"
+            : "-translate-y-20 scale-90 opacity-0 pointer-events-none duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]"
+        }`}
+      >
+        <nav
+          className={`backdrop-blur-md bg-[#FAF8F5]/85 dark:bg-neutral-900/80 border border-[#EBE5DC] dark:border-neutral-800/80 rounded-full px-5 py-2.5 flex items-center justify-between transition-all duration-300 ${
+            isScrolled
+              ? "shadow-[0_12px_36px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)] bg-[#FAF8F5]/90 dark:bg-neutral-900/90"
+              : "shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
+          }`}
+        >
           {/* Left: Wordmark */}
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

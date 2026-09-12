@@ -43,6 +43,8 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onCloseMenu,
   onRequestDelete,
   onViewAiContext,
+  onGenerateAiContext,
+  generatingAiId,
 }: {
   bookmarks: Bookmark[];
   openMenuId: string | null;
@@ -50,6 +52,8 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onCloseMenu: () => void;
   onRequestDelete: (id: string) => void;
   onViewAiContext: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  generatingAiId?: string | null;
 }) {
   const colCount = useColumnCount();
 
@@ -78,6 +82,8 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
               onCloseMenu={onCloseMenu}
               onRequestDelete={onRequestDelete}
               onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={generatingAiId === bookmark.id}
             />
           ))}
         </div>
@@ -90,6 +96,8 @@ interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
   onAddBookmark?: (newBookmark: Bookmark) => void;
   onDeleteBookmark?: (id: string) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  generatingAiId?: string | null;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
   activePlatform?: string;
@@ -101,6 +109,8 @@ export default function BookmarksScreen({
   bookmarks: externalBookmarks,
   onAddBookmark: externalAddBookmark,
   onDeleteBookmark,
+  onGenerateAiContext,
+  generatingAiId,
   searchTerm: externalSearchTerm,
   onSearchChange: externalOnSearchChange,
   activePlatform = "all",
@@ -288,6 +298,8 @@ export default function BookmarksScreen({
           onCloseMenu={handleCloseMenu}
           onRequestDelete={handleRequestDelete}
           onViewAiContext={handleViewAiContext}
+          onGenerateAiContext={onGenerateAiContext}
+          generatingAiId={generatingAiId}
         />
       ) : (
         <div className="text-center py-24 px-4 text-[var(--text)] space-y-2">

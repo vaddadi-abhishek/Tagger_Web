@@ -22,6 +22,8 @@ interface InstagramCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function formatInstagramDate(dateStr?: string | null): string | null {
@@ -68,11 +70,13 @@ function formatNumber(num?: number): string | null {
 export const InstagramCard = React.memo(function InstagramCard(props: InstagramCardProps) {
   const {
     bookmark,
-    onToggleMenu,
     isMenuOpen,
-    onViewAiContext,
-    onRequestDelete,
+    onToggleMenu,
     onCloseMenu,
+    onRequestDelete,
+    onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
   } = props;
 
   const [activeMediaIdx, setActiveMediaIdx] = useState(0);
@@ -249,6 +253,8 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
             onClose={onCloseMenu || (() => { })}
             onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="instagram"
             icon="vertical"

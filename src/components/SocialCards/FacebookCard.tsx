@@ -18,6 +18,8 @@ interface FacebookCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function formatNumber(num?: number): string | null {
@@ -47,6 +49,7 @@ function formatFacebookDate(dateString?: string | null): string | null {
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
   });
 }
 
@@ -56,6 +59,8 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     onToggleMenu,
     isMenuOpen,
     onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
     onRequestDelete,
     onCloseMenu,
   } = props;
@@ -278,6 +283,8 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
             onClose={onCloseMenu || (() => {})}
             onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="facebook"
             icon="vertical"

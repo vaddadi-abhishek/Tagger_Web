@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Check, ShieldCheck } from "lucide-react";
 
 interface PricingSectionProps {
-  onSelectTier: (tier: "starter" | "pro") => void;
+  onSelectTier: (tier: "free" | "starter" | "pro") => void;
 }
 
 export function PricingSection({ onSelectTier }: PricingSectionProps) {
@@ -15,15 +15,14 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
           Simple, honest pricing for serious thinkers.
         </h2>
         <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
-          Start with full access for 7 days. Keep your saved bookmarks forever regardless of plan.
+          Start completely free with 30 days of frontier AI access. Keep your saved bookmarks forever regardless of plan.
         </p>
 
         {/* Monthly / Annual Toggle */}
         <div className="pt-4 flex items-center justify-center gap-3">
           <span
-            className={`text-xs sm:text-sm font-medium ${
-              !isAnnual ? "text-neutral-900 dark:text-white" : "text-neutral-500"
-            }`}
+            className={`text-xs sm:text-sm font-medium ${!isAnnual ? "text-neutral-900 dark:text-white" : "text-neutral-500"
+              }`}
           >
             Monthly Billing
           </span>
@@ -33,16 +32,14 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             aria-label="Toggle annual billing"
           >
             <div
-              className={`size-4 rounded-full bg-neutral-900 dark:bg-white shadow-xs transition-transform ${
-                isAnnual ? "translate-x-6" : "translate-x-0"
-              }`}
+              className={`size-4 rounded-full bg-neutral-900 dark:bg-white shadow-xs transition-transform ${isAnnual ? "translate-x-6" : "translate-x-0"
+                }`}
             />
           </button>
           <div className="flex items-center gap-2">
             <span
-              className={`text-xs sm:text-sm font-medium ${
-                isAnnual ? "text-neutral-900 dark:text-white" : "text-neutral-500"
-              }`}
+              className={`text-xs sm:text-sm font-medium ${isAnnual ? "text-neutral-900 dark:text-white" : "text-neutral-500"
+                }`}
             >
               Annual Billing
             </span>
@@ -53,17 +50,66 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
         </div>
       </div>
 
-      {/* Two Tiers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-        {/* Starter Tier */}
+      {/* Three Tiers Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+        {/* Tier 1: Free Tier */}
         <div className="rounded-3xl p-8 sm:p-10 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-8 relative">
           <div className="space-y-6">
             <div className="space-y-2">
-              <div className="inline-flex text-[11px] font-mono uppercase tracking-wider text-neutral-500">
+              <div className="inline-flex text-[11px] font-mono uppercase tracking-wider text-neutral-500 font-semibold">
+                Free Forever
+              </div>
+              <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
+                Collector
+              </h3>
+              <p className="text-xs text-neutral-600 dark:text-neutral-400">
+                Essential AI-augmented bookmarking and research for everyday browsing.
+              </p>
+            </div>
+
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl sm:text-5xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight font-sans">
+                $0
+              </span>
+              <span className="text-xs text-neutral-500 font-mono">/ forever</span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-xs text-amber-900 dark:text-amber-300 font-medium leading-relaxed">
+              🎁 7 days unlimited acess to AI features for all new users.
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {[
+                "Save unlimited links and articles.",
+                "Auto AI text and image tagging upto 3 saved links per week.",
+                "Cloud sync bookmarks to mobile app.",
+                "Extension support for Chrome, Brave, Firefox & Safari",
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
+                  <Check className="size-4 text-neutral-900 dark:text-white shrink-0 mt-0.5" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={() => onSelectTier("free")}
+            className="w-full py-3.5 px-6 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+          >
+            Get Started Free
+          </button>
+        </div>
+
+        {/* Tier 2: Starter Tier */}
+        <div className="rounded-3xl p-8 sm:p-10 bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 shadow-sm flex flex-col justify-between space-y-8 relative">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <div className="inline-flex text-[11px] font-mono uppercase tracking-wider text-neutral-500 font-semibold">
                 Essential Knowledge Layer
               </div>
               <h3 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">
-                Starter
+                Thinker
               </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400">
                 Perfect for individuals needing an intelligent, organized memory vault.
@@ -77,17 +123,14 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
               <span className="text-xs text-neutral-500 font-mono">/ month</span>
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 font-medium">
-              🎁 7-Day All-Access Free Trial included with unlimited bookmarks & AI context.
-            </div>
-
             <div className="space-y-3 pt-2">
               {[
-                "Unlimited bookmark saving forever (even post-trial)",
-                "Post-trial AI auto-tagging (5 cards per week)",
-                "Visual snapshot & title extraction",
-                "Basic semantic search across all items",
-                "Chrome & Safari extension support",
+                "Everything in Free",
+                "Unlimited bookmark saving forever.",
+                "Unlimited access to AI features.",
+                "Auto AI text and image tagging.",
+                "Image text recognition.",
+                "Reading Mode for all the Articles.",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
                   <Check className="size-4 text-neutral-900 dark:text-white shrink-0 mt-0.5" />
@@ -101,12 +144,12 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             onClick={() => onSelectTier("starter")}
             className="w-full py-3.5 px-6 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
           >
-            Start 7-Day Free Trial
+            Upgrade to Starter
           </button>
         </div>
 
-        {/* Pro Tier (Featured) */}
-        <div className="rounded-3xl p-8 sm:p-10 bg-neutral-950 text-white border border-neutral-800 shadow-2xl flex flex-col justify-between space-y-8 relative overflow-hidden">
+        {/* Tier 3: Pro Tier (Featured) */}
+        <div className="rounded-3xl p-8 sm:p-10 bg-neutral-950 text-white border border-neutral-800 shadow-2xl flex flex-col justify-between space-y-8 relative overflow-hidden ring-1 ring-amber-500/20">
           {/* Subtle warm amber top border glow */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-700" />
 
@@ -121,7 +164,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             </div>
 
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white">Pro</h3>
+              <h3 className="text-2xl font-bold text-white">Architect</h3>
               <p className="text-xs text-neutral-400">
                 For researchers, builders, and heavy thinkers wanting limitless AI memory.
               </p>
@@ -140,7 +183,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
 
             <div className="space-y-3 pt-2">
               {[
-                "Unlimited bookmark saves forever",
+                "Everything in Starter, plus:",
                 "Unlimited AI visual context & Vision OCR parsing",
                 "Full MCP Server access (ChatGPT, Claude & Gemini)",
                 "In-app RAG chatbot across all bookmarks & transcripts",

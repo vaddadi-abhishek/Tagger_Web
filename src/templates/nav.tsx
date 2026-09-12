@@ -142,21 +142,21 @@ function Nav({
           <div className="w-full flex items-center justify-between px-4 sm:px-8 h-20 gap-4 sm:gap-6">
             {/* Searchbar stretching all the way to top-right icons */}
             <div className="flex-1 min-w-0">
-              <div className="relative flex items-center border-b border-black/20 dark:border-white/25 focus-within:border-black/70 dark:focus-within:border-white/80 transition-all duration-300 pb-1.5 group w-full">
+              <div className="relative flex items-center border-b border-[#B5814C]/30 dark:border-[#C88E3E]/30 focus-within:border-[#B5814C] dark:focus-within:border-[#C88E3E] transition-all duration-300 pb-1.5 group w-full">
                 <input
                   type="text"
                   id="top-search-mind"
                   placeholder="Search my mind..."
                   value={searchTerm}
                   onChange={(e) => onSearchChange?.(e.target.value)}
-                  className="search-mind-input w-full bg-transparent outline-none text-lg sm:text-xl md:text-2xl text-[var(--text-h)] placeholder-zinc-400/70 dark:placeholder-zinc-500/70 transition-colors pr-7"
+                  className="search-mind-input w-full bg-transparent outline-none text-lg sm:text-xl md:text-2xl text-[var(--text-h)] placeholder-[#8C8377]/70 dark:placeholder-[#7E7569]/70 transition-colors pr-7"
                 />
                 {searchTerm && (
                   <button
                     type="button"
                     onClick={() => onSearchChange?.("")}
                     aria-label="Clear search"
-                    className="absolute right-0 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer p-1 text-sm font-sans transition-colors"
+                    className="absolute right-0 text-[#8C8377] hover:text-[var(--text-h)] cursor-pointer p-1 text-sm font-sans transition-colors"
                   >
                     ✕
                   </button>
@@ -171,7 +171,7 @@ function Nav({
                 <AnimatedThemeToggler
                   variant="circle"
                   duration={500}
-                  className="size-9 sm:size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center cursor-pointer transition-all"
+                  className="size-9 sm:size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center cursor-pointer transition-all text-[var(--text-h)]"
                 />
               </div>
 
@@ -202,12 +202,12 @@ function Nav({
                       d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
                     />
                   </svg>
-                  {/* Unread indicator dot */}
-                  <span className="absolute top-2 right-2 size-2 rounded-full bg-sky-500 ring-2 ring-white dark:ring-zinc-900" />
+                  {/* Unread indicator dot (Sand Dune Amber) */}
+                  <span className="absolute top-2 right-2 size-2 rounded-full bg-[#D99F50] ring-2 ring-[#FAF8F5] dark:ring-[#0B0907]" />
                 </button>
               </div>
 
-              {/* 3. Profile Avatar Icon */}
+              {/* 3. Profile Avatar Icon (Signature Sand Dune Gradient) */}
               <div className="relative" ref={profileRef}>
                 <button
                   ref={profileBtnRef}
@@ -217,7 +217,7 @@ function Nav({
                     setProfileClicked((prev) => !prev);
                     setNotificationsClicked(false);
                   }}
-                  className="size-9 sm:size-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 text-white font-bold text-xs sm:text-sm flex items-center justify-center cursor-pointer shadow-sm hover:ring-2 hover:ring-sky-400/40 transition-all overflow-hidden"
+                  className="size-9 sm:size-10 rounded-full bg-gradient-to-tr from-[#B5814C] to-[#996533] hover:from-[#C08C56] hover:to-[#A4703D] text-white font-bold text-xs sm:text-sm flex items-center justify-center cursor-pointer shadow-[0_2px_8px_rgba(168,110,50,0.25)] hover:ring-2 hover:ring-[#B5814C]/40 transition-all overflow-hidden"
                   title={user?.name || "User Profile"}
                 >
                   {user?.name ? (
@@ -254,7 +254,7 @@ function Nav({
             style={{ top: notifPos.top, right: notifPos.right }}
           >
             <Glass
-              className="w-80 rounded-3xl p-4 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
+              className="w-80 rounded-3xl p-4 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#EBE5DC] dark:border-[#26211C]"
               style={{ display: "block" }}
               optics={{
                 mapSize: 256,
@@ -275,31 +275,31 @@ function Nav({
                 glow: 0,
               }}
             >
-              <div className="flex items-center justify-between pb-2.5 border-b border-zinc-500/20 mb-2.5">
+              <div className="flex items-center justify-between pb-2.5 border-b border-[#EBE5DC] dark:border-[#26211C] mb-2.5">
                 <span className="font-bold text-sm text-[var(--text-h)]">Notifications</span>
-                <span className="text-[10px] uppercase font-bold text-sky-500 bg-sky-500/10 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] uppercase font-bold text-[#B5814C] dark:text-[#D99F50] bg-[#B5814C]/10 dark:bg-[#D99F50]/15 px-2 py-0.5 rounded-full">
                   Live
                 </span>
               </div>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 <div className="p-2.5 rounded-2xl space-y-1">
                   <p className="font-semibold text-[var(--text-h)]">Bookmarks in Sync</p>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[11px] text-[#5F5850] dark:text-[#A89F91]">
                     Your saved bookmarks and metadata are synced with cloud storage.
                   </p>
                 </div>
                 <div className="p-2.5 rounded-2xl space-y-1">
                   <p className="font-semibold text-[var(--text-h)]">Auto Scraper Online</p>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[11px] text-[#5F5850] dark:text-[#A89F91]">
                     Smart metadata scraper is active and extracting rich social cards.
                   </p>
                 </div>
               </div>
-              <div className="pt-2 mt-2 border-t border-zinc-500/20 text-center">
+              <div className="pt-2 mt-2 border-t border-[#EBE5DC] dark:border-[#26211C] text-center">
                 <button
                   type="button"
                   onClick={() => setNotificationsClicked(false)}
-                  className="text-[11px] font-semibold text-sky-500 hover:underline cursor-pointer"
+                  className="text-[11px] font-semibold text-[#B5814C] dark:text-[#D99F50] hover:underline cursor-pointer"
                 >
                   Close
                 </button>

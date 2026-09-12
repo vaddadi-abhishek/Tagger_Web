@@ -20,6 +20,8 @@ interface RedditCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function formatNumber(num?: number): string | null {
@@ -52,6 +54,8 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
     onToggleMenu,
     isMenuOpen,
     onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
     onRequestDelete,
     onCloseMenu,
   } = props;
@@ -167,6 +171,8 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
             onClose={onCloseMenu || (() => {})}
             onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="reddit"
             icon="vertical"

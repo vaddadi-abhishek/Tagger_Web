@@ -11,6 +11,8 @@ interface GenericCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 export const GenericCard = React.memo(function GenericCard(props: GenericCardProps) {
@@ -21,6 +23,8 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
     onCloseMenu,
     onRequestDelete,
     onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
   } = props;
 
   const [logoError, setLogoError] = useState(false);
@@ -87,6 +91,8 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
               onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
               onClose={onCloseMenu || (() => { })}
               onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={isGeneratingAi}
               onRequestDelete={onRequestDelete}
               theme="generic"
               icon="vertical"
@@ -124,6 +130,8 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
               onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
               onClose={onCloseMenu || (() => { })}
               onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={isGeneratingAi}
               onRequestDelete={onRequestDelete}
               theme="generic"
               icon="vertical"

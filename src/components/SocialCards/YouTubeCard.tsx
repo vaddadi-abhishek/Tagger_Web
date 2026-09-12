@@ -21,6 +21,8 @@ interface YouTubeCardProps {
   onCloseMenu?: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function formatNumber(num?: number): string | null {
@@ -38,6 +40,8 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
     onCloseMenu,
     onRequestDelete,
     onViewAiContext,
+    onGenerateAiContext,
+    isGeneratingAi,
   } = props;
 
   const rawCardData = bookmark.card_data;
@@ -122,6 +126,8 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
             onClose={onCloseMenu || (() => {})}
             onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="youtube"
             buttonClassName="size-6 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer outline-none border border-white/20 shadow-sm flex items-center justify-center"

@@ -19,6 +19,8 @@ interface CardActionMenuProps {
   onClose: () => void;
   onRequestDelete?: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
   icon?: "vertical" | "horizontal";
   theme?: CardMenuTheme;
   buttonClassName?: string;
@@ -93,6 +95,8 @@ export const CardActionMenu = React.memo(function CardActionMenu({
   onClose,
   onRequestDelete,
   onViewAiContext,
+  onGenerateAiContext,
+  isGeneratingAi = false,
   icon = "vertical",
   theme = "generic",
   buttonClassName = "p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#3a3b3c] transition-colors cursor-pointer text-slate-500 dark:text-[#b0b3b8] outline-none",
@@ -214,31 +218,83 @@ export const CardActionMenu = React.memo(function CardActionMenu({
             className={`w-44 rounded-xl border shadow-xl z-50 text-[13px] font-medium py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left ${styles.menuBg} ${styles.border} ${styles.text}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewAiContext?.(bookmark);
-                onClose();
-              }}
-              className={`w-full text-left px-3.5 py-1.5 ${styles.hoverBg} transition-colors flex items-center gap-2 font-medium cursor-pointer`}
-              type="button"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.8"
-                stroke="currentColor"
-                className="size-3.5 shrink-0 opacity-70"
+            {bookmark.ai_status === "completed" || bookmark.ai_context ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewAiContext?.(bookmark);
+                  onClose();
+                }}
+                className={`w-full text-left px-3.5 py-1.5 ${styles.hoverBg} transition-colors flex items-center gap-2 font-medium cursor-pointer`}
+                type="button"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
-                />
-              </svg>
-              <span>AI Context</span>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.8"
+                  stroke="currentColor"
+                  className="size-3.5 shrink-0 opacity-70"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+                  />
+                </svg>
+                <span>AI Context</span>
+              </button>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGenerateAiContext?.(bookmark);
+                  onClose();
+                }}
+                disabled={isGeneratingAi}
+                className={`w-full text-left px-3.5 py-1.5 ${styles.hoverBg} transition-colors flex items-center gap-2 font-medium cursor-pointer text-amber-600 dark:text-amber-400`}
+                type="button"
+              >
+                {isGeneratingAi ? (
+                  <svg
+                    className="animate-spin size-3.5 shrink-0 text-amber-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="1.8"
+                    stroke="currentColor"
+                    className="size-3.5 shrink-0 text-amber-500"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+                    />
+                  </svg>
+                )}
+                <span>{isGeneratingAi ? "Generating AI..." : "Generate AI"}</span>
+              </button>
+            )}
             <hr className={`${styles.divider} my-1`} />
             <button
               onClick={(e) => {

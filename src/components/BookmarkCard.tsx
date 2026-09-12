@@ -15,6 +15,8 @@ interface BookmarkCardProps {
   onCloseMenu: () => void;
   onRequestDelete: (id: string) => void;
   onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 function resolveCardType(bookmark: Bookmark): string {

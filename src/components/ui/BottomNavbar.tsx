@@ -68,8 +68,8 @@ export function BottomNavbar({
               onClick={() => onTabChange?.(tab.id)}
               className={`relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center justify-center z-10 ${
                 isActive
-                  ? "bg-white/85 dark:bg-white/20 text-black dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] backdrop-blur-xs scale-100"
-                  : "text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white hover:bg-white/20 dark:hover:bg-white/10 active:scale-95"
+                  ? "bg-[#FAF8F5]/90 dark:bg-white/15 text-[#211D1A] dark:text-[#FAF8F5] border border-[#B5814C]/20 dark:border-white/10 shadow-[0_2px_8px_rgba(181,129,76,0.18)] backdrop-blur-xs scale-100"
+                  : "text-[#5F5850] dark:text-[#A89F91] hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 dark:hover:bg-white/10 active:scale-95"
               }`}
             >
               <span>{tab.label}</span>
@@ -80,15 +80,15 @@ export function BottomNavbar({
         {/* Floating Create Bookmark Button at End of List */}
         {onAddClick && (
           <>
-            {/* Clean Neutral Glass Incision Divider */}
-            <div className="h-4 w-[1px] bg-white/20 mx-1 shrink-0 z-10" />
+            {/* Clean Sand Glass Incision Divider */}
+            <div className="h-4 w-[1px] bg-[#B5814C]/20 dark:bg-white/20 mx-1 shrink-0 z-10" />
 
             <button
               type="button"
               onClick={onAddClick}
               title="Add new bookmark"
               aria-label="Add new bookmark"
-              className="relative px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-white bg-gradient-to-b from-indigo-500 to-indigo-600 dark:from-indigo-400 dark:to-indigo-500 hover:brightness-110 shadow-[0_2px_8px_rgba(99,102,241,0.35),inset_0_1px_0.5px_rgba(255,255,255,0.4)] transition-all duration-200 cursor-pointer active:scale-95 shrink-0 flex items-center gap-1.5 z-10"
+              className="relative px-3 sm:px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold text-[#FAF8F5] bg-gradient-to-r from-[#B5814C] to-[#996533] hover:from-[#C08C56] hover:to-[#A4703D] hover:brightness-105 shadow-[0_2px_12px_rgba(181,129,76,0.35),inset_0_1px_0.5px_rgba(255,255,255,0.4)] transition-all duration-200 cursor-pointer active:scale-95 shrink-0 flex items-center gap-1.5 z-10"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

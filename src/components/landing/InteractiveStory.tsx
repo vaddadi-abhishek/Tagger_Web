@@ -61,35 +61,28 @@ const pillars: StoryPillar[] = [
 
 export function InteractiveStory() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1);
-  const lastIndexRef = useRef(0);
+  const pillarRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeCard, setActiveCard] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const totalScrollable = rect.height - window.innerHeight;
-      if (totalScrollable <= 0) return;
+      // Find the pillar whose center is closest to 45% of viewport height
+      const focalPoint = window.innerHeight * 0.45;
+      let closestIdx = 0;
+      let minDistance = Infinity;
 
-      // Scrolled distance from the moment the container top reaches top of viewport
-      const scrolled = -rect.top;
-      const progress = Math.max(0, Math.min(1, scrolled / totalScrollable));
+      pillarRefs.current.forEach((el, idx) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const dist = Math.abs(center - focalPoint);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestIdx = idx;
+        }
+      });
 
-      let index = 0;
-      if (progress < 0.33) {
-        index = 0;
-      } else if (progress < 0.67) {
-        index = 1;
-      } else {
-        index = 2;
-      }
-
-      if (index !== lastIndexRef.current) {
-        setDirection(index > lastIndexRef.current ? 1 : -1);
-        lastIndexRef.current = index;
-        setActiveIndex(index);
-      }
+      setActiveCard(closestIdx);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -103,20 +96,16 @@ export function InteractiveStory() {
   }, []);
 
   const scrollToStep = (index: number) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const containerTop = rect.top + scrollTop;
-    const totalScrollable = rect.height - window.innerHeight;
-    const targetProgress = index === 0 ? 0.05 : index === 1 ? 0.5 : 0.95;
-    const targetScroll = containerTop + targetProgress * totalScrollable;
-    window.scrollTo({ top: targetScroll, behavior: "smooth" });
+    const el = pillarRefs.current[index];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   return (
-    <section id="how-it-works" className="relative scroll-mt-16">
+    <section id="how-it-works" className="relative scroll-mt-16 py-16">
       {/* Section Header */}
-      <div className="pt-20 pb-8 px-6 max-w-4xl mx-auto text-center space-y-3">
+      <div className="pt-8 pb-12 px-6 max-w-4xl mx-auto text-center space-y-3">
         <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 font-sans">
           Built for minds that consume at frontier speed.
         </h2>
@@ -125,135 +114,89 @@ export function InteractiveStory() {
         </p>
       </div>
 
-      {/* Full-Page Interactive Scrolling Track: 200vh for tight, responsive, no-lag scrolling */}
-      <div ref={containerRef} className="relative h-[200vh]">
-        {/* Pinned Sticky Viewport */}
+      {/* Sticky Scroll Reveal Track */}
+      <div ref={containerRef} className="relative max-w-7xl mx-auto px-6 sm:px-12 lg:px-20">
+        {/* Architectural background grid pattern */}
         <div
-          className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden py-8 px-6 sm:px-12 lg:px-20 z-10"
-          style={{ position: "sticky", top: 0 }}
-        >
-          {/* Architectural background grid pattern */}
-          <div
-            className="absolute inset-0 bg-[linear-gradient(to_right,#80808010_1px,transparent_1px),linear-gradient(to_bottom,#80808010_1px,transparent_1px)] bg-[size:36px_36px] pointer-events-none"
-            aria-hidden="true"
-          />
+          className="absolute inset-0 bg-[linear-gradient(to_right,#80808010_1px,transparent_1px),linear-gradient(to_bottom,#80808010_1px,transparent_1px)] bg-[size:36px_36px] pointer-events-none -z-10"
+          aria-hidden="true"
+        />
 
-          <div className="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
-            {/* Left Column: Narrative Content with Fade and Slide Animation */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Progress indicator dashes (matching 21st.dev scrollytelling component) */}
-              <div className="flex items-center gap-2">
-                {pillars.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollToStep(i)}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === activeIndex
-                      ? "w-10 bg-amber-600 dark:bg-amber-400"
-                      : "w-4 bg-neutral-300 dark:bg-neutral-700 hover:bg-neutral-400 dark:hover:bg-neutral-600"
-                      }`}
-                    aria-label={`Jump to step ${i + 1}`}
-                  />
-                ))}
-                <span className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 ml-2">
-                  0{activeIndex + 1} / 0{pillars.length}
-                </span>
-              </div>
+        <div className="relative flex flex-col lg:flex-row items-start justify-between gap-10 lg:gap-14">
+          {/* Left Column: Natural Scrolling Content (reveals on scroll) */}
+          <div className="w-full lg:w-[50%]">
+            {/* Pillar Sections */}
+            <div className="space-y-24 lg:space-y-36 pb-32">
+              {pillars.map((pillar, index) => {
+                const isActive = activeCard === index;
+                return (
+                  <motion.div
+                    key={pillar.number}
+                    ref={(el) => {
+                      pillarRefs.current[index] = el;
+                    }}
+                    animate={{
+                      opacity: isActive ? 1 : 0.28,
+                    }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="space-y-6 pt-4 cursor-pointer"
+                    onClick={() => scrollToStep(index)}
+                  >
+                    <div className="space-y-3">
+                      <span className="text-xs font-mono uppercase tracking-widest text-[#B5814C] dark:text-[#D99F50] font-bold">
+                        {pillar.number} — {pillar.badge}
+                      </span>
+                      <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 font-sans">
+                        {pillar.title}
+                      </h3>
+                      <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed pt-1">
+                        {pillar.description}
+                      </p>
+                    </div>
 
-              {/* Animated Text Content */}
-              <AnimatePresence mode="wait" custom={direction}>
-                <motion.div
-                  key={activeIndex}
-                  custom={direction}
-                  variants={{
-                    initial: (dir: number) => ({
-                      opacity: 0,
-                      y: dir > 0 ? 28 : -28,
-                    }),
-                    animate: {
-                      opacity: 1,
-                      y: 0,
-                      transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
-                    },
-                    exit: (dir: number) => ({
-                      opacity: 0,
-                      y: dir > 0 ? -28 : 28,
-                      transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
-                    }),
-                  }}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="space-y-5"
-                >
-                  <div className="space-y-2">
-                    <span className="text-xs font-mono uppercase tracking-widest text-amber-700 dark:text-amber-400 font-bold">
-                      {pillars[activeIndex].number} — {pillars[activeIndex].badge}
-                    </span>
-                    <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 font-sans">
-                      {pillars[activeIndex].title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-300 leading-relaxed pt-1">
-                      {pillars[activeIndex].description}
-                    </p>
-                  </div>
+                    <div className="space-y-3 pt-2">
+                      {pillar.bullets.map((b, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-3 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300"
+                        >
+                          <CheckCircle2 className="size-4.5 text-[#B5814C] dark:text-[#D99F50] shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </div>
+                      ))}
+                    </div>
 
-                  <div className="space-y-3 pt-2">
-                    {pillars[activeIndex].bullets.map((b, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-3 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300"
-                      >
-                        <CheckCircle2 className="size-4.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                        <span>{b}</span>
+                    {/* Mobile-only inline showcase preview */}
+                    <div className="block lg:hidden pt-4">
+                      <div className="rounded-3xl p-3 sm:p-5 bg-white/70 dark:bg-neutral-900/60 border border-[#EBE5DC] dark:border-[#26211C] shadow-xl backdrop-blur-sm overflow-hidden">
+                        {index === 0 && <ShowcaseVisualEngine />}
+                        {index === 1 && <ShowcaseMcpServer />}
+                        {index === 2 && <ShowcaseTranscriptRag />}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
 
-                  <div className="pt-2 flex items-center gap-2 text-xs font-mono text-neutral-400">
-                    <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" />
-                    <span>Scroll to advance story</span>
-                  </div>
+          {/* Right Column: Sticky Showcase Box (changes right side boxes on scroll) */}
+          <div className="hidden lg:block lg:w-[48%] sticky top-28 xl:top-32 self-start py-8">
+            <div className="relative rounded-3xl p-3 sm:p-5 bg-white/70 dark:bg-neutral-900/60 border border-[#EBE5DC] dark:border-[#26211C] shadow-2xl backdrop-blur-sm overflow-hidden min-h-[440px] flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeCard}
+                  initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.97 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full"
+                >
+                  {activeCard === 0 && <ShowcaseVisualEngine />}
+                  {activeCard === 1 && <ShowcaseMcpServer />}
+                  {activeCard === 2 && <ShowcaseTranscriptRag />}
                 </motion.div>
               </AnimatePresence>
-            </div>
-
-            {/* Right Column: Sliding Showcase Device Frame */}
-            <div className="lg:col-span-7">
-              <div className="relative rounded-3xl p-3 sm:p-5 bg-white/70 dark:bg-neutral-900/60 border border-neutral-200/80 dark:border-neutral-800 shadow-2xl backdrop-blur-sm overflow-hidden min-h-[400px] flex items-center justify-center">
-                <AnimatePresence mode="wait" custom={direction}>
-                  <motion.div
-                    key={activeIndex}
-                    custom={direction}
-                    variants={{
-                      initial: (dir: number) => ({
-                        opacity: 0,
-                        y: dir > 0 ? 50 : -50,
-                        scale: 0.96,
-                      }),
-                      animate: {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
-                      },
-                      exit: (dir: number) => ({
-                        opacity: 0,
-                        y: dir > 0 ? -50 : 50,
-                        scale: 0.96,
-                        transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
-                      }),
-                    }}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    className="w-full"
-                  >
-                    {activeIndex === 0 && <ShowcaseVisualEngine />}
-                    {activeIndex === 1 && <ShowcaseMcpServer />}
-                    {activeIndex === 2 && <ShowcaseTranscriptRag />}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
             </div>
           </div>
         </div>
