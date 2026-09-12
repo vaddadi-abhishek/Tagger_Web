@@ -10,6 +10,7 @@ export interface MetadataResponse {
   type?: string;
   card_data?: AnyCardData;
   ai_context?: string | null;
+  ai_category?: string[];
   ai_tags?: string[];
   visual_entities?: string[];
   ocr_text?: string;

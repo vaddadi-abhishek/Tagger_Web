@@ -252,6 +252,9 @@ export default function BookmarksScreen({
       const matchesAiContext = item.ai_context
         ? item.ai_context.toLowerCase().includes(cleanSearch)
         : false;
+      const matchesAiCategory = item.ai_category
+        ? item.ai_category.some((cat) => cat.toLowerCase().includes(cleanSearch))
+        : false;
       const matchesAiTags = item.ai_tags
         ? item.ai_tags.some((tag) => tag.toLowerCase().includes(cleanSearch))
         : false;
@@ -269,6 +272,7 @@ export default function BookmarksScreen({
         matchesUrl ||
         matchesDate ||
         matchesAiContext ||
+        matchesAiCategory ||
         matchesAiTags ||
         matchesVisualEntities ||
         matchesOcrText

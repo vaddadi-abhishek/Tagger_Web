@@ -127,6 +127,7 @@ export interface Bookmark {
   card_data?: AnyCardData;
   ai_status?: 'completed' | 'pending_manual' | 'no_credits' | 'failed';
   ai_context?: string | null;
+  ai_category?: string[];
   ai_tags?: string[];
   visual_entities?: string[];
   ocr_text?: string;

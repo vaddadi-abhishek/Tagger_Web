@@ -39,11 +39,12 @@ export function AiContextModal({ isOpen, bookmark, onClose }: AiContextModalProp
 
   if (!isOpen || !bookmark) return null;
 
+  const hasCategories = Boolean(bookmark.ai_category && bookmark.ai_category.length > 0);
   const hasContext = Boolean(bookmark.ai_context && bookmark.ai_context.trim().length > 0);
   const hasTags = Boolean(bookmark.ai_tags && bookmark.ai_tags.length > 0);
   const hasEntities = Boolean(bookmark.visual_entities && bookmark.visual_entities.length > 0);
   const hasOcr = Boolean(bookmark.ocr_text && bookmark.ocr_text.trim().length > 0);
-  const hasAnyData = hasContext || hasTags || hasEntities || hasOcr;
+  const hasAnyData = hasCategories || hasContext || hasTags || hasEntities || hasOcr;
 
   return (
     <div
@@ -173,6 +174,25 @@ export function AiContextModal({ isOpen, bookmark, onClose }: AiContextModalProp
                 </p>
               </div>
             </div>
+
+            {/* Section: AI Categories */}
+            {hasCategories && (
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70 block">
+                  AI Categories ({bookmark.ai_category!.length})
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {bookmark.ai_category!.map((cat) => (
+                    <span
+                      key={cat}
+                      className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 dark:border-emerald-500/20 capitalize tracking-tight"
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Section 2: AI Tags */}
             {hasTags && (
