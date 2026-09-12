@@ -1,8 +1,6 @@
 import Nav from "../templates/nav.tsx";
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
-import { Glass } from "@samasante/liquid-glass";
 import { ScreenSkeleton } from "../components/ui/ScreenSkeleton.tsx";
-import { BottomNavbar, type BottomNavbarTab } from "../components/ui/BottomNavbar.tsx";
 
 import type { Bookmark } from "../types/bookmark.ts";
 import {
@@ -204,60 +202,32 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     }
   };
 
-  const bottomTabs: BottomNavbarTab[] = [
-    { id: "all", label: "All" },
-    { id: "x", label: "Twitter / X" },
-    { id: "instagram", label: "Instagram" },
-    { id: "facebook", label: "Facebook" },
-    { id: "linkedin", label: "LinkedIn" },
-    { id: "reddit", label: "Reddit" },
-  ];
-
   return (
     <div className="flex h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-500 relative bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(217,159,80,0.12),rgba(250,248,245,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(200,142,62,0.09),rgba(11,9,7,0))]">
       {/* Top-Middle Floating "No credits left" Badge (Appears for 1.8s then smoothly fades out) */}
       <div
-        className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none transition-all duration-300 ease-out transform ${
-          showNoCreditsBadge
-            ? "opacity-100 translate-y-0 scale-100"
-            : "opacity-0 -translate-y-4 scale-95"
-        }`}
+        className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none transition-all duration-300 ease-out transform ${showNoCreditsBadge
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 -translate-y-4 scale-95"
+          }`}
       >
         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#FAFAF8]/95 dark:bg-[#1A1816]/95 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md">
           <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
           <span>No credits left</span>
         </div>
       </div>
-      {/* Bottom-Center Floating macOS Glass Toast HUD Capsule - elevated above bottom navbar */}
-      <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
+
+      {/* Bottom-Center Floating Sand Dune Toast HUD Capsule */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
         {toasts.map((toast) => {
           const isError =
             toast.type === "error" ||
             /failed|error|unreachable/i.test(toast.message);
 
           return (
-            <Glass
+            <div
               key={toast.id}
-              className="pointer-events-auto px-4 py-2.5 rounded-full shadow-[0_16px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.5)] border border-[#EBE5DC] dark:border-[#26211C] flex items-center gap-2.5 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200 text-[var(--text-h)] whitespace-nowrap max-w-full"
-              style={{ display: "inline-flex" }}
-              optics={{
-                mapSize: 256,
-                clipToShape: true,
-                softEdge: true,
-                depth: 0.95,
-                curvature: 0.45,
-                dispersion: 0.5,
-                strength: 0.18,
-                bend: 0.7,
-                bendWidth: 0.12,
-                frost: 2.5,
-                brightness: 0,
-                specular: 1.4,
-                sheenAngle: 50,
-                sheen: 1.25,
-                sheenWidth: 3.5,
-                glow: 0.2,
-              }}
+              className="pointer-events-auto px-4 py-2.5 rounded-full shadow-[0_12px_30px_rgba(181,129,76,0.18)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)] bg-[#FAF8F5]/95 dark:bg-[#14110E]/95 border border-[#B5814C]/35 dark:border-[#C88E3E]/35 flex items-center gap-2.5 transition-all animate-in fade-in slide-in-from-bottom-4 duration-200 text-[var(--text-h)] whitespace-nowrap max-w-full backdrop-blur-md"
             >
               {isError ? (
                 <svg
@@ -300,7 +270,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
               >
                 ✕
               </button>
-            </Glass>
+            </div>
           );
         })}
       </div>
@@ -316,9 +286,11 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             aria-hidden="true"
           >
             {/* Top-right warm amber dune wash */}
-            <div className="absolute -top-[15%] right-0 w-[55vw] h-[55vh] rounded-full bg-gradient-to-bl from-[#DEAC62]/14 via-[#B5814C]/8 to-transparent dark:from-[#C88E3E]/7 dark:via-[#B5814C]/4 dark:to-transparent blur-3xl" />
-            {/* Lower-left soft warm clay wash */}
-            <div className="absolute top-[45%] -left-[10%] w-[55vw] h-[60vh] rounded-full bg-gradient-to-tr from-[#D99F50]/10 via-[#996533]/6 to-transparent dark:from-[#B5814C]/5 dark:via-[#996533]/3 dark:to-transparent blur-3xl" />
+            <div className="absolute -top-[18%] right-[-5%] w-[60vw] h-[60vh] rounded-full bg-gradient-to-bl from-[#DEAC62]/20 via-[#B5814C]/10 to-transparent dark:from-[#C88E3E]/10 dark:via-[#B5814C]/5 dark:to-transparent blur-3xl" />
+            {/* Center-left soft warm clay wash */}
+            <div className="absolute top-[35%] -left-[12%] w-[60vw] h-[65vh] rounded-full bg-gradient-to-tr from-[#D99F50]/14 via-[#996533]/8 to-transparent dark:from-[#B5814C]/7 dark:via-[#996533]/4 dark:to-transparent blur-3xl" />
+            {/* Bottom-right gentle sand crest glow */}
+            <div className="absolute -bottom-[15%] right-[15%] w-[50vw] h-[45vh] rounded-full bg-gradient-to-t from-[#B5814C]/10 to-transparent dark:from-[#C88E3E]/6 to-transparent blur-3xl" />
           </div>
 
           <Nav
@@ -329,7 +301,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
             isScrolled={isScrolled}
           />
 
-          <div className="w-full px-4 sm:px-6 lg:px-8 pb-32 sm:pb-36">
+          <div className="w-full px-4 sm:px-6 lg:px-8 pb-16">
             {loadingData ? (
               <ScreenSkeleton />
             ) : (
@@ -343,21 +315,15 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                   activePlatform={activePlatform}
+                  onPlatformChange={setActivePlatform}
                   isAddModalOpen={isAddModalOpen}
+                  onOpenAddModal={() => setIsAddModalOpen(true)}
                   onCloseAddModal={() => setIsAddModalOpen(false)}
                 />
               </Suspense>
             )}
           </div>
         </main>
-
-        {/* Floating iOS Liquid Glass Bottom Navbar with (+) Add button at end */}
-        <BottomNavbar
-          activeTab={activePlatform}
-          onTabChange={setActivePlatform}
-          tabs={bottomTabs}
-          onAddClick={() => setIsAddModalOpen(true)}
-        />
       </div>
     </div>
   );

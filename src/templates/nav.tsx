@@ -115,7 +115,9 @@ function Nav({
     <>
       <header className="sticky top-0 z-30 w-full transition-all duration-300">
         <Glass
-          className={`w-full transition-all duration-300 ${isScrolled ? "shadow-[0_10px_30px_rgba(0,0,0,0.12)]" : ""
+          className={`w-full transition-all duration-300 border-b border-[#EBE5DC]/80 dark:border-[#26211C]/80 ${isScrolled
+            ? "shadow-[0_10px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)]"
+            : ""
             }`}
           style={{
             display: "block",
@@ -124,19 +126,19 @@ function Nav({
             mapSize: 256,
             clipToShape: true,
             softEdge: true,
-            depth: isScrolled ? 0.95 : 0,
-            curvature: isScrolled ? 0.48 : 0,
-            dispersion: isScrolled ? 0.65 : 0,
-            strength: isScrolled ? 0.2 : 0,
-            bend: isScrolled ? 0.72 : 0,
-            bendWidth: isScrolled ? 0.12 : 0,
-            frost: isScrolled ? 2 : 0,
+            depth: 0.95,
+            curvature: 0.48,
+            dispersion: 0.65,
+            strength: 0.05,
+            bend: 0.72,
+            bendWidth: 0.12,
+            frost: 2,
             brightness: 0,
-            specular: isScrolled ? 1.4 : 0,
+            specular: 1.4,
             sheenAngle: 50,
-            sheen: isScrolled ? 1.3 : 0,
-            sheenWidth: isScrolled ? 3.5 : 0,
-            glow: isScrolled ? 0.25 : 0,
+            sheen: 0.4,
+            sheenWidth: 2.5,
+            glow: 0.1,
           }}
         >
           <div className="w-full flex items-center justify-between px-4 sm:px-8 h-20 gap-4 sm:gap-6">
@@ -245,7 +247,7 @@ function Nav({
         </Glass>
       </header>
 
-      {/* Portaled Notifications Dropdown — rendered outside navbar Glass so it refracts page content directly */}
+      {/* Portaled Notifications Dropdown — rendered outside navbar with clean Sand Dune styling */}
       {notificationsClicked &&
         createPortal(
           <div
@@ -253,27 +255,8 @@ function Nav({
             className="fixed z-50"
             style={{ top: notifPos.top, right: notifPos.right }}
           >
-            <Glass
-              className="w-80 rounded-3xl p-4 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#EBE5DC] dark:border-[#26211C]"
-              style={{ display: "block" }}
-              optics={{
-                mapSize: 256,
-                clipToShape: true,
-                softEdge: true,
-                depth: 0.95,
-                curvature: 0.52,
-                dispersion: 0.65,
-                strength: 0.22,
-                bend: 0.75,
-                bendWidth: 0.12,
-                frost: 2.5,
-                brightness: 0,
-                specular: 1.95,
-                sheenAngle: 50,
-                sheen: 0,
-                sheenWidth: 3.5,
-                glow: 0,
-              }}
+            <div
+              className="w-80 rounded-3xl p-4 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] bg-[#FAF8F5] dark:bg-[#14110E] border border-[#B5814C]/25 dark:border-[#C88E3E]/25 transition-all"
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-[#EBE5DC] dark:border-[#26211C] mb-2.5">
                 <span className="font-bold text-sm text-[var(--text-h)]">Notifications</span>
@@ -304,12 +287,12 @@ function Nav({
                   Close
                 </button>
               </div>
-            </Glass>
+            </div>
           </div>,
           document.body
         )}
 
-      {/* Portaled Profile Dropdown — rendered outside navbar Glass so it refracts page content directly */}
+      {/* Portaled Profile Dropdown — rendered outside navbar with clean Sand Dune styling */}
       {profileClicked &&
         createPortal(
           <div
@@ -317,27 +300,8 @@ function Nav({
             className="fixed z-50"
             style={{ top: profilePos.top, right: profilePos.right }}
           >
-            <Glass
-              className="w-56 rounded-3xl p-2.5 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-[var(--text)]"
-              style={{ display: "block" }}
-              optics={{
-                mapSize: 256,
-                clipToShape: true,
-                softEdge: true,
-                depth: 0.95,
-                curvature: 0.52,
-                dispersion: 0.65,
-                strength: 0.22,
-                bend: 0.75,
-                bendWidth: 0.12,
-                frost: 2.5,
-                brightness: 0,
-                specular: 1.95,
-                sheenAngle: 50,
-                sheen: 0,
-                sheenWidth: 3.5,
-                glow: 0,
-              }}
+            <div
+              className="w-56 rounded-3xl p-2.5 text-xs shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] bg-[#FAF8F5] dark:bg-[#14110E] border border-[#B5814C]/25 dark:border-[#C88E3E]/25 text-[var(--text)] transition-all"
             >
               {user && (
                 <div className="px-3 py-2 border-b border-zinc-500/20 mb-1">
@@ -348,14 +312,14 @@ function Nav({
               <button
                 type="button"
                 onClick={() => setProfileClicked(false)}
-                className="w-full text-left block px-3 py-2 hover:bg-white/10 hover:text-[var(--text-h)] rounded-2xl transition-colors cursor-pointer"
+                className="w-full text-left block px-3 py-2 hover:bg-[#B5814C]/10 dark:hover:bg-white/10 hover:text-[var(--text-h)] rounded-2xl transition-colors cursor-pointer"
               >
                 Your Profile
               </button>
               <button
                 type="button"
                 onClick={() => setProfileClicked(false)}
-                className="w-full text-left block px-3 py-2 hover:bg-white/10 hover:text-[var(--text-h)] rounded-2xl transition-colors cursor-pointer"
+                className="w-full text-left block px-3 py-2 hover:bg-[#B5814C]/10 dark:hover:bg-white/10 hover:text-[var(--text-h)] rounded-2xl transition-colors cursor-pointer"
               >
                 Settings
               </button>
@@ -370,7 +334,7 @@ function Nav({
               >
                 Sign Out
               </button>
-            </Glass>
+            </div>
           </div>,
           document.body
         )}

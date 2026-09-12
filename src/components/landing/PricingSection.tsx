@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface PricingSectionProps {
   onSelectTier: (tier: "free" | "starter" | "pro") => void;

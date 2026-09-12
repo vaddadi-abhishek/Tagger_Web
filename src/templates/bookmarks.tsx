@@ -92,6 +92,15 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   );
 });
 
+export const PLATFORM_TABS = [
+  { id: "all", label: "All" },
+  { id: "x", label: "Twitter / X" },
+  { id: "instagram", label: "Instagram" },
+  { id: "facebook", label: "Facebook" },
+  { id: "linkedin", label: "LinkedIn" },
+  { id: "reddit", label: "Reddit" },
+];
+
 interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
   onAddBookmark?: (newBookmark: Bookmark) => void;
@@ -101,7 +110,9 @@ interface BookmarksScreenProps {
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
   activePlatform?: string;
+  onPlatformChange?: (platform: string) => void;
   isAddModalOpen?: boolean;
+  onOpenAddModal?: () => void;
   onCloseAddModal?: () => void;
 }
 
@@ -113,21 +124,48 @@ export default function BookmarksScreen({
   generatingAiId,
   searchTerm: externalSearchTerm,
   onSearchChange: externalOnSearchChange,
-  activePlatform = "all",
+  activePlatform: externalActivePlatform,
+  onPlatformChange: externalOnPlatformChange,
   isAddModalOpen: externalIsAddModalOpen,
+  onOpenAddModal: externalOnOpenAddModal,
   onCloseAddModal,
 }: BookmarksScreenProps) {
   const [internalBookmarks, setInternalBookmarks] = useState<Bookmark[]>([]);
   const [internalSearchTerm, setInternalSearchTerm] = useState("");
+  const [internalActivePlatform, setInternalActivePlatform] = useState("all");
   const [selectedAiBookmark, setSelectedAiBookmark] = useState<Bookmark | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [internalIsAddModalOpen, setInternalIsAddModalOpen] = useState(false);
 
+  const activePlatform =
+    externalActivePlatform !== undefined
+      ? externalActivePlatform
+      : internalActivePlatform;
+
+  const handlePlatformChange = useCallback(
+    (platform: string) => {
+      if (externalOnPlatformChange) {
+        externalOnPlatformChange(platform);
+      } else {
+        setInternalActivePlatform(platform);
+      }
+    },
+    [externalOnPlatformChange]
+  );
+
   const isAddModalOpen =
     externalIsAddModalOpen !== undefined
       ? externalIsAddModalOpen
       : internalIsAddModalOpen;
+
+  const handleOpenAddModal = useCallback(() => {
+    if (externalOnOpenAddModal) {
+      externalOnOpenAddModal();
+    } else {
+      setInternalIsAddModalOpen(true);
+    }
+  }, [externalOnOpenAddModal]);
 
   const handleCloseAddModal = useCallback(() => {
     if (onCloseAddModal) {
@@ -238,6 +276,62 @@ export default function BookmarksScreen({
     });
   }, [bookmarks, activePlatform, deferredSearchTerm]);
 
+  // Count bookmarks matching each platform filter
+  const platformCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: bookmarks.length,
+      x: 0,
+      instagram: 0,
+      facebook: 0,
+      linkedin: 0,
+      reddit: 0,
+    };
+
+    bookmarks.forEach((item) => {
+      const type = (item.type || "").toLowerCase();
+      const url = (item.url || "").toLowerCase();
+      const site = (item.site_name || "").toLowerCase();
+
+      if (
+        type.includes("x") ||
+        type.includes("twitter") ||
+        url.includes("twitter.com") ||
+        url.includes("x.com") ||
+        site.includes("twitter")
+      ) {
+        counts.x++;
+      } else if (
+        type.includes("instagram") ||
+        url.includes("instagram.com") ||
+        site.includes("instagram")
+      ) {
+        counts.instagram++;
+      } else if (
+        type.includes("facebook") ||
+        url.includes("facebook.com") ||
+        url.includes("fb.watch") ||
+        url.includes("fb.com") ||
+        site.includes("facebook")
+      ) {
+        counts.facebook++;
+      } else if (
+        type.includes("linkedin") ||
+        url.includes("linkedin.com") ||
+        site.includes("linkedin")
+      ) {
+        counts.linkedin++;
+      } else if (
+        type.includes("reddit") ||
+        url.includes("reddit.com") ||
+        site.includes("reddit")
+      ) {
+        counts.reddit++;
+      }
+    });
+
+    return counts;
+  }, [bookmarks]);
+
   // Stable callbacks for card actions to prevent child re-renders
   const handleToggleMenu = useCallback((id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -287,6 +381,62 @@ export default function BookmarksScreen({
           onClick={handleCloseMenu}
         />
       )}
+
+      {/* Top Dashboard Controls Bar: Platform Filters List & Add Bookmark Action Button */}
+      <div className="w-full pt-2 pb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        {/* Horizontal Platform Filter Pills */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -my-1 max-w-full">
+          {PLATFORM_TABS.map((tab) => {
+            const isActive = activePlatform === tab.id;
+            const count = platformCounts[tab.id] ?? 0;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handlePlatformChange(tab.id)}
+                className={`group relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0 select-none ${
+                  isActive
+                    ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] scale-100"
+                    : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Primary Action: Add Bookmark Button */}
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={handleOpenAddModal}
+            className="relative px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold text-[#FAF8F5] bg-gradient-to-r from-[#B5814C] to-[#996533] hover:from-[#C08C56] hover:to-[#A4703D] hover:brightness-105 shadow-[0_3px_14px_rgba(181,129,76,0.3)] hover:shadow-[0_4px_18px_rgba(181,129,76,0.45)] transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1.5"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="2.5"
+              stroke="currentColor"
+              className="size-4"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Add Bookmark</span>
+          </button>
+        </div>
+      </div>
 
       {/* Bookmarks Responsive CSS Grid:
           Grid with items-start ensures cards stay in their deterministic columns and expanding cards do not trigger column re-balancing or empty gaps */}
