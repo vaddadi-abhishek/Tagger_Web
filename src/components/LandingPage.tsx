@@ -114,18 +114,16 @@ export function LandingPage({
           1. FLOATING NAVIGATION BAR (Pill Header with Pop-in / Pop-out Physics)
       ══════════════════════════════════════════════════════════════ */}
       <header
-        className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-4xl origin-top transition-all ${
-          navVisible
-            ? "translate-y-0 scale-100 opacity-100 pointer-events-auto duration-350 ease-[cubic-bezier(0.34,1.45,0.64,1)]"
-            : "-translate-y-20 scale-90 opacity-0 pointer-events-none duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        }`}
+        className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-4xl origin-top transition-all ${navVisible
+          ? "translate-y-0 scale-100 opacity-100 pointer-events-auto duration-350 ease-[cubic-bezier(0.34,1.45,0.64,1)]"
+          : "-translate-y-20 scale-90 opacity-0 pointer-events-none duration-200 ease-[cubic-bezier(0.4,0,0.2,1)]"
+          }`}
       >
         <nav
-          className={`backdrop-blur-md bg-[#FAF8F5]/85 dark:bg-neutral-900/80 border border-[#EBE5DC] dark:border-neutral-800/80 rounded-full px-5 py-2.5 flex items-center justify-between transition-all duration-300 ${
-            isScrolled
-              ? "shadow-[0_12px_36px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)] bg-[#FAF8F5]/90 dark:bg-neutral-900/90"
-              : "shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
-          }`}
+          className={`backdrop-blur-md bg-[#FAF8F5]/85 dark:bg-neutral-900/80 border border-[#EBE5DC] dark:border-neutral-800/80 rounded-full px-5 py-2.5 flex items-center justify-between transition-all duration-300 ${isScrolled
+            ? "shadow-[0_12px_36px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)] bg-[#FAF8F5]/90 dark:bg-neutral-900/90"
+            : "shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
+            }`}
         >
           {/* Left: Wordmark */}
           <div
@@ -249,7 +247,7 @@ export function LandingPage({
 
             {/* Subheading */}
             <p className="text-base sm:text-lg text-[#5F5850] dark:text-[#B3ABA0] leading-relaxed font-normal">
-              The intelligent second brain with automated AI tagging, visual context that reads your images, Model Context Provider connectivity, and a conversational RAG chatbot across all your bookmarks, documents, and media.
+              Essential smart bookmarking with automated AI tagging, visual context that reads your images, Model Context Provider connectivity, and  MindSpace AI to answer everything across all your bookmarks.
             </p>
           </div>
         </div>
@@ -319,14 +317,6 @@ export function LandingPage({
             <span>·</span>
             <span>The Intelligent Knowledge Layer</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            <span className="text-neutral-600 dark:text-neutral-400">
-              All Systems Operational · MCP v1.0
-            </span>
-          </div>
-
           <div>
             © {new Date().getFullYear()} Mindspace Inc. All rights reserved.
           </div>

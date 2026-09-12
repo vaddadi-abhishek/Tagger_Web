@@ -44,7 +44,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
               Annual Billing
             </span>
             <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/30">
-              Save 20%
+              Save 37%
             </span>
           </div>
         </div>
@@ -63,7 +63,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
                 Collector
               </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                Essential AI-augmented bookmarking and research for everyday browsing.
+                Essential smart bookmarking for everyday browsing. Save what matters and never organize again.
               </p>
             </div>
 
@@ -75,13 +75,13 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             </div>
 
             <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-xs text-amber-900 dark:text-amber-300 font-medium leading-relaxed">
-              🎁 7 days unlimited acess to AI features for all new users.
+              🎁 14 days unlimited access to AI features for all new users.
             </div>
 
             <div className="space-y-3 pt-2">
               {[
                 "Save unlimited links and articles.",
-                "Auto AI text and image tagging upto 3 saved links per week.",
+                "Auto AI text and image tagging up to 3 saved links per week.",
                 "Cloud sync bookmarks to mobile app.",
                 "Extension support for Chrome, Brave, Firefox & Safari",
               ].map((feature, i) => (
@@ -112,21 +112,20 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
                 Thinker
               </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                Perfect for individuals needing an intelligent, organized memory vault.
+                Perfect for individuals needing an intelligent, self organized memory vault.
               </p>
             </div>
 
             <div className="flex items-baseline gap-2">
               <span className="text-4xl sm:text-5xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight font-sans">
-                ${isAnnual ? "4" : "5"}
+                ${isAnnual ? "5" : "8"}
               </span>
               <span className="text-xs text-neutral-500 font-mono">/ month</span>
             </div>
 
             <div className="space-y-3 pt-2">
               {[
-                "Everything in Free",
-                "Unlimited bookmark saving forever.",
+                "Everything in Free.",
                 "Unlimited access to AI features.",
                 "Auto AI text and image tagging.",
                 "Image text recognition.",
@@ -141,10 +140,10 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
           </div>
 
           <button
-            onClick={() => onSelectTier("starter")}
-            className="w-full py-3.5 px-6 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            onClick={() => onSelectTier("pro")}
+            className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-amber-900/30 transition-all cursor-pointer"
           >
-            Upgrade to Starter
+            Upgrade
           </button>
         </div>
 
@@ -158,9 +157,6 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
               <span className="inline-flex text-[11px] font-mono uppercase tracking-wider text-amber-400 font-bold">
                 Frontier AI Integration
               </span>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-500 text-neutral-950 font-extrabold uppercase">
-                Most Popular
-              </span>
             </div>
 
             <div className="space-y-2">
@@ -168,28 +164,19 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
               <p className="text-xs text-neutral-400">
                 For researchers, builders, and heavy thinkers wanting limitless AI memory.
               </p>
-            </div>
-
-            <div className="flex items-baseline gap-2">
-              <span className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight font-sans">
-                ${isAnnual ? "7" : "9"}
-              </span>
-              <span className="text-xs text-neutral-400 font-mono">/ month</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-neutral-300 font-medium">
-              ⚡ Full frontier connection to Claude Desktop, ChatGPT & Cursor.
+              <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-xs text-amber-500 dark:text-amber-300 font-medium leading-relaxed">
+                Active Thinker members receive priority beta access
+              </div>
             </div>
 
             <div className="space-y-3 pt-2">
               {[
-                "Everything in Starter, plus:",
-                "Unlimited AI visual context & Vision OCR parsing",
-                "Full MCP Server access (ChatGPT, Claude & Gemini)",
-                "In-app RAG chatbot across all bookmarks & transcripts",
-                "Timestamped podcast citations & instant audio jumps",
-                "Priority 1,536-dimensional vector embedding updates",
-                "Priority email & Discord technical support",
+                "Everything in Thinker.",
+                "Ask MindSpace AI about anything you've saved.",
+                "MindSpace AI in Reading Mode",
+                "MCP Server access to Claude, ChatGPT, and many other AI tools.",
+                "YouTube full transcript available to answer your queries.",
+                "Priority Email & technical support",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-neutral-200">
                   <Check className="size-4 text-amber-400 shrink-0 mt-0.5" />
@@ -203,14 +190,9 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             onClick={() => onSelectTier("pro")}
             className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-amber-900/30 transition-all cursor-pointer"
           >
-            Upgrade to Pro
+            Join Waitlist
           </button>
         </div>
-      </div>
-
-      <div className="mt-12 text-center text-xs text-neutral-500 flex items-center justify-center gap-2">
-        <ShieldCheck className="size-4 text-emerald-600" />
-        <span>No credit card required for 7-day trial · Cancel anytime with one click</span>
       </div>
     </section>
   );
