@@ -116,10 +116,8 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
         </a>
 
         {/* Top-Right Logo & 3-dots Menu */}
-        <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
-          <div className="bg-black/60 backdrop-blur-md px-1.5 py-1 rounded-full border border-white/20 shadow-sm flex items-center justify-center">
-            <YouTubeBrandLogo className="w-5 h-3.5" />
-          </div>
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-2 z-10">
+          <YouTubeBrandLogo className="w-6 h-4 drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]" />
           <CardActionMenu
             bookmark={bookmark}
             isOpen={Boolean(isMenuOpen)}

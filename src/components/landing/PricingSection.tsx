@@ -15,7 +15,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
           Simple pricing for serious thinkers.
         </h2>
         <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
-          Start completely free with 14  days free trail. Keep your saved bookmarks forever regardless of plan.
+          Start completely free with a 14-day free trial. Keep your saved bookmarks forever regardless of plan.
         </p>
 
         {/* Monthly / Annual Toggle */}
@@ -83,7 +83,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
                 "Save unlimited links and articles.",
                 "Auto AI text and image tagging up to 3 saved links per week.",
                 "Cloud sync bookmarks to mobile app.",
-                "Extension support for Chrome, Brave, Firefox & Safari",
+                "Extension support for Chrome, Brave, Firefox & Safari.",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
                   <Check className="size-4 text-neutral-900 dark:text-white shrink-0 mt-0.5" />
@@ -112,7 +112,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
                 Thinker
               </h3>
               <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                Perfect for individuals needing an intelligent, self organized memory vault.
+                Perfect for individuals needing an intelligent, self-organized memory vault.
               </p>
             </div>
 
@@ -125,11 +125,11 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
 
             <div className="space-y-3 pt-2">
               {[
-                "Everything in Free.",
+                "Everything in Collector.",
                 "Unlimited access to AI features.",
                 "Unlimited Auto AI text and image tagging.",
                 "Image text recognition.",
-                "Reading Mode for all the Articles.",
+                "Reading Mode for all articles.",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
                   <Check className="size-4 text-neutral-900 dark:text-white shrink-0 mt-0.5" />
@@ -172,11 +172,11 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             <div className="space-y-3 pt-2">
               {[
                 "Everything in Thinker.",
-                "Ask MindSpace AI about anything you've saved.",
-                "MindSpace AI in Reading Mode",
+                "Ask Mindspace AI about anything you've saved.",
+                "Mindspace AI in Reading Mode.",
                 "MCP Server access to Claude, ChatGPT, and many other AI tools.",
                 "YouTube full transcript available to answer your queries.",
-                "Priority Email & technical support",
+                "Priority email & technical support.",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3 text-xs text-neutral-200">
                   <Check className="size-4 text-amber-400 shrink-0 mt-0.5" />

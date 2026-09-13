@@ -38,6 +38,9 @@ export function LandingPage({
       smoothWheel: true,
     });
 
+    // Expose lenis instance globally for interactive showcase boundary passthrough scrolling
+    (window as any).__lenis = lenis;
+
     let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
@@ -85,6 +88,7 @@ export function LandingPage({
       cancelAnimationFrame(rafId);
       lenis.off("scroll", onLenisScroll);
       window.removeEventListener("scroll", onNativeScroll);
+      delete (window as any).__lenis;
       lenis.destroy();
     };
   }, []);
@@ -138,16 +142,16 @@ export function LandingPage({
           {/* Center: Navigation Links */}
           <div className="hidden md:flex items-center gap-8 text-xs sm:text-sm font-medium text-[#5F5850] dark:text-neutral-300">
             <button
-              onClick={() => scrollToSection("how-it-works")}
+              onClick={() => scrollToSection("features")}
               className="hover:text-[#211D1A] dark:hover:text-white transition-colors cursor-pointer"
             >
-              How it Works
+              Features
             </button>
             <button
               onClick={() => scrollToSection("how-it-works")}
               className="hover:text-[#211D1A] dark:hover:text-white transition-colors cursor-pointer"
             >
-              Features
+              How it Works
             </button>
             <button
               onClick={() => scrollToSection("pricing")}
@@ -241,7 +245,7 @@ export function LandingPage({
                     />
                   </svg>
                 </span>
-                <span className="relative z-10">Never Organize again</span>
+                <span className="relative z-10">Never Organize Again</span>
               </span>
             </h1>
 
@@ -256,20 +260,19 @@ export function LandingPage({
       {/* ══════════════════════════════════════════════════════════════
           3. PRODUCT WIREFRAME / 3D PERSPECTIVE SHOWCASE (Container Scroll)
       ══════════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 -mt-12 sm:-mt-20">
-        <ContainerScroll
-          titleComponent={
-            <div className="space-y-3 mb-8">
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white font-sans">
-                Everything You Save, In One Place
-              </h2>
-              <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto">
-                A space for your mind. Save anything, explore by context, and find what you need without folders, labels, or keywords.
-              </p>
-            </div>
-          }
-        >
-          {/* Mockup mirroring the actual Mindspace Home Screen with lazy loading cards */}
+      <section id="features" className="relative z-10 pt-16 sm:pt-24 pb-8 scroll-mt-20">
+        {/* Title & Subheading scroll away naturally with page scroll */}
+        <div className="max-w-4xl mx-auto text-center px-4 mb-10 sm:mb-16">
+          <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white font-sans">
+            Everything You Save, In One Place
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto mt-3">
+            A space for your mind. Save anything, explore by context, and find what you need without folders, labels, or keywords.
+          </p>
+        </div>
+
+        {/* 3D Perspective Showcase: zooms in closer with negative space, then zooms out */}
+        <ContainerScroll>
           <DashboardWireframe />
         </ContainerScroll>
       </section>
@@ -280,7 +283,7 @@ export function LandingPage({
       <InteractiveStory />
 
       {/* ══════════════════════════════════════════════════════════════
-          5. CLEAR, TRANSPARENT PRICING (Two Tiers)
+          5. CLEAR, TRANSPARENT PRICING (Three Tiers)
       ══════════════════════════════════════════════════════════════ */}
       <PricingSection
         onSelectTier={(_tier) => {

@@ -224,4 +224,14 @@
 .content-auto {
   content-visibility: auto;
   contain-intrinsic-size: 1px 360px;
-}
+}
+
+/* Hide scrollbars universally */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

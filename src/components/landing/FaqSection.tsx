@@ -9,14 +9,14 @@ interface FaqItem {
 
 const faqs: FaqItem[] = [
   {
-    question: "How does the 7-day free trial work?",
+    question: "How does the 14-day free trial work?",
     answer:
-      "When you create your account, you immediately receive 7 full days of unrestricted Pro access. This includes unlimited bookmark saves, full AI visual context analysis, native MCP server connectivity for Claude and ChatGPT, and in-app conversational RAG across all your bookmarks and media transcripts. No credit card is required to begin.",
+      "When you create your account, you immediately receive 14 full days of unrestricted access to all AI features. This includes unlimited bookmark saves, full AI visual context analysis, native MCP server connectivity for Claude and ChatGPT, and conversational retrieval across your bookmarks and transcripts. No credit card is required to begin.",
   },
   {
-    question: "What happens after the trial ends on the $5 plan?",
+    question: "What happens after the 14-day trial ends if I don't upgrade?",
     answer:
-      "You will never lose your saved links. Bookmark saving remains completely unlimited forever. On the $5 Starter plan, automated AI visual context extraction and auto-tagging is capped at 5 cards per week, and you maintain full access to fast semantic search across your entire library.",
+      "You will never lose your saved links. Bookmark saving remains completely unlimited forever. Your account simply transitions to our Free Collector plan, which includes up to 3 AI auto-tagged links per week and full access to your saved library. You can upgrade to Thinker ($5/mo billed annually or $8/mo monthly) or join the Architect waitlist at any time.",
   },
   {
     question: "How does the MCP integration work with Claude or ChatGPT?",
@@ -102,7 +102,7 @@ export function FaqSection({ onStartFree }: FaqSectionProps) {
             Stop letting what matters get buried in tabs.
           </h2>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal">
-            Turn scattered bookmarks, and links into an intelligent second brain powered by AI auto-tagging, visual context.
+            Turn scattered bookmarks and links into an intelligent second brain powered by AI auto-tagging and deep visual context.
           </p>
 
           <div className="pt-4 flex justify-center">

@@ -341,10 +341,22 @@ if (uInfluence > 0.001) {
 
     // 7. Render Loop: Continuous Free Flow Smoothly Parting Around the Mouse
     let animationFrameId: number;
+    let isVisible = true;
     const clock = new THREE.Clock();
+
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+      },
+      { threshold: 0.02 }
+    );
+    visibilityObserver.observe(container);
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+
+      // Skip heavy 150,000 particle simulation when user scrolled past hero into demo section
+      if (!isVisible) return;
 
       const elapsedTime = clock.getElapsedTime();
       material.uniforms.uTime.value = elapsedTime;
@@ -372,6 +384,7 @@ if (uInfluence > 0.001) {
       window.removeEventListener("mousemove", onPointerMove);
       window.removeEventListener("mouseleave", onPointerLeave);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
 
       geometry.dispose();
       material.dispose();

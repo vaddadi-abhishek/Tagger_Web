@@ -27,7 +27,7 @@ const pillars: StoryPillar[] = [
       "Save links, screenshots, and visual assets without manual sorting. Mindspace applies intelligent AI auto-tagging and deep visual context understanding, reading text and concepts from your images as well.",
     bullets: [
       "Hands-off automatic classification.",
-      "Recognizes people, places, and brands — not just generic labels like 'person' or 'outdoor",
+      "Recognizes people, places, and brands — not just generic labels like 'person' or 'outdoor'.",
       "Deep visual understanding that reads text, objects, and concepts from images.",
     ],
   },
@@ -37,7 +37,7 @@ const pillars: StoryPillar[] = [
     title: "Model Context Protocol (MCP) Connectivity",
     subtitle: "Direct Context Injection for Frontier AI Models",
     description:
-      "Connect your entire library of bookmarks, image text, image content context, and notes directly to Claude, ChatGPT and other AI models.",
+      "Connect your entire library of bookmarks, image text, visual context, and notes directly to Claude, ChatGPT, and other AI models.",
     bullets: [
       "Native MCP server — Seamless integration with Claude, ChatGPT, and other AI assistants.",
       "No exporting, no copy-pasting links — your AI tools query your saves directly.",
@@ -50,7 +50,7 @@ const pillars: StoryPillar[] = [
     title: "Mindspace AI",
     subtitle: "Query Across All Your Bookmarks & Knowledge",
     description:
-      "Ask anything about what you've saved. MindSpace AI searches across your articles, images, and transcripts to answer in plain language — with sources you can trace back.",
+      "Ask anything about what you've saved. Mindspace AI searches across your articles, images, and transcripts to answer in plain language — with sources you can trace back.",
     bullets: [
       "Conversational AI that searches across everything you've saved — notes, articles, images, and transcripts.",
       "Answers complex queries in plain language, not just a list of matching results.",
