@@ -38,7 +38,7 @@ const INITIAL_WIREFRAME_CARDS: WireframeCardItem[] = [
   { id: "wf-web-1", type: "generic", platformName: "Web Article" },
 ];
 
-export const DEMO_PLATFORM_TABS = [
+const DEMO_PLATFORM_TABS = [
   { id: "all", label: "All" },
   { id: "x", label: "Twitter / X" },
   { id: "youtube", label: "YouTube" },

@@ -1,30 +1,29 @@
-import { useState, useMemo, useCallback, useDeferredValue, useEffect, memo } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useSyncExternalStore, memo } from "react";
 import React from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
 import { AiContextModal } from "../components/AiContextModal";
+import { PLATFORM_TABS, resolveCardType, matchesPlatform } from "../lib/utils";
+
+function getColumnCount(): number {
+  if (typeof window === "undefined") return 1;
+  const w = window.innerWidth;
+  if (w >= 1280) return 4;
+  if (w >= 1024) return 3;
+  if (w >= 640) return 2;
+  return 1;
+}
+
+function subscribeResize(callback: () => void) {
+  window.addEventListener("resize", callback, { passive: true });
+  return () => window.removeEventListener("resize", callback);
+}
 
 /** Responsive column count matching Tailwind breakpoints: 1 / sm:2 / lg:3 / xl:4 */
 function useColumnCount() {
-  const getCount = () => {
-    const w = window.innerWidth;
-    if (w >= 1280) return 4;
-    if (w >= 1024) return 3;
-    if (w >= 640) return 2;
-    return 1;
-  };
-
-  const [cols, setCols] = useState(getCount);
-
-  useEffect(() => {
-    const onResize = () => setCols(getCount());
-    window.addEventListener("resize", onResize, { passive: true });
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  return cols;
+  return useSyncExternalStore(subscribeResize, getColumnCount, () => 1);
 }
 
 /**
@@ -92,14 +91,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   );
 });
 
-export const PLATFORM_TABS = [
-  { id: "all", label: "All" },
-  { id: "x", label: "Twitter / X" },
-  { id: "instagram", label: "Instagram" },
-  { id: "facebook", label: "Facebook" },
-  { id: "linkedin", label: "LinkedIn" },
-  { id: "reddit", label: "Reddit" },
-];
+
 
 interface BookmarksScreenProps {
   bookmarks?: Bookmark[];
@@ -195,45 +187,7 @@ export default function BookmarksScreen({
 
     return bookmarks.filter((item) => {
       if (activePlatform && activePlatform !== "all") {
-        const type = (item.type || "").toLowerCase();
-        const url = (item.url || "").toLowerCase();
-        const site = (item.site_name || "").toLowerCase();
-
-        if (activePlatform === "x") {
-          const isX =
-            type.includes("x") ||
-            type.includes("twitter") ||
-            url.includes("twitter.com") ||
-            url.includes("x.com") ||
-            site.includes("twitter");
-          if (!isX) return false;
-        } else if (activePlatform === "instagram") {
-          const isIg =
-            type.includes("instagram") ||
-            url.includes("instagram.com") ||
-            site.includes("instagram");
-          if (!isIg) return false;
-        } else if (activePlatform === "facebook") {
-          const isFb =
-            type.includes("facebook") ||
-            url.includes("facebook.com") ||
-            url.includes("fb.watch") ||
-            url.includes("fb.com") ||
-            site.includes("facebook");
-          if (!isFb) return false;
-        } else if (activePlatform === "linkedin") {
-          const isLi =
-            type.includes("linkedin") ||
-            url.includes("linkedin.com") ||
-            site.includes("linkedin");
-          if (!isLi) return false;
-        } else if (activePlatform === "reddit") {
-          const isReddit =
-            type.includes("reddit") ||
-            url.includes("reddit.com") ||
-            site.includes("reddit");
-          if (!isReddit) return false;
-        }
+        if (!matchesPlatform(item, activePlatform)) return false;
       }
 
       if (!cleanSearch) return true;
@@ -280,7 +234,7 @@ export default function BookmarksScreen({
     });
   }, [bookmarks, activePlatform, deferredSearchTerm]);
 
-  // Count bookmarks matching each platform filter
+  // Count bookmarks matching each platform filter using centralized resolver
   const platformCounts = useMemo(() => {
     const counts: Record<string, number> = {
       all: bookmarks.length,
@@ -292,44 +246,9 @@ export default function BookmarksScreen({
     };
 
     bookmarks.forEach((item) => {
-      const type = (item.type || "").toLowerCase();
-      const url = (item.url || "").toLowerCase();
-      const site = (item.site_name || "").toLowerCase();
-
-      if (
-        type.includes("x") ||
-        type.includes("twitter") ||
-        url.includes("twitter.com") ||
-        url.includes("x.com") ||
-        site.includes("twitter")
-      ) {
-        counts.x++;
-      } else if (
-        type.includes("instagram") ||
-        url.includes("instagram.com") ||
-        site.includes("instagram")
-      ) {
-        counts.instagram++;
-      } else if (
-        type.includes("facebook") ||
-        url.includes("facebook.com") ||
-        url.includes("fb.watch") ||
-        url.includes("fb.com") ||
-        site.includes("facebook")
-      ) {
-        counts.facebook++;
-      } else if (
-        type.includes("linkedin") ||
-        url.includes("linkedin.com") ||
-        site.includes("linkedin")
-      ) {
-        counts.linkedin++;
-      } else if (
-        type.includes("reddit") ||
-        url.includes("reddit.com") ||
-        site.includes("reddit")
-      ) {
-        counts.reddit++;
+      const type = resolveCardType(item);
+      if (type in counts) {
+        counts[type]++;
       }
     });
 

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import type { Bookmark, GlobalWebCardData } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, getFaviconUrl, parseCardData } from "../../lib/utils";
 import { SafeImage } from "./SafeImage";
 import { CardActionMenu } from "./CardActionMenu";
 
@@ -30,22 +30,17 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
   const [logoError, setLogoError] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const cardData = bookmark.card_data as GlobalWebCardData | undefined;
+  const cardData = useMemo(
+    () => parseCardData<GlobalWebCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
   const snapshotUrl = cardData?.snapshot || bookmark.snapshot;
   const mediaUrl = snapshotUrl || bookmark.logo;
   const descriptionText = bookmark.description || "";
   const DESCRIPTION_LIMIT = 130;
   const isLongDescription = descriptionText.length > DESCRIPTION_LIMIT;
 
-  let domainFavicon = "";
-  if (bookmark.url) {
-    try {
-      const hostname = new URL(bookmark.url).hostname;
-      domainFavicon = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
-    } catch {
-      // ignore parsing error
-    }
-  }
+  const domainFavicon = useMemo(() => getFaviconUrl(bookmark.url), [bookmark.url]);
   const logoSrc = !logoError && bookmark.logo ? bookmark.logo : domainFavicon;
 
   return (

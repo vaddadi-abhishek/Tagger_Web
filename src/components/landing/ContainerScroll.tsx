@@ -23,7 +23,7 @@ const ScrollAnimationRotateContext = React.createContext<
   ScrollAnimationRotateContextValue | undefined
 >(undefined);
 
-export function useScrollAnimationRotateContext() {
+function useScrollAnimationRotateContext() {
   const context = React.useContext(ScrollAnimationRotateContext);
   if (!context) {
     throw new Error(

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { Bookmark, LinkedInCardData, MediaItem } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
 import {
@@ -24,12 +24,6 @@ interface LinkedInCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatNumber(num?: number): string | null {
-  if (!num) return null;
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-}
-
 export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCardProps) {
   const {
     bookmark,
@@ -42,18 +36,10 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
     onCloseMenu,
   } = props;
 
-  const rawCardData = bookmark.card_data;
-  const cardData: LinkedInCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as LinkedInCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as LinkedInCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(
+    () => parseCardData<LinkedInCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
 
   const author = cardData?.author;
   const metrics = cardData?.metrics;

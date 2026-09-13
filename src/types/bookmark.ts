@@ -131,4 +131,5 @@ export interface Bookmark {
   ai_tags?: string[];
   visual_entities?: string[];
   ocr_text?: string;
+  already_exists?: boolean;
 }

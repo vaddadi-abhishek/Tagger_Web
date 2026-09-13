@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { Bookmark, XCardData, MediaItem } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, formatDetailDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
 import {
@@ -25,26 +25,6 @@ interface TwitterCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatNumber(num?: number): string | null {
-  if (!num || num <= 0) return null;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-}
-
-function formatDetailDate(dateString?: string | null): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return null;
-
-  const timeOptions: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit", hour12: true };
-  const dateOptions: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" };
-
-  const timeStr = date.toLocaleTimeString("en-US", timeOptions);
-  const dateStr = date.toLocaleDateString("en-US", dateOptions);
-  return `${timeStr} · ${dateStr}`;
-}
-
 export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardProps) {
   const {
     bookmark,
@@ -57,18 +37,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
     isGeneratingAi,
   } = props;
 
-  const rawCardData = bookmark.card_data;
-  const cardData: XCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as XCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as XCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(() => parseCardData<XCardData>(bookmark.card_data), [bookmark.card_data]);
 
   const author = cardData?.author;
   const metrics = cardData?.metrics;

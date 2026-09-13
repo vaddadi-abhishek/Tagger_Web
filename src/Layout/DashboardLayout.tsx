@@ -3,13 +3,14 @@ import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react"
 import { ScreenSkeleton } from "../components/ui/ScreenSkeleton.tsx";
 
 import type { Bookmark } from "../types/bookmark.ts";
+import { findDuplicateBookmark } from "../lib/utils.ts";
 import {
   fetchBookmarks,
   createBookmark,
   triggerGenerateAi,
   deleteBookmark,
   getUserPlan,
-  type UserPlanInfo,
+  CreditExhaustedError,
 } from "../services/api.ts";
 
 // Lazy-loaded bookmarks screen
@@ -37,16 +38,16 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   const [activePlatform, setActivePlatform] = useState("all");
 
   // Create Bookmark Modal State
+  // Create Bookmark Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Auto AI Context Setting (Defaults to true, loaded from user plan)
   const [autoAiContext, setAutoAiContext] = useState(true);
-  const [, setUserPlan] = useState<UserPlanInfo | null>(null);
 
   // ID of bookmark actively generating AI context via 3-dots menu
   const [generatingAiId, setGeneratingAiId] = useState<string | null>(null);
 
-  // Top-Middle Floating "No credits left" badge state (appears for 1.5 - 2s)
+  // Floating "No credits left" badge state (appears for 3.2s)
   const [showNoCreditsBadge, setShowNoCreditsBadge] = useState(false);
   const noCreditsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -57,13 +58,30 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     setShowNoCreditsBadge(true);
     noCreditsTimeoutRef.current = setTimeout(() => {
       setShowNoCreditsBadge(false);
-    }, 1800); // Auto-dismisses in 1.8s
+    }, 3200); // Auto-dismisses in 3.2s (at least 3s)
+  }, []);
+
+  // Bottom-Center Floating "Link already exists" badge state (appears for 3.2s)
+  const [showAlreadyExistsBadge, setShowAlreadyExistsBadge] = useState(false);
+  const alreadyExistsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerAlreadyExistsBadge = useCallback(() => {
+    if (alreadyExistsTimeoutRef.current) {
+      clearTimeout(alreadyExistsTimeoutRef.current);
+    }
+    setShowAlreadyExistsBadge(true);
+    alreadyExistsTimeoutRef.current = setTimeout(() => {
+      setShowAlreadyExistsBadge(false);
+    }, 3200); // Auto-dismisses in 3.2s (at least 3s)
   }, []);
 
   useEffect(() => {
     return () => {
       if (noCreditsTimeoutRef.current) {
         clearTimeout(noCreditsTimeoutRef.current);
+      }
+      if (alreadyExistsTimeoutRef.current) {
+        clearTimeout(alreadyExistsTimeoutRef.current);
       }
     };
   }, []);
@@ -73,20 +91,41 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     setIsScrolled((prev) => (prev !== nextScrolled ? nextScrolled : prev));
   };
 
-  // Floating Toast Notifications State
+  // Floating Toast Notifications State & Timeout Tracking
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
+  const toastTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const toastCounterRef = useRef(0);
 
-  const addToast = (message: string, type?: "success" | "error") => {
-    const id = `toast_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`;
+  const addToast = useCallback((message: string, type?: "success" | "error") => {
+    toastCounterRef.current += 1;
+    const id = `toast_${toastCounterRef.current}`;
     setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
+
+    const timeoutId = setTimeout(() => {
+      toastTimeoutsRef.current.delete(id);
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 5000);
-  };
 
-  const removeToast = (id: string) => {
+    toastTimeoutsRef.current.set(id, timeoutId);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    const existing = toastTimeoutsRef.current.get(id);
+    if (existing) {
+      clearTimeout(existing);
+      toastTimeoutsRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
+
+  useEffect(() => {
+    const timeouts = toastTimeoutsRef.current;
+    return () => {
+      // Clean up all pending toast timeouts on unmount
+      timeouts.forEach((timeout) => clearTimeout(timeout));
+      timeouts.clear();
+    };
+  }, []);
 
   // State for Bookmarks
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
@@ -105,7 +144,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         if (isMounted) {
           setBookmarks(fetchedBms);
           if (plan) {
-            setUserPlan(plan);
             setAutoAiContext(plan.auto_ai_context);
           }
         }
@@ -122,12 +160,19 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [addToast]);
 
   // Add Bookmark Handler: Optimistic card + Node backend extraction & credit-gated AI
   const handleAddBookmark = async (newBookmark: Bookmark) => {
+    // 1. Client-Side Duplicate Check: Short-circuit before any network or Gemini API invocation
+    const existingBm = findDuplicateBookmark(bookmarks, newBookmark.url);
+    if (existingBm) {
+      triggerAlreadyExistsBadge();
+      return;
+    }
+
     const tempId = `temp_${Date.now()}`;
-    // 1. Optimistic lazy-loading card
+    // 2. Optimistic lazy-loading card
     const optimisticBookmark: Bookmark = {
       id: tempId,
       url: newBookmark.url,
@@ -143,18 +188,23 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     setBookmarks((prev) => [optimisticBookmark, ...prev]);
 
     try {
-      // 2. Call Node backend with autoAiContext (sent as X-Auto-AI-Context header)
+      // 3. Call Node backend with autoAiContext (sent as X-Auto-AI-Context header)
       const savedBookmark = await createBookmark(newBookmark.url, autoAiContext);
 
-      // 3. Replace optimistic card with server response
+      if (savedBookmark.already_exists) {
+        // Backend detected duplicate: remove optimistic card without reordering or pushing to front row
+        setBookmarks((prev) => prev.filter((b) => b.id !== tempId));
+        triggerAlreadyExistsBadge();
+        return;
+      }
+
+      // 4. Replace optimistic card with server response
       setBookmarks((prev) => {
         const withoutOld = prev.filter((b) => b.id !== savedBookmark.id && b.id !== tempId);
         return [{ ...savedBookmark, isFetchingMetadata: false }, ...withoutOld];
       });
 
-      if ((savedBookmark as any).already_exists) {
-        addToast("Link already in your library! (0 credits used)", "success");
-      } else if (savedBookmark.ai_status === "no_credits") {
+      if (savedBookmark.ai_status === "no_credits") {
         triggerNoCreditsBadge();
       } else {
         addToast("Bookmark saved successfully!", "success");
@@ -176,14 +226,18 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         prev.map((b) => (b.id === bookmark.id ? { ...b, ...updated } : b))
       );
       addToast("✨ AI Context generated successfully!", "success");
-    } catch (err: any) {
-      if (err.code === "NO_CREDITS_LEFT" || err.message?.includes("No free credits")) {
+    } catch (err: unknown) {
+      if (
+        err instanceof CreditExhaustedError ||
+        (err instanceof Error && err.message.includes("No free credits"))
+      ) {
         setBookmarks((prev) =>
           prev.map((b) => (b.id === bookmark.id ? { ...b, ai_status: "no_credits" } : b))
         );
         triggerNoCreditsBadge();
       } else {
-        addToast(err.message || "Failed to generate AI context", "error");
+        const message = err instanceof Error ? err.message : "Failed to generate AI context";
+        addToast(message, "error");
       }
     } finally {
       setGeneratingAiId(null);
@@ -204,11 +258,11 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
 
   return (
     <div className="flex h-screen h-[100dvh] w-full max-w-full overflow-hidden bg-[var(--bg)] text-[var(--text)] transition-colors duration-500 relative bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(217,159,80,0.12),rgba(250,248,245,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(200,142,62,0.09),rgba(11,9,7,0))]">
-      {/* Top-Middle Floating "No credits left" Badge (Appears for 1.8s then smoothly fades out) */}
+      {/* Bottom-Center Floating "No credits left" Badge (Appears for 3.2s then smoothly fades out) */}
       <div
-        className={`fixed top-6 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none transition-all duration-300 ease-out transform ${showNoCreditsBadge
+        className={`fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none transition-all duration-300 ease-out transform ${showNoCreditsBadge
           ? "opacity-100 translate-y-0 scale-100"
-          : "opacity-0 -translate-y-4 scale-95"
+          : "opacity-0 translate-y-4 scale-95"
           }`}
       >
         <div className="flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#FAFAF8]/95 dark:bg-[#1A1816]/95 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md">
@@ -217,8 +271,21 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         </div>
       </div>
 
+      {/* Bottom-Center Floating "Link already exists" Badge (Appears for 3.2s then smoothly fades out) */}
+      <div
+        className={`fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 z-[99999] pointer-events-none transition-all duration-300 ease-out transform ${showAlreadyExistsBadge
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 translate-y-4 scale-95"
+          }`}
+      >
+        <div className="flex items-center gap-2.5 px-4 py-2 rounded-full text-xs font-semibold bg-[#FAFAF8]/95 dark:bg-[#1A1816]/95 text-amber-600 dark:text-amber-400 border border-amber-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md">
+          <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          <span>Link already exists</span>
+        </div>
+      </div>
+
       {/* Bottom-Center Floating Sand Dune Toast HUD Capsule */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
+      <div className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
         {toasts.map((toast) => {
           const isError =
             toast.type === "error" ||

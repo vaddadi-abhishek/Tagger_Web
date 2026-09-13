@@ -19,27 +19,7 @@ interface BookmarkCardProps {
   isGeneratingAi?: boolean;
 }
 
-function resolveCardType(bookmark: Bookmark): string {
-  const rawType = (bookmark.type || "").toLowerCase().trim();
-  if (rawType === "x" || rawType === "twitter") return "x";
-  if (rawType === "reddit") return "reddit";
-  if (rawType === "instagram") return "instagram";
-  if (rawType === "linkedin") return "linkedin";
-  if (rawType === "youtube") return "youtube";
-  if (rawType === "facebook") return "facebook";
-
-  const url = (bookmark.url || "").toLowerCase();
-  const site = (bookmark.site_name || "").toLowerCase();
-
-  if (url.includes("twitter.com") || url.includes("x.com") || site.includes("twitter")) return "x";
-  if (url.includes("reddit.com") || site.includes("reddit")) return "reddit";
-  if (url.includes("instagram.com") || site.includes("instagram")) return "instagram";
-  if (url.includes("linkedin.com") || site.includes("linkedin")) return "linkedin";
-  if (url.includes("youtube.com") || url.includes("youtu.be") || site.includes("youtube")) return "youtube";
-  if (url.includes("facebook.com") || site.includes("facebook")) return "facebook";
-
-  return "generic";
-}
+import { resolveCardType } from "../lib/utils";
 
 export const BookmarkCard = React.memo(function BookmarkCard(props: BookmarkCardProps) {
   const { bookmark } = props;

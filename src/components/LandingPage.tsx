@@ -8,16 +8,21 @@ import { PricingSection } from "./landing/PricingSection";
 import { FaqSection } from "./landing/FaqSection";
 import { AnimatedThemeToggler } from "./ui/AnimatedThemeToggler";
 
+declare global {
+  interface Window {
+    __lenis?: Lenis;
+  }
+}
+
 interface LandingPageProps {
   isLoggedIn: boolean;
-  user: { name: string; email: string } | null;
+  user?: { name: string; email: string } | null;
   onNavigateToAuth: (mode: "login" | "signup") => void;
   onOpenApp: () => void;
 }
 
 export function LandingPage({
   isLoggedIn,
-  user: _user,
   onNavigateToAuth,
   onOpenApp,
 }: LandingPageProps) {
@@ -39,7 +44,7 @@ export function LandingPage({
     });
 
     // Expose lenis instance globally for interactive showcase boundary passthrough scrolling
-    (window as any).__lenis = lenis;
+    window.__lenis = lenis;
 
     let rafId: number;
     function raf(time: number) {
@@ -88,7 +93,7 @@ export function LandingPage({
       cancelAnimationFrame(rafId);
       lenis.off("scroll", onLenisScroll);
       window.removeEventListener("scroll", onNativeScroll);
-      delete (window as any).__lenis;
+      delete window.__lenis;
       lenis.destroy();
     };
   }, []);
@@ -286,7 +291,7 @@ export function LandingPage({
           5. CLEAR, TRANSPARENT PRICING (Three Tiers)
       ══════════════════════════════════════════════════════════════ */}
       <PricingSection
-        onSelectTier={(_tier) => {
+        onSelectTier={() => {
           if (isLoggedIn) {
             onOpenApp();
           } else {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { Bookmark, YouTubeCardData } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
 import {
@@ -25,13 +25,6 @@ interface YouTubeCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatNumber(num?: number): string | null {
-  if (!num || num <= 0) return null;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-}
-
 export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardProps) {
   const {
     bookmark,
@@ -44,18 +37,10 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
     isGeneratingAi,
   } = props;
 
-  const rawCardData = bookmark.card_data;
-  const cardData: YouTubeCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as YouTubeCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as YouTubeCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(
+    () => parseCardData<YouTubeCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
 
   const channel = cardData?.channel;
   const metrics = cardData?.metrics;

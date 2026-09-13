@@ -41,7 +41,6 @@ export const AnimatedThemeToggler = ({
   onThemeChange,
   ...props
 }: AnimatedThemeTogglerProps) => {
-  const shape = variant;
   const isControlled = theme !== undefined;
   const [internalIsDark, setInternalIsDark] = useState(() => {
     if (typeof window !== "undefined") {
@@ -140,7 +139,7 @@ export const AnimatedThemeToggler = ({
       root.dataset.magicuiThemeVt = "active";
 
       const clipPath = getThemeTransitionClipPaths(
-        shape,
+        variant,
         cx,
         cy,
         maxRadius,
@@ -176,7 +175,7 @@ export const AnimatedThemeToggler = ({
       applyTheme();
       cleanup();
     }
-  }, [shape, fromCenter, duration, isDark, isControlled, onThemeChange]);
+  }, [variant, fromCenter, duration, isDark, isControlled, onThemeChange]);
 
   return (
     <button

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import type { Bookmark, InstagramCardData } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
@@ -26,47 +26,6 @@ interface InstagramCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatInstagramDate(dateStr?: string | null): string | null {
-  if (!dateStr) return null;
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return null;
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    if (diffMs < 0) return null;
-
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffMins < 60) {
-      return `${Math.max(1, diffMins)} MINUTES AGO`;
-    }
-    if (diffHours < 24) {
-      return `${diffHours} ${diffHours === 1 ? "HOUR" : "HOURS"} AGO`;
-    }
-    if (diffDays < 7) {
-      return `${diffDays} ${diffDays === 1 ? "DAY" : "DAYS"} AGO`;
-    }
-    return d
-      .toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-      })
-      .toUpperCase();
-  } catch {
-    return null;
-  }
-}
-
-function formatNumber(num?: number): string | null {
-  if (!num || num <= 0) return null;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-}
-
 export const InstagramCard = React.memo(function InstagramCard(props: InstagramCardProps) {
   const {
     bookmark,
@@ -87,18 +46,10 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
     setActiveMediaIdx(0);
   }, [bookmark.id]);
 
-  const rawCardData = bookmark.card_data;
-  const cardData: InstagramCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as InstagramCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as InstagramCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(
+    () => parseCardData<InstagramCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
 
   const author = cardData?.author;
   const metrics = cardData?.metrics;
@@ -396,9 +347,9 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           </a>
         ) : null}
 
-        {formatInstagramDate(postDate) && (
+        {formatRelativeDate(postDate) && (
           <div className="text-[10px] tracking-wider text-slate-400 dark:text-[#737373] uppercase font-medium">
-            {formatInstagramDate(postDate)}
+            {formatRelativeDate(postDate)}
           </div>
         )}
       </div>

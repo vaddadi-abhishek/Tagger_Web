@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import type { Bookmark, FacebookCardData, MediaItem } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
 import {
@@ -22,37 +22,6 @@ interface FacebookCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatNumber(num?: number): string | null {
-  if (num === undefined || num === null || num <= 0) return null;
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-}
-
-function formatFacebookDate(dateString?: string | null): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return null;
-
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  if (diffMs < 0) return null;
-
-  const diffMins = Math.floor(diffMs / (1000 * 60));
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffMins < 60) return `${Math.max(1, diffMins)}m`;
-  if (diffHours < 24) return `${diffHours}h`;
-  if (diffDays < 7) return `${diffDays}d`;
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-  });
-}
-
 export const FacebookCard = React.memo(function FacebookCard(props: FacebookCardProps) {
   const {
     bookmark,
@@ -65,18 +34,10 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     onCloseMenu,
   } = props;
 
-  const rawCardData = bookmark.card_data;
-  const cardData: FacebookCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as FacebookCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as FacebookCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(
+    () => parseCardData<FacebookCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
 
   const author = cardData?.author;
   const metrics = cardData?.metrics;
@@ -264,7 +225,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
               {author?.name || "Facebook User"}
             </span>
             <div className="flex items-center gap-1 text-[11.5px] text-slate-500 dark:text-[#b0b3b8]">
-              {formatFacebookDate(postedAt) && <span>{formatFacebookDate(postedAt)}</span>}
+              {formatRelativeDate(postedAt) && <span>{formatRelativeDate(postedAt)}</span>}
               <span>•</span>
               <svg viewBox="0 0 16 16" className="w-3 h-3 fill-current">
                 <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm0 14.5a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13zm-.5-10.25a.75.75 0 0 1 1.5 0v3.5a.75.75 0 0 1-.22.53l-2 2a.75.75 0 0 1-1.06-1.06l1.78-1.78v-3.19z" />

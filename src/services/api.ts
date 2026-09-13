@@ -14,11 +14,11 @@ export interface MetadataResponse {
   ai_tags?: string[];
   visual_entities?: string[];
   ocr_text?: string;
-  ai_status?: 'completed' | 'pending_manual' | 'no_credits' | 'failed';
+  ai_status?: "completed" | "pending_manual" | "no_credits" | "failed";
 }
 
 export interface UserPlanInfo {
-  plan: 'free' | 'pro';
+  plan: "free" | "pro";
   is_paid: boolean;
   credits_remaining: number;
   credits_limit: number;
@@ -32,6 +32,17 @@ export interface AuthUser {
   id?: string;
   email: string;
   name: string;
+}
+
+/**
+ * Custom error thrown when the user's AI processing credits have been exhausted.
+ */
+export class CreditExhaustedError extends Error {
+  readonly code = "NO_CREDITS_LEFT";
+  constructor(message: string = "No free credits remaining") {
+    super(message);
+    this.name = "CreditExhaustedError";
+  }
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
@@ -80,23 +91,59 @@ function validateAndFormatUrl(rawUrl: string): string {
   }
 }
 
+/**
+ * Centralized fetch wrapper providing standard authentication, response parsing,
+ * and strongly typed error propagation.
+ */
+async function request<T>(
+  path: string,
+  options: RequestInit & { customHeaders?: Record<string, string> } = {}
+): Promise<T> {
+  const { customHeaders, ...init } = options;
+  const headers = getAuthHeaders(customHeaders);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      ...headers,
+      ...(init.headers as Record<string, string> | undefined),
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      message?: string;
+      ai_status?: string;
+    };
+    const errorMessage =
+      errorData.error || errorData.message || `Request failed (Status ${response.status})`;
+
+    if (response.status === 402 || errorData.error === "NO_CREDITS_LEFT") {
+      throw new CreditExhaustedError(errorMessage);
+    }
+
+    throw new Error(errorMessage);
+  }
+
+  // Support 204 No Content or empty bodies
+  if (response.status === 204) {
+    return undefined as unknown as T;
+  }
+
+  return response.json();
+}
+
 // ==========================================
 // Authentication Methods (Via Node Backend)
 // ==========================================
 
 export async function loginUser(email: string, password: string): Promise<AuthUser> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const data = await request<{ token?: string; user: AuthUser }>("/auth/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
 
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Login failed (Status ${response.status})`);
-  }
-
-  const data = await response.json();
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
   }
@@ -111,18 +158,14 @@ export async function signUpUser(
   password: string,
   username?: string
 ): Promise<{ user: AuthUser | null; message?: string }> {
-  const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, username }),
-  });
+  const data = await request<{ user: AuthUser | null; token?: string; message?: string }>(
+    "/auth/signup",
+    {
+      method: "POST",
+      body: JSON.stringify({ email, password, username }),
+    }
+  );
 
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Sign up failed (Status ${response.status})`);
-  }
-
-  const data = await response.json();
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
   }
@@ -137,20 +180,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   if (!token) return null;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
-
-    if (!response.ok) {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_USER_KEY);
-      return null;
-    }
-
-    const data = await response.json();
+    const data = await request<{ user: AuthUser }>("/auth/me", { method: "GET" });
     return data.user;
   } catch {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
     return null;
   }
 }
@@ -165,118 +199,48 @@ export function logoutUser(): void {
 // ==========================================
 
 export async function fetchBookmarks(): Promise<Bookmark[]> {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${API_BASE_URL}/bookmarks`, {
-    method: "GET",
-    headers,
-  });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Failed to fetch bookmarks (Status ${response.status})`);
-  }
-
-  return response.json();
+  return request<Bookmark[]>("/bookmarks", { method: "GET" });
 }
 
 export async function createBookmark(url: string, autoAiContext: boolean = true): Promise<Bookmark> {
   const validatedUrl = validateAndFormatUrl(url);
-  const headers = getAuthHeaders({
-    "X-Auto-AI-Context": String(autoAiContext),
-  });
-
-  const response = await fetch(`${API_BASE_URL}/bookmarks`, {
+  return request<Bookmark>("/bookmarks", {
     method: "POST",
-    headers,
     body: JSON.stringify({ url: validatedUrl }),
+    customHeaders: {
+      "X-Auto-AI-Context": String(autoAiContext),
+    },
   });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Failed to create bookmark (Status ${response.status})`);
-  }
-
-  return response.json();
 }
 
 export async function triggerGenerateAi(bookmarkId: string): Promise<Bookmark> {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${API_BASE_URL}/bookmarks/${bookmarkId}/generate-ai`, {
+  return request<Bookmark>(`/bookmarks/${bookmarkId}/generate-ai`, {
     method: "POST",
-    headers,
   });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string; message?: string; ai_status?: string };
-    if (response.status === 402 || errorData.error === 'NO_CREDITS_LEFT') {
-      const err = new Error("No free credits remaining");
-      (err as any).code = 'NO_CREDITS_LEFT';
-      throw err;
-    }
-    throw new Error(errorData.error || errorData.message || `AI generation failed (Status ${response.status})`);
-  }
-
-  return response.json();
 }
 
 export async function deleteBookmark(bookmarkId: string): Promise<void> {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${API_BASE_URL}/bookmarks/${bookmarkId}`, {
+  return request<void>(`/bookmarks/${bookmarkId}`, {
     method: "DELETE",
-    headers,
   });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Failed to delete bookmark (Status ${response.status})`);
-  }
 }
 
 export async function getUserPlan(): Promise<UserPlanInfo> {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${API_BASE_URL}/user/plan`, {
-    method: "GET",
-    headers,
-  });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Failed to fetch plan info (Status ${response.status})`);
-  }
-
-  return response.json();
+  return request<UserPlanInfo>("/user/plan", { method: "GET" });
 }
 
 export async function updateUserSettings(settings: { auto_ai_context: boolean }): Promise<void> {
-  const headers = getAuthHeaders();
-  const response = await fetch(`${API_BASE_URL}/user/settings`, {
+  return request<void>("/user/settings", {
     method: "PATCH",
-    headers,
     body: JSON.stringify(settings),
   });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(errorData.error || `Failed to update settings (Status ${response.status})`);
-  }
 }
 
 export async function fetchUrlMetadata(url: string): Promise<MetadataResponse> {
   const validatedUrl = validateAndFormatUrl(url);
-  const headers = getAuthHeaders();
-
-  const response = await fetch(`${API_BASE_URL}/extract`, {
+  return request<MetadataResponse>("/extract", {
     method: "POST",
-    headers,
     body: JSON.stringify({ url: validatedUrl }),
   });
-
-  if (!response.ok) {
-    const errorData = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(
-      errorData.error || `Failed to fetch metadata (Status ${response.status})`
-    );
-  }
-
-  return response.json();
 }
+

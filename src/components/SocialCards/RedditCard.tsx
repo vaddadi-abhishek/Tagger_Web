@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import type { Bookmark, RedditCardData, MediaItem } from "../../types/bookmark";
-import { sanitizeUrl } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
@@ -24,30 +24,6 @@ interface RedditCardProps {
   isGeneratingAi?: boolean;
 }
 
-function formatNumber(num?: number): string | null {
-  if (!num) return null;
-  if (num >= 1000) return (num / 1000).toFixed(1) + "k";
-  return num.toString();
-}
-
-function getRelativeTime(dateString?: string | null): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return null;
-
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  if (diffInSeconds < 60) return `${diffInSeconds}s`;
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
-
-  const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  if (date.getFullYear() !== now.getFullYear()) {
-    options.year = "numeric";
-  }
-  return date.toLocaleDateString("en-US", options);
-}
-
 export const RedditCard = React.memo(function RedditCard(props: RedditCardProps) {
   const {
     bookmark,
@@ -60,18 +36,10 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
     onCloseMenu,
   } = props;
 
-  const rawCardData = bookmark.card_data;
-  const cardData: RedditCardData | null = useMemo(() => {
-    if (!rawCardData) return null;
-    if (typeof rawCardData === "string") {
-      try {
-        return JSON.parse(rawCardData) as RedditCardData;
-      } catch {
-        return null;
-      }
-    }
-    return rawCardData as RedditCardData;
-  }, [rawCardData]);
+  const cardData = useMemo(
+    () => parseCardData<RedditCardData>(bookmark.card_data),
+    [bookmark.card_data]
+  );
 
   const subreddit = cardData?.subreddit;
   const metrics = cardData?.metrics;
@@ -149,11 +117,11 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
               <span className="font-bold text-slate-900 dark:text-[#d7dadc] hover:underline cursor-pointer">
                 {subreddit?.name || "Reddit"}
               </span>
-              {getRelativeTime(cardData?.posted_at) && (
+              {formatRelativeDate(cardData?.posted_at) && (
                 <>
                   <span className="text-slate-400 dark:text-[#818384] text-[10px]">•</span>
                   <span className="text-slate-500 dark:text-[#818384] text-[11px]">
-                    {getRelativeTime(cardData?.posted_at)}
+                    {formatRelativeDate(cardData?.posted_at)}
                   </span>
                 </>
               )}
