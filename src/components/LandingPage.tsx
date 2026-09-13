@@ -203,7 +203,7 @@ export function LandingPage({
           <div className="max-w-lg sm:max-w-xl lg:max-w-2xl text-left space-y-5 sm:space-y-6">
             {/* Big Editorial Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.75rem] font-bold tracking-tight text-[#211D1A] dark:text-[#FAF8F5] leading-[1.08] font-sans">
-              <span>Stop Collecting Links</span>
+              <span>Save Anything</span>
               <br />
               <span className="relative inline-block mt-1">
                 {/* Organic Golden Sand Brush Stroke Wash spanning across the entire lower phrase */}
@@ -241,13 +241,13 @@ export function LandingPage({
                     />
                   </svg>
                 </span>
-                <span className="relative z-10">Start Using Them.</span>
+                <span className="relative z-10">Never Organize again</span>
               </span>
             </h1>
 
             {/* Subheading */}
             <p className="text-base sm:text-lg text-[#5F5850] dark:text-[#B3ABA0] leading-relaxed font-normal">
-              Essential smart bookmarking with automated AI tagging, visual context that reads your images, Model Context Provider connectivity, and  MindSpace AI to answer everything across all your bookmarks.
+              From tweets and reels to full articles, Mindspace understands what you save, recognizes the context, and tags it for you. No folders, no labels, no manual organizing. Find anything by what you remember, not what you named it.
             </p>
           </div>
         </div>
@@ -261,10 +261,10 @@ export function LandingPage({
           titleComponent={
             <div className="space-y-3 mb-8">
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white font-sans">
-                AI auto-tagging, visual context, and RAG in action.
+                Everything You Save, In One Place
               </h2>
               <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 max-w-xl mx-auto">
-                Never waste time organizing again. Watch Mindspace automatically tag your saves, read your images, and prepare your bookmarks and transcripts for conversational queries.
+                A space for your mind. Save anything, explore by context, and find what you need without folders, labels, or keywords.
               </p>
             </div>
           }
@@ -314,8 +314,6 @@ export function LandingPage({
             <span className="font-bold text-sm tracking-tight text-neutral-900 dark:text-white font-sans lowercase">
               mindspace
             </span>
-            <span>·</span>
-            <span>The Intelligent Knowledge Layer</span>
           </div>
           <div>
             © {new Date().getFullYear()} Mindspace Inc. All rights reserved.

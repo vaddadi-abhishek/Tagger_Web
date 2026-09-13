@@ -12,10 +12,10 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
     <section id="pricing" className="py-24 px-6 max-w-7xl mx-auto scroll-mt-20">
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
         <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 font-sans">
-          Simple, honest pricing for serious thinkers.
+          Simple pricing for serious thinkers.
         </h2>
         <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400">
-          Start completely free with 30 days of frontier AI access. Keep your saved bookmarks forever regardless of plan.
+          Start completely free with 14  days free trail. Keep your saved bookmarks forever regardless of plan.
         </p>
 
         {/* Monthly / Annual Toggle */}
@@ -95,7 +95,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
 
           <button
             onClick={() => onSelectTier("free")}
-            className="w-full py-3.5 px-6 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+            className="w-full py-3.5 px-6 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 font-semibold text-xs sm:text-sm hover:border-amber-400 dark:hover:border-amber-400 transition-colors cursor-pointer"
           >
             Get Started Free
           </button>
@@ -127,7 +127,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
               {[
                 "Everything in Free.",
                 "Unlimited access to AI features.",
-                "Auto AI text and image tagging.",
+                "Unlimited Auto AI text and image tagging.",
                 "Image text recognition.",
                 "Reading Mode for all the Articles.",
               ].map((feature, i) => (
@@ -165,7 +165,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
                 For researchers, builders, and heavy thinkers wanting limitless AI memory.
               </p>
               <div className="p-3 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-xs text-amber-500 dark:text-amber-300 font-medium leading-relaxed">
-                Active Thinker members receive priority beta access
+                Active Thinker members receive priority beta access to new features.
               </div>
             </div>
 
@@ -190,7 +190,7 @@ export function PricingSection({ onSelectTier }: PricingSectionProps) {
             onClick={() => onSelectTier("pro")}
             className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-amber-900/30 transition-all cursor-pointer"
           >
-            Join Waitlist
+            Join Waiting List
           </button>
         </div>
       </div>

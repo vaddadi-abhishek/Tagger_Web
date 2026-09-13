@@ -102,7 +102,7 @@ export function FaqSection({ onStartFree }: FaqSectionProps) {
             Stop letting what matters get buried in tabs.
           </h2>
           <p className="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal">
-            Turn scattered bookmarks, screenshots, and links into an intelligent second brain powered by AI auto-tagging, visual context, and conversational RAG.
+            Turn scattered bookmarks, and links into an intelligent second brain powered by AI auto-tagging, visual context.
           </p>
 
           <div className="pt-4 flex justify-center">

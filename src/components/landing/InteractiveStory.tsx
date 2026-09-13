@@ -26,35 +26,36 @@ const pillars: StoryPillar[] = [
     description:
       "Save links, screenshots, and visual assets without manual sorting. Mindspace applies intelligent AI auto-tagging and deep visual context understanding, reading text and concepts from your images as well.",
     bullets: [
-      "Hands-off automatic classification for every bookmark and save.",
-      "Instant AI auto-tagging for all saved content and web bookmarks.",
-      "Deep visual context understanding that reads your images as well.",
+      "Hands-off automatic classification.",
+      "Recognizes people, places, and brands — not just generic labels like 'person' or 'outdoor",
+      "Deep visual understanding that reads text, objects, and concepts from images.",
     ],
   },
   {
     number: "02",
-    badge: "Model Context Provider",
-    title: "Model Context Provider (MCP)",
+    badge: "Model Context Protocol",
+    title: "Model Context Protocol (MCP) Connectivity",
     subtitle: "Direct Context Injection for Frontier AI Models",
     description:
-      "Mindspace operates as a native Model Context Provider. Connect your entire library of bookmarks, images, and notes directly to Claude, ChatGPT and other AI models.",
+      "Connect your entire library of bookmarks, image text, image content context, and notes directly to Claude, ChatGPT and other AI models.",
     bullets: [
-      "Native Model Context Provider protocol endpoint.",
-      "Allows frontier AI models to read, query, and cite your private research.",
-      "Seamless integration with Claude, ChatGPT and other AI models.",
+      "Native MCP server — Seamless integration with Claude, ChatGPT, and other AI assistants.",
+      "No exporting, no copy-pasting links — your AI tools query your saves directly.",
+      "Lets AI models read, search, and reference your private knowledge.",
     ],
   },
   {
     number: "03",
     badge: "Knowledge Retrieval",
-    title: "RAG System Chatbot",
+    title: "Mindspace AI",
     subtitle: "Query Across All Your Bookmarks & Knowledge",
     description:
-      "An intelligent RAG chatbot that searches across your entire bookmark vault, saved articles, images, and audio transcripts to deliver precise, citation-backed answers to your queries.",
+      "Ask anything about what you've saved. MindSpace AI searches across your articles, images, and transcripts to answer in plain language — with sources you can trace back.",
     bullets: [
-      "Conversational RAG chatbot indexing all your bookmarks, notes, and saves.",
-      "Answers complex queries with direct syntheses and source citations.",
-      "Deep transcript search across your saved YouTube podcasts and videos.",
+      "Conversational AI that searches across everything you've saved — notes, articles, images, and transcripts.",
+      "Answers complex queries in plain language, not just a list of matching results.",
+      "Available in Reading Mode — ask questions about an article without leaving.",
+      "Full transcript search across your saved YouTube podcasts and videos.",
     ],
   },
 ];
@@ -105,13 +106,10 @@ export function InteractiveStory() {
   return (
     <section id="how-it-works" className="relative scroll-mt-16 py-16">
       {/* Section Header */}
-      <div className="pt-8 pb-12 px-6 max-w-4xl mx-auto text-center space-y-3">
+      <div className="pt-8 pb-12 px-6 max-w-6xl mx-auto text-center space-y-3">
         <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 font-sans">
-          Built for minds that consume at frontier speed.
+          Everything You Save. Everything You Know.
         </h2>
-        <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 font-normal max-w-2xl mx-auto">
-          From AI auto-tagging and reading your images to Model Context Provider access and a conversational RAG chatbot across all your bookmarks.
-        </p>
       </div>
 
       {/* Sticky Scroll Reveal Track */}
