@@ -236,20 +236,16 @@ export default function BookmarksScreen({
 
   // Count bookmarks matching each platform filter using centralized resolver
   const platformCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      all: bookmarks.length,
-      x: 0,
-      instagram: 0,
-      facebook: 0,
-      linkedin: 0,
-      reddit: 0,
-    };
+    const counts: Record<string, number> = { all: bookmarks.length };
+    PLATFORM_TABS.forEach((tab) => {
+      if (tab.id !== "all") {
+        counts[tab.id] = 0;
+      }
+    });
 
     bookmarks.forEach((item) => {
       const type = resolveCardType(item);
-      if (type in counts) {
-        counts[type]++;
-      }
+      counts[type] = (counts[type] || 0) + 1;
     });
 
     return counts;

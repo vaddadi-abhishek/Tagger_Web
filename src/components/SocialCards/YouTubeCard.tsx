@@ -49,7 +49,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
     if (cardData?.video_id) {
       return `https://i.ytimg.com/vi/${cardData.video_id}/maxresdefault.jpg`;
     }
-    return bookmark.snapshot || null;
+    return null;
   });
 
   const handleThumbError = () => {
@@ -57,8 +57,6 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
       setThumbSrc(`https://i.ytimg.com/vi/${cardData.video_id}/hqdefault.jpg`);
     } else if (cardData?.video_id && thumbSrc?.includes("hqdefault.jpg")) {
       setThumbSrc(`https://i.ytimg.com/vi/${cardData.video_id}/mqdefault.jpg`);
-    } else if (thumbSrc !== bookmark.snapshot && bookmark.snapshot) {
-      setThumbSrc(bookmark.snapshot);
     } else {
       setThumbSrc(null);
     }
@@ -82,7 +80,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
               loading="lazy"
               decoding="async"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover/video:scale-105"
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-zinc-800">

@@ -10,6 +10,7 @@ export type CardMenuTheme =
   | "linkedin"
   | "youtube"
   | "reddit"
+  | "pinterest"
   | "generic";
 
 interface CardActionMenuProps {
@@ -78,6 +79,13 @@ const themeStyles: Record<
     text: "text-slate-900 dark:text-[#d7dadc]",
     divider: "border-slate-200 dark:border-[#343536]",
     hoverBg: "hover:bg-slate-100 dark:hover:bg-[#272729]",
+  },
+  pinterest: {
+    menuBg: "bg-white dark:bg-[#1f1f1f]",
+    border: "border-slate-200 dark:border-[#333333]",
+    text: "text-slate-900 dark:text-[#f5f5f5]",
+    divider: "border-slate-200 dark:border-[#333333]",
+    hoverBg: "hover:bg-slate-100 dark:hover:bg-[#2b2b2b]",
   },
   generic: {
     menuBg: "bg-white dark:bg-zinc-900",

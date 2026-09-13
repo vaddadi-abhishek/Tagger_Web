@@ -101,6 +101,21 @@ export interface GlobalWebCardData {
   snapshot?: string | null;
 }
 
+export interface PinterestCardData {
+  author?: {
+    name?: string;
+    username?: string;
+    avatar_url?: string | null;
+  };
+  metrics?: {
+    saves?: number;
+    comments?: number;
+    repins?: number;
+  };
+  media?: MediaItem[];
+  posted_at?: string | null;
+}
+
 export type AnyCardData =
   | XCardData
   | InstagramCardData
@@ -108,6 +123,7 @@ export type AnyCardData =
   | LinkedInCardData
   | RedditCardData
   | YouTubeCardData
+  | PinterestCardData
   | GlobalWebCardData
   | Record<string, unknown>;
 
@@ -116,7 +132,6 @@ export interface Bookmark {
   url: string;
   title: string;
   description: string;
-  snapshot?: string | null;
   logo: string | null;
   site_name: string;
   tags?: string[];

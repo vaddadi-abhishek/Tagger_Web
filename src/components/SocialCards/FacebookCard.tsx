@@ -61,11 +61,8 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
         }
       }
     }
-    if (bookmark.snapshot && /\.mp4(?:\?.*)?$/i.test(bookmark.snapshot)) {
-      return bookmark.snapshot;
-    }
     return null;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const [videoError, setVideoError] = useState(false);
 
@@ -95,11 +92,8 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
       }
     }
 
-    if (list.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes(".mp4")) {
-      addUrl(bookmark.snapshot);
-    }
     return list;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const hasMedia = Boolean(videoUrl || postImages.length > 0);
 
@@ -281,7 +275,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
               playsInline
               preload="metadata"
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-              poster={bookmark.snapshot || postImages[0] || undefined}
+              poster={postImages[0] || undefined}
               onError={() => setVideoError(true)}
             >
               <source src={videoUrl} type="video/mp4" />

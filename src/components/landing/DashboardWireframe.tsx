@@ -15,6 +15,7 @@ import {
   XBrandLogo,
   YouTubeBrandLogo,
   InstagramBrandLogo,
+  PinterestBrandLogo,
   LinkedInBrandLogo,
   RedditAlienLogo,
   VerticalMoreIcon,
@@ -25,7 +26,7 @@ import {
 ══════════════════════════════════════════════════════════════════ */
 export interface WireframeCardItem {
   id: string;
-  type: "x" | "youtube" | "instagram" | "linkedin" | "reddit" | "generic";
+  type: "x" | "youtube" | "instagram" | "pinterest" | "linkedin" | "reddit" | "generic";
   platformName: string;
 }
 
@@ -33,6 +34,7 @@ const INITIAL_WIREFRAME_CARDS: WireframeCardItem[] = [
   { id: "wf-x-1", type: "x", platformName: "Twitter / X" },
   { id: "wf-yt-1", type: "youtube", platformName: "YouTube" },
   { id: "wf-ig-1", type: "instagram", platformName: "Instagram" },
+  { id: "wf-pin-1", type: "pinterest", platformName: "Pinterest" },
   { id: "wf-li-1", type: "linkedin", platformName: "LinkedIn" },
   { id: "wf-rd-1", type: "reddit", platformName: "Reddit" },
   { id: "wf-web-1", type: "generic", platformName: "Web Article" },
@@ -43,6 +45,7 @@ const DEMO_PLATFORM_TABS = [
   { id: "x", label: "Twitter / X" },
   { id: "youtube", label: "YouTube" },
   { id: "instagram", label: "Instagram" },
+  { id: "pinterest", label: "Pinterest" },
   { id: "linkedin", label: "LinkedIn" },
   { id: "reddit", label: "Reddit" },
   { id: "generic", label: "Articles" },
@@ -64,6 +67,8 @@ function PlatformLogo({ type }: { type: WireframeCardItem["type"] }) {
       return <YouTubeBrandLogo className="w-5 h-5 shrink-0" />;
     case "instagram":
       return <InstagramBrandLogo className="w-4 h-4 shrink-0" />;
+    case "pinterest":
+      return <PinterestBrandLogo className="w-4 h-4 shrink-0" />;
     case "linkedin":
       return <LinkedInBrandLogo className="w-4 h-4 fill-[#0a66c2] shrink-0" />;
     case "reddit":
@@ -373,6 +378,10 @@ function WireframeCard({
             <div className="size-1.5 rounded-full bg-white/50" />
             <div className="size-1.5 rounded-full bg-white/50" />
           </div>
+        </div>
+      ) : item.type === "pinterest" ? (
+        <div className="w-full aspect-[3/4] max-h-48 rounded-xl bg-gradient-to-br from-neutral-200 via-neutral-100 to-neutral-200/60 dark:from-neutral-800 dark:via-neutral-800/50 dark:to-neutral-900 border border-neutral-200/60 dark:border-neutral-800/60 mb-3 flex items-center justify-center relative overflow-hidden">
+          <PinterestBrandLogo className="w-6 h-6 opacity-30" />
         </div>
       ) : item.type === "x" ? (
         <div className="w-full h-28 rounded-xl bg-gradient-to-br from-neutral-200/80 via-neutral-100 to-neutral-200/50 dark:from-neutral-800/80 dark:via-neutral-800/40 dark:to-neutral-900 border border-neutral-200/60 dark:border-neutral-800/60 mb-3" />

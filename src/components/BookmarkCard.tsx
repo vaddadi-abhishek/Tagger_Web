@@ -7,6 +7,7 @@ import { InstagramCard } from "./SocialCards/InstagramCard";
 import { LinkedInCard } from "./SocialCards/LinkedInCard";
 import { YouTubeCard } from "./SocialCards/YouTubeCard";
 import { FacebookCard } from "./SocialCards/FacebookCard";
+import { PinterestCard } from "./SocialCards/PinterestCard";
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
@@ -65,6 +66,8 @@ export const BookmarkCard = React.memo(function BookmarkCard(props: BookmarkCard
         return <YouTubeCard {...props} />;
       case "facebook":
         return <FacebookCard {...props} />;
+      case "pinterest":
+        return <PinterestCard {...props} />;
       default:
         return <GenericCard {...props} />;
     }

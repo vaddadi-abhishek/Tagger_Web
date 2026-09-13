@@ -124,16 +124,8 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
       }
     }
 
-    if (items.length === 0 && bookmark.snapshot) {
-      const isSnapVideo =
-        bookmark.snapshot.includes(".mp4") ||
-        bookmark.snapshot.includes("/reel/") ||
-        bookmark.snapshot.includes("/video/");
-      addItem(bookmark.snapshot, isSnapVideo ? "video" : "image");
-    }
-
     return items;
-  }, [cardData, bookmark.snapshot]);
+  }, [cardData]);
 
   const handlePrev = (e: React.MouseEvent) => {
     e.preventDefault();

@@ -34,7 +34,7 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
     () => parseCardData<GlobalWebCardData>(bookmark.card_data),
     [bookmark.card_data]
   );
-  const snapshotUrl = cardData?.snapshot || bookmark.snapshot;
+  const snapshotUrl = cardData?.snapshot;
   const mediaUrl = snapshotUrl || bookmark.logo;
   const descriptionText = bookmark.description || "";
   const DESCRIPTION_LIMIT = 130;

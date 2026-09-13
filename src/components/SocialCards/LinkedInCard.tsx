@@ -60,11 +60,8 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
         }
       }
     }
-    if (list.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes(".mp4")) {
-      list.push(bookmark.snapshot);
-    }
     return list;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   // Find video URL if available
   const videoUrl: string | null = useMemo(() => {
@@ -78,11 +75,8 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
         }
       }
     }
-    if (bookmark.snapshot && /\.mp4(?:\?.*)?$/i.test(bookmark.snapshot)) {
-      return bookmark.snapshot;
-    }
     return null;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const [videoError, setVideoError] = useState(false);
   const hasMedia = Boolean(videoUrl || postImages.length > 0);
@@ -234,7 +228,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
               playsInline
               preload="metadata"
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-              poster={bookmark.snapshot || postImages[0] || undefined}
+              poster={postImages[0] || undefined}
               onError={() => setVideoError(true)}
             >
               <source src={videoUrl} type="video/mp4" />

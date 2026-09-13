@@ -57,11 +57,8 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
     if (Array.isArray(cardData?.media) && cardData.media.length > 0) {
       return cardData.media;
     }
-    if (bookmark.snapshot) {
-      return [{ type: "image", url: bookmark.snapshot }];
-    }
     return [];
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const videoItem = mediaItems.find((m) => m.type === "video");
   const imageItems = mediaItems.filter((m) => m.type !== "video");

@@ -62,16 +62,8 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       }
     }
 
-    if (
-      bookmark.snapshot &&
-      (/\.mp4(?:\?.*)?$/i.test(bookmark.snapshot) ||
-        bookmark.snapshot.includes("video.twimg.com") ||
-        bookmark.snapshot.includes("/vid/"))
-    ) {
-      return bookmark.snapshot;
-    }
     return null;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const [videoError, setVideoError] = useState(false);
 
@@ -104,11 +96,8 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       }
     }
 
-    if (list.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes(".mp4") && !bookmark.snapshot.includes("video.twimg.com")) {
-      addUrl(bookmark.snapshot);
-    }
     return list;
-  }, [cardData?.media, bookmark.snapshot]);
+  }, [cardData?.media]);
 
   const hasMedia = Boolean(videoUrl || postImages.length > 0);
   const handleText = author?.handle ? (author.handle.startsWith("@") ? author.handle : `@${author.handle}`) : "";
@@ -269,13 +258,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
                 playsInline
                 preload="metadata"
                 className="w-full max-h-[360px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-                poster={
-                  bookmark.snapshot &&
-                  !bookmark.snapshot.includes(".mp4") &&
-                  !bookmark.snapshot.includes("video.twimg.com")
-                    ? bookmark.snapshot
-                    : postImages[0] || undefined
-                }
+                poster={postImages[0] || undefined}
                 onError={() => setVideoError(true)}
               >
                 <source src={videoUrl} type="video/mp4" />

@@ -180,7 +180,6 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       description: "Extracting metadata & analyzing...",
       site_name: "",
       logo: null,
-      snapshot: null,
       isFetchingMetadata: true,
       created_at: new Date().toISOString(),
     };

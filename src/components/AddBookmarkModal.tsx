@@ -60,13 +60,21 @@ export function AddBookmarkModal({
       url: formattedUrlStr,
       title: computedTitle,
       description: "",
-      snapshot: isImageUrl ? formattedUrlStr : null,
       logo: null,
       site_name: sourceName,
       tags: [],
       collections: [],
       created_at: new Date().toISOString(),
       isFetchingMetadata: true,
+      card_data: isImageUrl
+        ? {
+            snapshot: formattedUrlStr,
+            author: null,
+            published_at: null,
+            site_name: sourceName,
+            type: "image",
+          }
+        : undefined,
     };
 
     setUrl("");

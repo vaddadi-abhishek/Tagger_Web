@@ -117,6 +117,7 @@ export function resolveCardType(bookmark: Bookmark): string {
   if (rawType === "linkedin") return "linkedin";
   if (rawType === "youtube") return "youtube";
   if (rawType === "facebook") return "facebook";
+  if (rawType === "pinterest") return "pinterest";
 
   const url = (bookmark.url || "").toLowerCase();
   const site = (bookmark.site_name || "").toLowerCase();
@@ -124,6 +125,7 @@ export function resolveCardType(bookmark: Bookmark): string {
   if (url.includes("twitter.com") || url.includes("x.com") || site.includes("twitter")) return "x";
   if (url.includes("reddit.com") || site.includes("reddit")) return "reddit";
   if (url.includes("instagram.com") || site.includes("instagram")) return "instagram";
+  if (url.includes("pinterest.com") || url.includes("pin.it") || site.includes("pinterest")) return "pinterest";
   if (url.includes("linkedin.com") || site.includes("linkedin")) return "linkedin";
   if (url.includes("youtube.com") || url.includes("youtu.be") || site.includes("youtube")) return "youtube";
   if (url.includes("facebook.com") || url.includes("fb.watch") || url.includes("fb.com") || site.includes("facebook")) return "facebook";
@@ -158,7 +160,9 @@ export function getFaviconUrl(url?: string): string {
 export const PLATFORM_TABS = [
   { id: "all", label: "All" },
   { id: "x", label: "Twitter / X" },
+  { id: "youtube", label: "YouTube" },
   { id: "instagram", label: "Instagram" },
+  { id: "pinterest", label: "Pinterest" },
   { id: "facebook", label: "Facebook" },
   { id: "linkedin", label: "LinkedIn" },
   { id: "reddit", label: "Reddit" },
@@ -285,7 +289,21 @@ export function canonicalizeUrl(rawUrl: string): string {
     return `https://redd.it/${redditShortMatch[1]}`;
   }
 
-  // 5. General Web URLs
+  // 5. Pinterest Canonicalization
+  // Matches: pinterest.com/pin/ID, pin.it/ID
+  const pinMatch = preCleaned.match(
+    /(?:https?:\/\/)?(?:[a-z]{2,3}\.)?(?:pinterest\.[a-z.]+|pin\.it)\/pin\/(\d+)/i
+  );
+  if (pinMatch) {
+    const pinId = pinMatch[1];
+    return `https://www.pinterest.com/pin/${pinId}/`;
+  }
+  const pinShortMatch = preCleaned.match(/(?:https?:\/\/)?pin\.it\/([a-zA-Z0-9]+)/i);
+  if (pinShortMatch) {
+    return `https://pin.it/${pinShortMatch[1]}`;
+  }
+
+  // 6. General Web URLs
   let formatted = preCleaned;
   // If there are trailing spaces or words, isolate the URL part
   const spaceIdx = formatted.search(/\s/);
@@ -366,6 +384,11 @@ export function isSameBookmarkUrl(urlA?: string | null, urlB?: string | null): b
   const redA = trimmedA.match(/reddit\.com\/r\/[^/\s]+\/comments\/([a-zA-Z0-9]+)/i)?.[1] || trimmedA.match(/redd\.it\/([a-zA-Z0-9]+)/i)?.[1];
   const redB = trimmedB.match(/reddit\.com\/r\/[^/\s]+\/comments\/([a-zA-Z0-9]+)/i)?.[1] || trimmedB.match(/redd\.it\/([a-zA-Z0-9]+)/i)?.[1];
   if (redA && redB && redA === redB) return true;
+
+  // Compare Pinterest Pin IDs
+  const pinA = trimmedA.match(/pinterest\.[a-z.]+\/pin\/(\d+)/i)?.[1] || trimmedA.match(/pin\.it\/([a-zA-Z0-9]+)/i)?.[1];
+  const pinB = trimmedB.match(/pinterest\.[a-z.]+\/pin\/(\d+)/i)?.[1] || trimmedB.match(/pin\.it\/([a-zA-Z0-9]+)/i)?.[1];
+  if (pinA && pinB && pinA === pinB) return true;
 
   return false;
 }
