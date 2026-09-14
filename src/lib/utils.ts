@@ -275,13 +275,35 @@ export function canonicalizeUrl(rawUrl: string): string {
   }
 
   // 4. Reddit Canonicalization
-  // Matches: reddit.com/r/sub/comments/ID/... or redd.it/ID
-  const redditMatch = preCleaned.match(
+  // 4a. Check for Comment URL first (so /comment/ID is not lost)
+  const redditCommentMatch = preCleaned.match(
+    /(?:https?:\/\/)?(?:www\.|old\.)?reddit\.com\/r\/([^/\s]+)\/comments\/([a-zA-Z0-9]+)(?:\/[^/\s]+)?\/comment\/([a-zA-Z0-9]+)/i
+  );
+  if (redditCommentMatch) {
+    const subreddit = redditCommentMatch[1].toLowerCase();
+    const postId = redditCommentMatch[2];
+    const commentId = redditCommentMatch[3];
+    return `https://www.reddit.com/r/${subreddit}/comments/${postId}/comment/${commentId}/`;
+  }
+
+  // 4b. Check for Old-style Comment URL: /r/sub/comments/POST_ID/slug/COMMENT_ID/
+  const oldCommentMatch = preCleaned.match(
+    /(?:https?:\/\/)?(?:www\.|old\.)?reddit\.com\/r\/([^/\s]+)\/comments\/([a-zA-Z0-9]+)\/[^/\s]+\/([a-zA-Z0-9]{6,})(?:\/|$|\?)/i
+  );
+  if (oldCommentMatch && !['comment', 'comments', 'live', 'photos', 'video'].includes(oldCommentMatch[3].toLowerCase())) {
+    const subreddit = oldCommentMatch[1].toLowerCase();
+    const postId = oldCommentMatch[2];
+    const commentId = oldCommentMatch[3];
+    return `https://www.reddit.com/r/${subreddit}/comments/${postId}/comment/${commentId}/`;
+  }
+
+  // 4c. Check for Standard Post URL
+  const redditPostMatch = preCleaned.match(
     /(?:https?:\/\/)?(?:www\.|old\.)?reddit\.com\/r\/([^/\s]+)\/comments\/([a-zA-Z0-9]+)/i
   );
-  if (redditMatch) {
-    const subreddit = redditMatch[1].toLowerCase();
-    const postId = redditMatch[2];
+  if (redditPostMatch) {
+    const subreddit = redditPostMatch[1].toLowerCase();
+    const postId = redditPostMatch[2];
     return `https://www.reddit.com/r/${subreddit}/comments/${postId}/`;
   }
   const redditShortMatch = preCleaned.match(/(?:https?:\/\/)?redd\.it\/([a-zA-Z0-9]+)/i);
@@ -380,10 +402,16 @@ export function isSameBookmarkUrl(urlA?: string | null, urlB?: string | null): b
   const ytB = trimmedB.match(/(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/i)?.[1];
   if (ytA && ytB && ytA === ytB) return true;
 
-  // Compare Reddit post IDs
+  // Compare Reddit post & comment IDs
   const redA = trimmedA.match(/reddit\.com\/r\/[^/\s]+\/comments\/([a-zA-Z0-9]+)/i)?.[1] || trimmedA.match(/redd\.it\/([a-zA-Z0-9]+)/i)?.[1];
   const redB = trimmedB.match(/reddit\.com\/r\/[^/\s]+\/comments\/([a-zA-Z0-9]+)/i)?.[1] || trimmedB.match(/redd\.it\/([a-zA-Z0-9]+)/i)?.[1];
-  if (redA && redB && redA === redB) return true;
+  if (redA && redB && redA === redB) {
+    const commentA = trimmedA.match(/\/comment\/([a-zA-Z0-9]+)/i)?.[1] || trimmedA.match(/comments\/[a-zA-Z0-9]+\/[^/\s]+\/([a-zA-Z0-9]{6,})/i)?.[1];
+    const commentB = trimmedB.match(/\/comment\/([a-zA-Z0-9]+)/i)?.[1] || trimmedB.match(/comments\/[a-zA-Z0-9]+\/[^/\s]+\/([a-zA-Z0-9]{6,})/i)?.[1];
+    if (!commentA && !commentB) return true;
+    if (commentA && commentB && commentA === commentB) return true;
+    return false;
+  }
 
   // Compare Pinterest Pin IDs
   const pinA = trimmedA.match(/pinterest\.[a-z.]+\/pin\/(\d+)/i)?.[1] || trimmedA.match(/pin\.it\/([a-zA-Z0-9]+)/i)?.[1];

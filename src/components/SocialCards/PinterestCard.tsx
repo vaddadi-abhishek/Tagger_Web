@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import type { Bookmark, PinterestCardData } from "../../types/bookmark";
 import { sanitizeUrl, formatNumber, parseCardData } from "../../lib/utils";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import { PinterestBrandLogo, VerticalMoreIcon } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
 
@@ -37,23 +38,36 @@ export const PinterestCard = React.memo(function PinterestCard(props: PinterestC
   const author = cardData?.author;
   const metrics = cardData?.metrics;
 
+  // Resolve video item if pin is a video pin
+  const videoItem = useMemo(() => {
+    return cardData?.media?.find((m) => m.type === "video");
+  }, [cardData?.media]);
+
   // Resolve best image URL (card media)
   const imageUrl = useMemo(() => {
     if (cardData?.media && Array.isArray(cardData.media) && cardData.media.length > 0) {
       const firstImg = cardData.media.find((m) => m.type === "image" || !m.type);
       if (firstImg?.url) return firstImg.url;
     }
-    return null;
-  }, [cardData?.media]);
+    return cardData?.video_thumbnail || null;
+  }, [cardData?.media, cardData?.video_thumbnail]);
 
   const authorName = author?.name || author?.username || bookmark.site_name || "Pinterest";
 
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#1c1c1c] text-slate-900 dark:text-[#f5f5f5] font-sans rounded-2xl border border-slate-200/80 dark:border-[#2e2e2e] overflow-hidden shadow-xs hover:shadow-md transition-shadow">
-      {/* 1. Hero Pin Image with Top-Right Pinterest Logo & 3-Dots Action Button */}
+      {/* 1. Hero Pin Image or Video with Top-Right Pinterest Logo & 3-Dots Action Button */}
       <div className="relative w-full bg-slate-100 dark:bg-black overflow-hidden select-none">
-        {imageUrl ? (
+        {videoItem ? (
+          <SafeVideo
+            src={videoItem.url}
+            poster={cardData?.video_thumbnail || imageUrl}
+            controls
+            playsInline
+            className="w-full max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
+          />
+        ) : imageUrl ? (
           <a
             href={sanitizeUrl(bookmark.url)}
             target="_blank"

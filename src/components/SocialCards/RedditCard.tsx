@@ -4,6 +4,7 @@ import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "..
 import { ExpandableText } from "./ExpandableText";
 import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import {
   RedditAlienLogo,
   UpvoteIcon,
@@ -173,9 +174,10 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
       {/* 4. Media Area */}
       {videoItem ? (
         <div className="w-full bg-slate-100 dark:bg-black overflow-hidden border-y border-slate-200 dark:border-[#343536]">
-          <video
+          <SafeVideo
             key={videoItem.url}
             src={videoItem.url}
+            poster={cardData?.video_thumbnail}
             controls
             playsInline
             className="w-full max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
