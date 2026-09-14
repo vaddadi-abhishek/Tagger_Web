@@ -201,7 +201,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
             onRequestDelete={onRequestDelete}
             theme="instagram"
             icon="vertical"
-            buttonClassName="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
+            buttonClassName="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
           />
         </div>
       </div>
@@ -260,8 +260,8 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
             <span
               key={idx}
               className={`w-1.5 h-1.5 rounded-full aspect-square shrink-0 transition-all duration-150 ${idx === activeMediaIdx
-                  ? "bg-[#0095f6]"
-                  : "bg-slate-300 dark:bg-zinc-600 opacity-60"
+                ? "bg-[#0095f6]"
+                : "bg-slate-300 dark:bg-zinc-600 opacity-60"
                 }`}
             />
           ))}

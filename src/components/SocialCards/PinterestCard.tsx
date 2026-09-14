@@ -16,24 +16,6 @@ interface PinterestCardProps {
   isGeneratingAi?: boolean;
 }
 
-/**
- * Formats ISO date strings (e.g. "2026-06-02T11:30:14.000Z") into clean date format "02-Jun-2026"
- */
-function formatPinterestDate(dateString?: string | null): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  if (Number.isNaN(date.getTime())) {
-    return dateString;
-  }
-  const day = String(date.getDate()).padStart(2, "0");
-  const monthNames = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-  ];
-  const month = monthNames[date.getMonth()];
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
-}
 
 export const PinterestCard = React.memo(function PinterestCard(props: PinterestCardProps) {
   const {
@@ -66,10 +48,6 @@ export const PinterestCard = React.memo(function PinterestCard(props: PinterestC
 
   const authorName = author?.name || author?.username || bookmark.site_name || "Pinterest";
 
-  // Use posted_at in card_data for displaying date
-  const displayDate = useMemo(() => {
-    return formatPinterestDate(cardData?.posted_at);
-  }, [cardData?.posted_at]);
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#1c1c1c] text-slate-900 dark:text-[#f5f5f5] font-sans rounded-2xl border border-slate-200/80 dark:border-[#2e2e2e] overflow-hidden shadow-xs hover:shadow-md transition-shadow">
@@ -96,37 +74,25 @@ export const PinterestCard = React.memo(function PinterestCard(props: PinterestC
 
         {/* Top-Right Corner: Only Pinterest Logo & 3-Dots Action Button */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
-          <div
-            className="size-6.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md shadow-xs flex items-center justify-center"
-            title="Pinterest"
-          >
-            <PinterestBrandLogo className="size-4 shrink-0" />
+          <div className="p-0.5 shrink-0">
+            <PinterestBrandLogo className="size-5 shrink-0" />
           </div>
           <CardActionMenu
             bookmark={bookmark}
             isOpen={Boolean(isMenuOpen)}
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-            onClose={onCloseMenu || (() => {})}
+            onClose={onCloseMenu || (() => { })}
             onViewAiContext={onViewAiContext}
             onGenerateAiContext={onGenerateAiContext}
             isGeneratingAi={isGeneratingAi}
             onRequestDelete={onRequestDelete}
             theme="pinterest"
             icon="vertical"
-            buttonClassName="size-6.5 rounded-full bg-white/80 dark:bg-black/60 hover:bg-white dark:hover:bg-black/80 text-slate-700 dark:text-zinc-200 backdrop-blur-md transition-colors cursor-pointer outline-none flex items-center justify-center shadow-xs"
+            buttonClassName="size-6.5 rounded-full hover:bg-white dark:hover:bg-black/80 text-slate-700 dark:text-zinc-200 backdrop-blur-md transition-colors cursor-pointer outline-none flex items-center justify-center shadow-xs"
             customButtonContent={<VerticalMoreIcon className="size-3.5 fill-current" />}
           />
         </div>
       </div>
-
-      {/* 2. Date Section (using posted_at from card_data) */}
-      {displayDate && (
-        <div className="px-3.5 pt-2.5 pb-0.5">
-          <span className="text-[11.5px] font-medium text-slate-500 dark:text-zinc-400">
-            {displayDate}
-          </span>
-        </div>
-      )}
 
       {/* 4. Published by Profile Pic & Name (matching reference image) */}
       <div className="px-3.5 pt-2 pb-3 flex items-center justify-between gap-2 mt-auto">

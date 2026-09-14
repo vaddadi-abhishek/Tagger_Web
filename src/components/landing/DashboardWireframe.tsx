@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { Glass } from "@samasante/liquid-glass";
 import {
   Sparkles,
   RotateCcw,
@@ -102,54 +101,33 @@ function WireframeAiModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/25 dark:bg-black/45 animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 select-none"
       onClick={onClose}
     >
-      <Glass
-        className="rounded-[2rem] max-w-xl w-full flex flex-col max-h-[86vh] animate-in zoom-in-95 duration-200 text-left relative shadow-[0_25px_60px_rgba(0,0,0,0.35)] transition-all duration-300"
-        style={{
-          display: "flex",
-        }}
+      <div
+        className="rounded-3xl max-w-xl w-full flex flex-col max-h-[86vh] animate-in zoom-in-95 duration-200 text-left relative bg-[#FAF8F5] dark:bg-[#14110E] border border-[#B5814C]/25 dark:border-[#C88E3E]/25 shadow-[0_25px_60px_rgba(0,0,0,0.18)] dark:shadow-[0_25px_60px_rgba(0,0,0,0.7)] overflow-hidden transition-all"
         onClick={(e) => e.stopPropagation()}
-        optics={{
-          mapSize: 256,
-          clipToShape: true,
-          softEdge: true,
-          depth: 0.95,
-          curvature: 0.52,
-          dispersion: 0.65,
-          strength: 0.22,
-          bend: 0.75,
-          bendWidth: 0.12,
-          frost: 5.5,
-          brightness: 0,
-          specular: 1.95,
-          sheenAngle: 50,
-          sheen: 1.3,
-          sheenWidth: 3.5,
-          glow: 0.25,
-        }}
       >
         <div className="p-6 sm:p-8 flex flex-col h-full max-h-[86vh] overflow-hidden">
           {/* Header: Platform Brand, Subtitle & Circular Dismiss (Matching AiContextModal) */}
-          <div className="flex items-start justify-between gap-4 pb-4 border-b border-zinc-500/20 shrink-0">
+          <div className="flex items-start justify-between gap-4 pb-4 border-b border-[#EBE5DC] dark:border-[#26211C] shrink-0">
             <div className="space-y-1.5 min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] bg-white/15 dark:bg-white/10 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center gap-1.5">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] bg-[#B5814C]/10 dark:bg-[#D99F50]/15 text-[#B5814C] dark:text-[#D99F50] border border-[#B5814C]/20 dark:border-[#D99F50]/25 flex items-center gap-1.5">
                   <PlatformLogo type={card.type} />
                   <span>{card.platformName}</span>
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--text)] opacity-60">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8C8377] dark:text-[#A89F91]">
                   AI Intelligence
                 </span>
               </div>
               {/* Skeleton Title Bar */}
               <div className="space-y-1 mt-1.5">
-                <div className="h-5 w-4/5 rounded-md bg-[var(--text-h)]/15 dark:bg-white/20" />
-                <div className="h-4.5 w-1/2 rounded-md bg-[var(--text-h)]/15 dark:bg-white/20" />
+                <div className="h-5 w-4/5 rounded-md bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
+                <div className="h-4.5 w-1/2 rounded-md bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
               </div>
               {/* Skeleton URL Bar */}
-              <div className="h-3 w-36 rounded bg-[var(--text)]/20 dark:bg-white/15 font-mono mt-1" />
+              <div className="h-3 w-36 rounded bg-[#8C8377]/25 dark:bg-[#A89F91]/25 font-mono mt-1" />
             </div>
 
             <button
@@ -171,93 +149,93 @@ function WireframeAiModal({
             </button>
           </div>
 
-          {/* Modal Body: Structured Swiss Hierarchy with zero text data (No scrollbar) */}
+          {/* Modal Body: Structured Sand Dune Hierarchy with zero text data (No scrollbar) */}
           <div className="space-y-5 overflow-y-auto no-scrollbar pr-1 py-4 flex-1">
             {/* Section 1: Context Synthesis */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C8377] dark:text-[#A89F91]">
                   Context Synthesis
                 </span>
-                <span className="flex items-center gap-1 opacity-70 text-[11px] font-medium text-[var(--text)] hover:text-[var(--text-h)] transition-colors cursor-pointer">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-[#B5814C] dark:text-[#D99F50] hover:underline transition-colors cursor-pointer">
                   <Copy className="size-3" />
                   <span>Copy</span>
                 </span>
               </div>
 
-              <div className="rounded-2xl p-4 sm:p-5 bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 space-y-2.5">
-                <div className="h-3.5 w-full rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
-                <div className="h-3.5 w-11/12 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
-                <div className="h-3.5 w-3/4 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+              <div className="rounded-2xl p-4 sm:p-5 bg-[#F5F0E8]/70 dark:bg-[#1C1814] border border-[#EBE5DC] dark:border-[#26211C] space-y-2.5">
+                <div className="h-3.5 w-full rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
+                <div className="h-3.5 w-11/12 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
+                <div className="h-3.5 w-3/4 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
               </div>
             </div>
 
-            {/* Section 2: AI Categories (Emerald styling matching real AiContextModal) */}
+            {/* Section 2: AI Categories */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70 block">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C8377] dark:text-[#A89F91] block">
                 AI Categories (2)
               </span>
               <div className="flex flex-wrap gap-1.5">
-                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 dark:border-emerald-500/20 capitalize tracking-tight flex items-center">
-                  <span className="h-2.5 w-16 rounded-full bg-emerald-500/40 dark:bg-emerald-400/40" />
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-[#B5814C]/12 dark:bg-[#D99F50]/15 text-[#996533] dark:text-[#D99F50] border border-[#B5814C]/25 dark:border-[#D99F50]/25 capitalize tracking-tight flex items-center">
+                  <span className="h-2.5 w-16 rounded-full bg-[#B5814C]/40 dark:bg-[#D99F50]/40" />
                 </span>
-                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 dark:border-emerald-500/20 capitalize tracking-tight flex items-center">
-                  <span className="h-2.5 w-20 rounded-full bg-emerald-500/40 dark:bg-emerald-400/40" />
+                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-[#B5814C]/12 dark:bg-[#D99F50]/15 text-[#996533] dark:text-[#D99F50] border border-[#B5814C]/25 dark:border-[#D99F50]/25 capitalize tracking-tight flex items-center">
+                  <span className="h-2.5 w-20 rounded-full bg-[#B5814C]/40 dark:bg-[#D99F50]/40" />
                 </span>
               </div>
             </div>
 
             {/* Section 3: Auto-Generated Tags */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70 block">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C8377] dark:text-[#A89F91] block">
                 Auto-Generated Tags (3)
               </span>
               <div className="flex flex-wrap gap-1.5">
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 dark:bg-white/5 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center gap-1">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#B5814C]/10 dark:bg-[#C88E3E]/10 text-[#211D1A] dark:text-[#FAF8F5] border border-[#B5814C]/20 dark:border-[#C88E3E]/20 flex items-center gap-1">
                   <span className="opacity-50">#</span>
-                  <span className="h-2.5 w-14 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+                  <span className="h-2.5 w-14 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
                 </span>
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 dark:bg-white/5 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center gap-1">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#B5814C]/10 dark:bg-[#C88E3E]/10 text-[#211D1A] dark:text-[#FAF8F5] border border-[#B5814C]/20 dark:border-[#C88E3E]/20 flex items-center gap-1">
                   <span className="opacity-50">#</span>
-                  <span className="h-2.5 w-18 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+                  <span className="h-2.5 w-18 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
                 </span>
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 dark:bg-white/5 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center gap-1">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#B5814C]/10 dark:bg-[#C88E3E]/10 text-[#211D1A] dark:text-[#FAF8F5] border border-[#B5814C]/20 dark:border-[#C88E3E]/20 flex items-center gap-1">
                   <span className="opacity-50">#</span>
-                  <span className="h-2.5 w-12 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+                  <span className="h-2.5 w-12 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
                 </span>
               </div>
             </div>
 
             {/* Section 4: Visual Entities */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70 block">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C8377] dark:text-[#A89F91] block">
                 Visual Entities (2)
               </span>
               <div className="flex flex-wrap gap-1.5">
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 dark:bg-white/5 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center">
-                  <span className="h-2.5 w-24 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#F5F0E8]/80 dark:bg-[#1C1814] text-[var(--text-h)] border border-[#EBE5DC] dark:border-[#26211C] flex items-center">
+                  <span className="h-2.5 w-24 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
                 </span>
-                <span className="px-3 py-1 text-xs font-medium rounded-full bg-white/10 dark:bg-white/5 text-[var(--text-h)] border border-white/20 dark:border-white/10 flex items-center">
-                  <span className="h-2.5 w-20 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20" />
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-[#F5F0E8]/80 dark:bg-[#1C1814] text-[var(--text-h)] border border-[#EBE5DC] dark:border-[#26211C] flex items-center">
+                  <span className="h-2.5 w-20 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20" />
                 </span>
               </div>
             </div>
 
             {/* Section 5: Detected Media Text (OCR) */}
             <div className="space-y-2">
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--text)] opacity-70 block">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#8C8377] dark:text-[#A89F91] block">
                 Detected Media Text (OCR)
               </span>
-              <div className="rounded-2xl p-3.5 sm:p-4 bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 space-y-2">
-                <div className="h-3 w-4/5 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20 font-mono" />
-                <div className="h-3 w-3/5 rounded-full bg-[var(--text-h)]/15 dark:bg-white/20 font-mono" />
+              <div className="rounded-2xl p-3.5 sm:p-4 bg-[#F5F0E8]/70 dark:bg-[#1C1814] border border-[#EBE5DC] dark:border-[#26211C] space-y-2">
+                <div className="h-3 w-4/5 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20 font-mono" />
+                <div className="h-3 w-3/5 rounded-full bg-[#8C8377]/20 dark:bg-[#A89F91]/20 font-mono" />
               </div>
             </div>
           </div>
 
-          {/* Footer: Swiss Minimalist Controls */}
-          <div className="flex items-center justify-between pt-4 border-t border-zinc-500/20 shrink-0">
-            <div className="text-xs font-semibold text-[var(--text)] opacity-60 flex items-center gap-1.5">
+          {/* Footer: Sand Dune Controls */}
+          <div className="flex items-center justify-between pt-4 border-t border-[#EBE5DC] dark:border-[#26211C] shrink-0">
+            <div className="text-xs font-semibold text-[#B5814C] dark:text-[#D99F50] flex items-center gap-1.5">
               <span>Visit Source</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -274,13 +252,13 @@ function WireframeAiModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-xs font-bold rounded-full bg-[var(--text-h)] text-[var(--bg)] dark:bg-white dark:text-black hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer shadow-sm"
+              className="px-6 py-2 text-xs font-bold rounded-full bg-gradient-to-r from-[#B5814C] to-[#996533] hover:from-[#C08C56] hover:to-[#A4703D] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] active:scale-[0.98] transition-all cursor-pointer"
             >
               Done
             </button>
           </div>
         </div>
-      </Glass>
+      </div>
     </div>
   );
 }
