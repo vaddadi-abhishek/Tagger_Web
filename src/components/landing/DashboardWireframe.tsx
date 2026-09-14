@@ -562,14 +562,14 @@ export function DashboardWireframe() {
           {/* ─── 2. Top App Navigation Bar (Mirroring nav.tsx) ─── */}
           <header className="shrink-0 w-full z-20 dark:border-[#26211C]/80 px-4 sm:px-6 py-2.5 transition-colors">
             <div className="w-full flex items-center justify-between gap-4">
-              {/* Search "Search my mind..." input */}
+              {/* Search "Search your mind..." input */}
               <div className="flex-1 min-w-0">
                 <div className="relative flex items-center border-b border-[#B5814C]/30 dark:border-[#C88E3E]/30 focus-within:border-[#B5814C] dark:focus-within:border-[#C88E3E] transition-colors pb-1 group w-full">
                   <input
                     type="text"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Search my mind..."
+                    placeholder="Search your mind..."
                     className="w-full bg-transparent outline-none text-sm sm:text-base md:text-lg text-[#211D1A] dark:text-[#FAF8F5] placeholder-[#8C8377]/70 dark:placeholder-[#7E7569]/70 pr-6"
                   />
                   {searchInput && (

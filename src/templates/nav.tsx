@@ -129,7 +129,7 @@ function Nav({
             ref={searchInputRef}
             type="text"
             id="top-search-mind"
-            placeholder="Search my mind..."
+            placeholder="Search your mind..."
             value={searchTerm}
             onChange={(e) => onSearchChange?.(e.target.value)}
             onFocus={() => {
