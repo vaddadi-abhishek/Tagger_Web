@@ -4,6 +4,7 @@ import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "..
 import { ExpandableText } from "./ExpandableText";
 import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import {
   InstagramBrandLogo,
   InstagramLikeIcon,
@@ -214,9 +215,10 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           onTouchEnd={handleTouchEnd}
         >
           {currentMedia.type === "video" ? (
-            <video
+            <SafeVideo
               key={currentMedia.url}
               src={currentMedia.url}
+              poster={cardData?.video_thumbnail}
               controls
               playsInline
               className="w-full max-h-[420px] object-contain mx-auto block bg-slate-100 dark:bg-black"

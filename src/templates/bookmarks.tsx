@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useDeferredValue, useSyncExternalStore, memo } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, memo } from "react";
 import React from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
@@ -7,33 +7,11 @@ import { AddBookmarkModal } from "../components/AddBookmarkModal";
 import { AiContextModal } from "../components/AiContextModal";
 import { PLATFORM_TABS, resolveCardType, matchesPlatform } from "../lib/utils";
 
-function getColumnCount(): number {
-  if (typeof window === "undefined") return 1;
-  const w = window.innerWidth;
-  if (w >= 1280) return 4;
-  if (w >= 1024) return 3;
-  if (w >= 640) return 2;
-  return 1;
-}
-
-function subscribeResize(callback: () => void) {
-  window.addEventListener("resize", callback, { passive: true });
-  return () => window.removeEventListener("resize", callback);
-}
-
-/** Responsive column count matching Tailwind breakpoints: 1 / sm:2 / lg:3 / xl:4 */
-function useColumnCount() {
-  return useSyncExternalStore(subscribeResize, getColumnCount, () => 1);
-}
-
 /**
- * Tight-packing waterfall layout that distributes cards into fixed columns
- * in row-first reading order (card1→col1, card2→col2, card3→col3, card4→col4, card5→col1, ...).
- *
- * Each column is an independent flex container so:
- *  - Cards pack tightly with no vertical gaps between rows
- *  - Expanding a card only pushes items below it in the same column
- *  - Cards never jump between columns on expand/collapse/add/remove
+ * Pinterest-style fluid masonry container:
+ * - Cards flow dynamically into columns (1 / sm:2 / lg:3 / xl:4) with zero vertical gaps
+ * - Single flat list keyed by bookmark.id: cards never unmount or jump between DOM trees on filter/delete/add
+ * - Perfect vertical packing with break-inside-avoid
  */
 const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   bookmarks,
@@ -54,37 +32,20 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   generatingAiId?: string | null;
 }) {
-  const colCount = useColumnCount();
-
-  // Distribute bookmarks round-robin across columns (row-first order)
-  const columns = useMemo(() => {
-    const cols: Bookmark[][] = Array.from({ length: colCount }, () => []);
-    bookmarks.forEach((bm, i) => {
-      cols[i % colCount].push(bm);
-    });
-    return cols;
-  }, [bookmarks, colCount]);
-
   return (
-    <div
-      className="w-full grid gap-4"
-      style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}
-    >
-      {columns.map((colBookmarks, colIdx) => (
-        <div key={colIdx} className="flex flex-col gap-4">
-          {colBookmarks.map((bookmark) => (
-            <BookmarkCard
-              key={bookmark.id}
-              bookmark={bookmark}
-              isMenuOpen={openMenuId === bookmark.id}
-              onToggleMenu={onToggleMenu}
-              onCloseMenu={onCloseMenu}
-              onRequestDelete={onRequestDelete}
-              onViewAiContext={onViewAiContext}
-              onGenerateAiContext={onGenerateAiContext}
-              isGeneratingAi={generatingAiId === bookmark.id}
-            />
-          ))}
+    <div className="w-full columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [column-fill:_balance]">
+      {bookmarks.map((bookmark) => (
+        <div key={bookmark.id} className="break-inside-avoid mb-4">
+          <BookmarkCard
+            bookmark={bookmark}
+            isMenuOpen={openMenuId === bookmark.id}
+            onToggleMenu={onToggleMenu}
+            onCloseMenu={onCloseMenu}
+            onRequestDelete={onRequestDelete}
+            onViewAiContext={onViewAiContext}
+            onGenerateAiContext={onGenerateAiContext}
+            isGeneratingAi={generatingAiId === bookmark.id}
+          />
         </div>
       ))}
     </div>

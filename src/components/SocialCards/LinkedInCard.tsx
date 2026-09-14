@@ -3,6 +3,7 @@ import type { Bookmark, LinkedInCardData, MediaItem } from "../../types/bookmark
 import { sanitizeUrl, formatNumber, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import {
   LinkedInBrandLogo,
   LinkedInLikeIcon,
@@ -222,18 +223,15 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
       {hasMedia &&
         (videoUrl && !videoError ? (
           <div className="w-full border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-100 dark:bg-black">
-            <video
+            <SafeVideo
               key={videoUrl}
+              src={videoUrl}
+              poster={cardData?.video_thumbnail || postImages[0]}
               controls
               playsInline
-              preload="metadata"
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-              poster={postImages[0] || undefined}
               onError={() => setVideoError(true)}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support HTML5 video.
-            </video>
+            />
           </div>
         ) : (
           renderImageGrid()

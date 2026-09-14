@@ -3,6 +3,7 @@ import type { Bookmark, XCardData, MediaItem } from "../../types/bookmark";
 import { sanitizeUrl, formatNumber, formatDetailDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import {
   ReplyIcon,
   RepostIcon,
@@ -252,18 +253,15 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
         (videoUrl && !videoError ? (
           <div className="px-3.5 mt-2">
             <div className="relative w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-black border border-slate-200 dark:border-[#2f3336]">
-              <video
+              <SafeVideo
                 key={videoUrl}
+                src={videoUrl}
+                poster={cardData?.video_thumbnail || postImages[0]}
                 controls
                 playsInline
-                preload="metadata"
                 className="w-full max-h-[360px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-                poster={postImages[0] || undefined}
                 onError={() => setVideoError(true)}
-              >
-                <source src={videoUrl} type="video/mp4" />
-                Your browser does not support HTML5 video.
-              </video>
+              />
             </div>
           </div>
         ) : videoUrl && videoError ? (

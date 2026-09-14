@@ -3,6 +3,7 @@ import type { Bookmark, FacebookCardData, MediaItem } from "../../types/bookmark
 import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
+import { SafeVideo } from "./SafeVideo";
 import {
   FacebookBrandLogo,
   FacebookLikeBadge,
@@ -269,18 +270,15 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
       {hasMedia &&
         (videoUrl && !videoError ? (
           <div className="w-full border-y border-slate-200 dark:border-[#3a3b3c]/50 bg-slate-100 dark:bg-black">
-            <video
+            <SafeVideo
               key={videoUrl}
+              src={videoUrl}
+              poster={cardData?.video_thumbnail || postImages[0]}
               controls
               playsInline
-              preload="metadata"
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
-              poster={postImages[0] || undefined}
               onError={() => setVideoError(true)}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support HTML5 video.
-            </video>
+            />
           </div>
         ) : videoUrl && videoError ? (
           <div className="p-4 mx-3.5 my-1 rounded-xl bg-slate-900 border border-slate-700 flex flex-col items-center justify-center text-center gap-2">
