@@ -560,7 +560,7 @@ export function DashboardWireframe() {
           </div>
 
           {/* ─── 2. Top App Navigation Bar (Mirroring nav.tsx) ─── */}
-          <header className="shrink-0 w-full z-20 bg-[#FAF8F5]/90 dark:bg-[#0B0907]/90 border-b border-[#EBE5DC]/80 dark:border-[#26211C]/80 px-4 sm:px-6 py-2.5 transition-colors">
+          <header className="shrink-0 w-full z-20 dark:border-[#26211C]/80 px-4 sm:px-6 py-2.5 transition-colors">
             <div className="w-full flex items-center justify-between gap-4">
               {/* Search "Search my mind..." input */}
               <div className="flex-1 min-w-0">
@@ -647,19 +647,17 @@ export function DashboardWireframe() {
                       e.stopPropagation();
                       setActivePlatform(tab.id);
                     }}
-                    className={`group relative px-3 py-1 rounded-full text-xs font-semibold tracking-tight whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${
-                      isActive
-                        ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_10px_rgba(181,129,76,0.3)] scale-100"
-                        : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
-                    }`}
+                    className={`group relative px-3 py-1 rounded-full text-xs font-semibold tracking-tight whitespace-nowrap transition-all duration-150 cursor-pointer flex items-center gap-1.5 shrink-0 select-none ${isActive
+                      ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_10px_rgba(181,129,76,0.3)] scale-100"
+                      : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
+                      }`}
                   >
                     <span>{tab.label}</span>
                     <span
-                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
-                      }`}
+                      className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${isActive
+                        ? "bg-white/20 text-white"
+                        : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
+                        }`}
                     >
                       {count}
                     </span>

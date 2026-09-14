@@ -44,7 +44,25 @@ export class CreditExhaustedError extends Error {
   }
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+/**
+ * Resolves the API base URL dynamically.
+ * When accessing from a mobile/network device over LAN (e.g., http://192.168.x.x:5173),
+ * using the relative path `/api/v1` ensures requests are routed through Vite's dev server proxy
+ * on the exact same port (5173), bypassing mobile Safari 'Load failed' network blocks and Windows firewall.
+ */
+export const getApiBaseUrl = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && window.location.hostname) {
+    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+      if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+        return envUrl;
+      }
+      return "/api/v1";
+    }
+  }
+  return envUrl || "http://localhost:3000/api/v1";
+};
+
 const AUTH_TOKEN_KEY = "mindspace_auth_token";
 const AUTH_USER_KEY = "mindspace_auth_user";
 
@@ -101,7 +119,9 @@ async function request<T>(
   const { customHeaders, ...init } = options;
   const headers = getAuthHeaders(customHeaders);
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const baseUrl = getApiBaseUrl();
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const response = await fetch(`${baseUrl}${normalizedPath}`, {
     ...init,
     headers: {
       ...headers,

@@ -287,8 +287,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       <div className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 max-w-lg w-auto pointer-events-none px-4">
         {toasts.map((toast) => {
           const isError =
-            toast.type === "error" ||
-            /failed|error|unreachable/i.test(toast.message);
+            toast.type === "error" || /failed|error|unreachable/i.test(toast.message);
 
           return (
             <div

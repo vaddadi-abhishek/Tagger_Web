@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getApiBaseUrl } from "../../services/api";
 
 interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   url?: string | null;
@@ -18,7 +19,7 @@ const proxyFallbackUrls = new Set<string>();
 const getProxyUrl = (raw?: string | null): string => {
   if (!raw) return "";
   if (raw.startsWith("data:") || raw.startsWith("blob:")) return raw;
-  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+  const baseUrl = getApiBaseUrl();
   return `${baseUrl}/proxy-image?url=${encodeURIComponent(raw)}`;
 };
 
@@ -93,11 +94,10 @@ export const SafeImage = React.memo(function SafeImage({
       referrerPolicy="no-referrer"
       onError={handleError}
       onLoad={handleLoad}
-      className={`${className} ${
-        isAlreadyLoaded
+      className={`${className} ${isAlreadyLoaded
           ? "opacity-100"
           : `transition-opacity duration-200 ${isLoaded ? "opacity-100" : "opacity-0"}`
-      }`}
+        }`}
       {...rest}
     />
   );

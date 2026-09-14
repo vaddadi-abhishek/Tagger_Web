@@ -164,7 +164,7 @@ export const AnimatedThemeToggler = ({
               }
             );
           })
-          .catch(() => {})
+          .catch(() => { })
           .finally(() => {
             cleanup();
           });
@@ -184,7 +184,7 @@ export const AnimatedThemeToggler = ({
       onClick={toggleTheme}
       disabled={isTransitioning}
       className={cn(
-        "p-2 rounded-full text-[var(--text-h)] bg-[var(--bg)] border border-[var(--border)] hover:bg-[var(--accent-bg)] hover:text-[var(--primary)] transition-all cursor-pointer flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
+        "p-2 text-[var(--text-h)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
         className
       )}
       aria-label="Toggle Theme"

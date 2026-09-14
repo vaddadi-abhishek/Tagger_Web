@@ -302,7 +302,7 @@ export default function BookmarksScreen({
       )}
 
       {/* Top Dashboard Controls Bar: Platform Filters List & Add Bookmark Action Button */}
-      <div className="w-full pt-2 pb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="w-full pb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         {/* Horizontal Platform Filter Pills */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -my-1 max-w-full">
           {PLATFORM_TABS.map((tab) => {
@@ -314,19 +314,17 @@ export default function BookmarksScreen({
                 key={tab.id}
                 type="button"
                 onClick={() => handlePlatformChange(tab.id)}
-                className={`group relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0 select-none ${
-                  isActive
-                    ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] scale-100"
-                    : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
-                }`}
+                className={`group relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0 select-none ${isActive
+                  ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] scale-100"
+                  : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
+                  }`}
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
-                  }`}
+                  className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${isActive
+                    ? "bg-white/20 text-white"
+                    : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
+                    }`}
                 >
                   {count}
                 </span>
