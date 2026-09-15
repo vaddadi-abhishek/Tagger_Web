@@ -64,7 +64,6 @@ export const getApiBaseUrl = (): string => {
 };
 
 const AUTH_TOKEN_KEY = "mindspace_auth_token";
-const AUTH_USER_KEY = "mindspace_auth_user";
 
 /**
  * Returns authentication headers containing Bearer token from localStorage.
@@ -166,9 +165,6 @@ export async function loginUser(email: string, password: string): Promise<AuthUs
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
   }
-  if (data.user) {
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
-  }
   return data.user;
 }
 
@@ -188,9 +184,6 @@ export async function signUpUser(
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
   }
-  if (data.user) {
-    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
-  }
   return data;
 }
 
@@ -203,14 +196,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return data.user;
   } catch {
     localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_USER_KEY);
     return null;
   }
 }
 
 export function logoutUser(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
-  localStorage.removeItem(AUTH_USER_KEY);
 }
 
 // ==========================================
