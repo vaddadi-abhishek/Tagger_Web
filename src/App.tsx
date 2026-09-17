@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { AuthPage } from "./components/AuthPage";
 import DashboardLayout from "./Layout/DashboardLayout";
+import { ReaderPage } from "./components/ReaderPage";
 import { getCurrentUser, logoutUser } from "./services/api";
 
 export default function App() {
@@ -93,6 +94,22 @@ export default function App() {
               user={user}
               onSignOut={handleSignOut}
             />
+          ) : (
+            <AuthPage
+              initialMode="login"
+              onLoginSuccess={handleLoginSuccess}
+              onGoToLanding={() => navigate("/")}
+            />
+          )
+        }
+      />
+
+      {/* Reader Mode Route: /my/app/:articleId */}
+      <Route
+        path="/my/app/:articleId"
+        element={
+          isLoggedIn ? (
+            <ReaderPage user={user} />
           ) : (
             <AuthPage
               initialMode="login"

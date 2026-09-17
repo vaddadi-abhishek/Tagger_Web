@@ -68,6 +68,13 @@ export interface LinkedInCardData {
   media?: MediaItem[];
   posted_at: string | null;
   video_thumbnail?: string | null;
+  type?: string | null;
+  page_intent?: string | null;
+  document?: {
+    title?: string | null;
+    page_count?: number | null;
+    pdf_url?: string | null;
+  } | null;
 }
 
 export interface RedditCardData {
@@ -140,6 +147,8 @@ export interface Bookmark {
   title: string;
   description: string;
   logo: string | null;
+  snapshot_url?: string | null;
+  snapshot?: string | null;
   site_name: string;
   tags?: string[];
   collections?: string[];
@@ -147,6 +156,7 @@ export interface Bookmark {
   isFetchingMetadata?: boolean;
   type?: string;
   card_data?: AnyCardData;
+  is_article?: boolean;
   ai_status?: 'completed' | 'pending_manual' | 'no_credits' | 'failed';
   ai_context?: string | null;
   ai_category?: string[];
@@ -154,4 +164,17 @@ export interface Bookmark {
   visual_entities?: string[];
   ocr_text?: string;
   already_exists?: boolean;
+}
+
+export interface ArticleContent {
+  bookmark_id: string;
+  content_html: string;
+  word_count: number;
+  reading_time_minutes: number;
+  created_at: string;
+  title?: string | null;
+  url?: string | null;
+  site_name?: string | null;
+  description?: string | null;
+  logo_url?: string | null;
 }

@@ -297,11 +297,11 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
         ))}
 
       {/* Date & Views Row */}
-      {(formatDetailDate(postedAt) || metrics?.views) && (
+      {Boolean(formatDetailDate(postedAt) || (metrics?.views && metrics.views > 0)) ? (
         <div className="px-3.5 mt-2.5">
           <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-500 dark:text-[#71767b]">
             {formatDetailDate(postedAt) && <span>{formatDetailDate(postedAt)}</span>}
-            {metrics?.views ? (
+            {metrics?.views && metrics.views > 0 ? (
               <>
                 {formatDetailDate(postedAt) && <span>·</span>}
                 <span className="font-bold text-slate-900 dark:text-[#e7e9ea] ml-0.5">
@@ -312,7 +312,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
             ) : null}
           </div>
         </div>
-      )}
+      ) : null}
 
       <hr className="border-slate-200 dark:border-[#2f3336] mx-3.5 mt-2" />
 

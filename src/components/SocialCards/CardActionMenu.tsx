@@ -226,6 +226,35 @@ export const CardActionMenu = React.memo(function CardActionMenu({
             className={`w-44 rounded-xl border shadow-xl z-50 text-[13px] font-medium py-1.5 overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-left ${styles.menuBg} ${styles.border} ${styles.text}`}
             onClick={(e) => e.stopPropagation()}
           >
+            {bookmark.is_article && (
+              <a
+                href={`/my/app/${bookmark.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className={`w-full text-left px-3.5 py-1.5 ${styles.hoverBg} transition-colors flex items-center gap-2 font-medium cursor-pointer text-[#c06c46] dark:text-[#d6855f]`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.8"
+                  stroke="currentColor"
+                  className="size-3.5 shrink-0"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                  />
+                </svg>
+                <span>Read Mode</span>
+              </a>
+            )}
+
             {bookmark.ai_status === "completed" || bookmark.ai_context ? (
               <button
                 onClick={(e) => {

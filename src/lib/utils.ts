@@ -114,7 +114,7 @@ export function resolveCardType(bookmark: Bookmark): string {
   if (rawType === "x" || rawType === "twitter") return "x";
   if (rawType === "reddit") return "reddit";
   if (rawType === "instagram") return "instagram";
-  if (rawType === "linkedin") return "linkedin";
+  if (rawType === "linkedin" || rawType.startsWith("linkedin_")) return "linkedin";
   if (rawType === "youtube") return "youtube";
   if (rawType === "facebook") return "facebook";
   if (rawType === "pinterest") return "pinterest";

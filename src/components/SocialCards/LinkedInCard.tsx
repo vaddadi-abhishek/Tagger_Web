@@ -80,10 +80,77 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
   }, [cardData?.media]);
 
   const [videoError, setVideoError] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const hasMedia = Boolean(videoUrl || postImages.length > 0);
+
+  const handlePrevSlide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentSlide((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextSlide = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCurrentSlide((prev) => Math.min(postImages.length - 1, prev + 1));
+  };
 
   const renderImageGrid = () => {
     if (postImages.length === 0) return null;
+
+    // Interactive presentation viewer for LinkedIn documents/slides
+    if (cardData?.document && postImages.length > 0) {
+      return (
+        <div className="relative w-full overflow-hidden border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-100 dark:bg-black group">
+          <a
+            href={sanitizeUrl(bookmark.url)}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full"
+          >
+            <SafeImage
+              url={postImages[currentSlide] || postImages[0]}
+              alt={`Slide ${currentSlide + 1}`}
+              className="w-full h-auto max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black select-none"
+            />
+          </a>
+
+          {postImages.length > 1 && (
+            <>
+              {currentSlide > 0 && (
+                <button
+                  type="button"
+                  onClick={handlePrevSlide}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all shadow-md z-10 cursor-pointer"
+                  aria-label="Previous slide"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+
+              {currentSlide < postImages.length - 1 && (
+                <button
+                  type="button"
+                  onClick={handleNextSlide}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all shadow-md z-10 cursor-pointer"
+                  aria-label="Next slide"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              )}
+
+              <div className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-[11px] font-medium tracking-wide shadow-sm pointer-events-none">
+                {currentSlide + 1} / {postImages.length}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
 
     if (postImages.length === 1) {
       return (
@@ -153,6 +220,39 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
     );
   };
 
+  const subType = (cardData?.type || bookmark.type || "").toLowerCase();
+  const typeBadge = useMemo(() => {
+    if (subType === "linkedin_topic_collection") {
+      return (
+        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-200/70 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60">
+          Topic Hub
+        </span>
+      );
+    }
+    if (subType === "linkedin_news_story") {
+      return (
+        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/70 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60">
+          News Story
+        </span>
+      );
+    }
+    if (subType === "linkedin_newsletter") {
+      return (
+        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60">
+          Newsletter
+        </span>
+      );
+    }
+    if (subType === "linkedin_article") {
+      return (
+        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-200/70 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60">
+          Article
+        </span>
+      );
+    }
+    return null;
+  }, [subType]);
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#1b1f23] text-slate-900 dark:text-[#f3f6f8] font-sans rounded-2xl border border-slate-200/80 dark:border-[#38434f] overflow-hidden pb-1 shadow-sm">
       {/* 1. Header: Avatar, Name & Options */}
@@ -173,9 +273,12 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
           )}
 
           <div className="flex flex-col justify-center overflow-hidden leading-tight">
-            <span className="font-semibold text-slate-900 dark:text-[#f3f6f8] text-[13.5px] truncate hover:underline cursor-pointer">
-              {author?.name || "LinkedIn Member"}
-            </span>
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="font-semibold text-slate-900 dark:text-[#f3f6f8] text-[13.5px] truncate hover:underline cursor-pointer">
+                {author?.name || "LinkedIn Member"}
+              </span>
+              {typeBadge}
+            </div>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
               {bookmark.site_name || "LinkedIn"}
             </span>
@@ -208,7 +311,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
           href={sanitizeUrl(bookmark.url)}
           target="_blank"
           rel="noreferrer"
-          className="block text-slate-900 dark:text-[#f3f6f8]"
+          className="block text-slate-900 dark:text-[#f3f6f8] group"
         >
           <ExpandableText
             text={bookmark.description || bookmark.title}
@@ -218,6 +321,40 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
           />
         </a>
       </div>
+
+      {/* Document details if present */}
+      {cardData?.document && (
+        <div className="px-3.5 pb-2.5">
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-[#38434f] bg-slate-50/80 dark:bg-[#28323d]/50">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-bold text-[11px] shrink-0 uppercase tracking-tight">
+                PDF
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                  {cardData.document.title || bookmark.title || "Document"}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {cardData.document.page_count ? `${cardData.document.page_count} pages` : `${postImages.length} pages`}
+                </span>
+              </div>
+            </div>
+            {cardData.document.pdf_url && (
+              <a
+                href={sanitizeUrl(cardData.document.pdf_url)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0 px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/50 flex items-center gap-1.5 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* 3. Media: Video or Multi-Image Grid */}
       {hasMedia &&
@@ -238,15 +375,28 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
         ))}
 
       {/* 4. Reactions Metric row */}
-      {(metrics?.reactions || metrics?.comments) && (
+      {(Boolean(metrics?.reactions && metrics.reactions > 0) ||
+        Boolean(metrics?.comments && metrics.comments > 0) ||
+        Boolean(metrics?.reposts && metrics.reposts > 0)) ? (
         <div className="px-3.5 py-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#38434f]/40">
           <div className="flex items-center gap-1.5">
-            <LinkedInReactionBadge className="w-4 h-4 shrink-0" />
-            <span>{formatNumber(metrics?.reactions) || "1"}</span>
+            {metrics?.reactions && metrics.reactions > 0 ? (
+              <>
+                <LinkedInReactionBadge className="w-4 h-4 shrink-0" />
+                <span>{formatNumber(metrics.reactions)}</span>
+              </>
+            ) : null}
           </div>
-          {metrics?.comments ? <span>{formatNumber(metrics.comments)} comments</span> : null}
+          <div className="flex items-center gap-2">
+            {metrics?.comments && metrics.comments > 0 ? (
+              <span>{formatNumber(metrics.comments)} comments</span>
+            ) : null}
+            {metrics?.reposts && metrics.reposts > 0 ? (
+              <span>{formatNumber(metrics.reposts)} reposts</span>
+            ) : null}
+          </div>
         </div>
-      )}
+      ) : null}
 
       {/* 5. Action Buttons Footer */}
       <div className="px-2 py-1 flex items-center justify-between text-slate-600 dark:text-slate-300 text-[12px] font-semibold mt-auto">

@@ -39,6 +39,7 @@ export const SafeImage = React.memo(function SafeImage({
   ...rest
 }: SafeImageProps) {
   const isAlreadyLoaded = Boolean(url && globalLoadedImageUrls.has(url));
+  const imgRef = React.useRef<HTMLImageElement>(null);
 
   const [currentSrc, setCurrentSrc] = useState<string>(() => getInitialSrc(url));
   const [hasError, setHasError] = useState(false);
@@ -51,12 +52,28 @@ export const SafeImage = React.memo(function SafeImage({
     setIsLoaded(alreadyLoaded);
   }, [url]);
 
+  // Synchronous check if image is already cached or completed by browser
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      if (url) {
+        globalLoadedImageUrls.add(url);
+        if (currentSrc.includes("/proxy-image?url=")) {
+          proxyFallbackUrls.add(url);
+        }
+      }
+      setIsLoaded(true);
+    }
+  }, [currentSrc, url]);
+
   const handleError = () => {
     if (url && currentSrc === url && !url.includes("/proxy-image?url=")) {
-      // Remember that this URL requires the proxy fallback
-      proxyFallbackUrls.add(url);
+      // Direct load failed: attempt backend proxy fallback
       setCurrentSrc(getProxyUrl(url));
     } else {
+      // Proxy also failed or invalid URL: mark error & cleanup proxy cache
+      if (url) {
+        proxyFallbackUrls.delete(url);
+      }
       setHasError(true);
     }
   };
@@ -64,6 +81,9 @@ export const SafeImage = React.memo(function SafeImage({
   const handleLoad = () => {
     if (url) {
       globalLoadedImageUrls.add(url);
+      if (currentSrc.includes("/proxy-image?url=")) {
+        proxyFallbackUrls.add(url);
+      }
     }
     setIsLoaded(true);
   };
@@ -87,6 +107,7 @@ export const SafeImage = React.memo(function SafeImage({
 
   return (
     <img
+      ref={imgRef}
       src={currentSrc}
       alt={alt}
       loading={isAlreadyLoaded ? "eager" : "lazy"}

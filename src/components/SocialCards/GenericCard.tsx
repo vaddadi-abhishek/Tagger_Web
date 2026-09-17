@@ -34,7 +34,11 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
     () => parseCardData<GlobalWebCardData>(bookmark.card_data),
     [bookmark.card_data]
   );
-  const snapshotUrl = cardData?.snapshot;
+  const snapshotUrl =
+    cardData?.snapshot ||
+    bookmark.snapshot_url ||
+    (bookmark as { snapshot?: string | null }).snapshot ||
+    null;
   const mediaUrl = snapshotUrl || bookmark.logo;
   const descriptionText = bookmark.description || "";
   const DESCRIPTION_LIMIT = 130;
@@ -190,6 +194,24 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
               />
             </svg>
             <span>{cardData.author}</span>
+          </div>
+        )}
+
+        {/* Reader Mode Action */}
+        {bookmark.is_article && (
+          <div className="pt-2">
+            <a
+              href={`/my/app/${bookmark.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f4ece1] dark:bg-[#2a241e] hover:bg-[#ebdccb] dark:hover:bg-[#382f27] text-[#c06c46] dark:text-[#d6855f] text-[11px] font-semibold transition-all border border-[#e2d5c3] dark:border-[#42372f] shadow-2xs hover:scale-[1.02] active:scale-95 cursor-pointer"
+            >
+              <svg className="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+              </svg>
+              <span>Read Mode</span>
+            </a>
           </div>
         )}
       </div>

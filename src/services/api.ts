@@ -1,4 +1,4 @@
-import type { Bookmark, AnyCardData } from "../types/bookmark";
+import type { Bookmark, AnyCardData, ArticleContent } from "../types/bookmark";
 
 export interface MetadataResponse {
   url: string;
@@ -251,6 +251,12 @@ export async function fetchUrlMetadata(url: string): Promise<MetadataResponse> {
   return request<MetadataResponse>("/extract", {
     method: "POST",
     body: JSON.stringify({ url: validatedUrl }),
+  });
+}
+
+export async function fetchBookmarkArticle(bookmarkId: string): Promise<ArticleContent> {
+  return request<ArticleContent>(`/bookmarks/${bookmarkId}/article`, {
+    method: "GET",
   });
 }
 
