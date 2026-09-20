@@ -57,10 +57,10 @@ export const getApiBaseUrl = (): string => {
       if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
         return envUrl;
       }
-      return "/api/v1";
+      return "https://mindspace-link-web-scrapper.onrender.com/api/v1";
     }
   }
-  return envUrl || "http://localhost:3000/api/v1";
+  return envUrl || "https://mindspace-link-web-scrapper.onrender.com/api/v1";
 };
 
 const AUTH_TOKEN_KEY = "mindspace_auth_token";
