@@ -6,11 +6,7 @@ import { SafeImage } from "./SafeImage";
 import { SafeVideo } from "./SafeVideo";
 import {
   LinkedInBrandLogo,
-  LinkedInLikeIcon,
   LinkedInReactionBadge,
-  LinkedInCommentIcon,
-  LinkedInRepostIcon,
-  LinkedInSendIcon,
 } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
 
@@ -378,7 +374,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
       {(Boolean(metrics?.reactions && metrics.reactions > 0) ||
         Boolean(metrics?.comments && metrics.comments > 0) ||
         Boolean(metrics?.reposts && metrics.reposts > 0)) ? (
-        <div className="px-3.5 py-1.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[#38434f]/40">
+        <div className="px-3.5 py-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mt-auto">
           <div className="flex items-center gap-1.5">
             {metrics?.reactions && metrics.reactions > 0 ? (
               <>
@@ -397,26 +393,6 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
           </div>
         </div>
       ) : null}
-
-      {/* 5. Action Buttons Footer */}
-      <div className="px-2 py-1 flex items-center justify-between text-slate-600 dark:text-slate-300 text-[12px] font-semibold mt-auto">
-        <button className="flex-1 py-1.5 flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#28323d] rounded-lg transition-colors cursor-pointer">
-          <LinkedInLikeIcon />
-          <span className="hidden sm:inline">Like</span>
-        </button>
-        <button className="flex-1 py-1.5 flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#28323d] rounded-lg transition-colors cursor-pointer">
-          <LinkedInCommentIcon />
-          <span className="hidden sm:inline">Comment</span>
-        </button>
-        <button className="flex-1 py-1.5 flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#28323d] rounded-lg transition-colors cursor-pointer">
-          <LinkedInRepostIcon />
-          <span className="hidden sm:inline">Repost</span>
-        </button>
-        <button className="flex-1 py-1.5 flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#28323d] rounded-lg transition-colors cursor-pointer">
-          <LinkedInSendIcon />
-          <span className="hidden sm:inline">Send</span>
-        </button>
-      </div>
     </div>
   );
 });

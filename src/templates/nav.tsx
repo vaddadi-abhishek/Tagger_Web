@@ -175,7 +175,7 @@ function Nav({
               setProfileClicked(false);
             }}
             aria-label="View notifications"
-            className="relative size-9 sm:size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center cursor-pointer transition-all text-[var(--text-h)] group"
+            className="relative size-9 sm:size-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center cursor-pointer transition-all text-[#B5814C] dark:text-[#D99F50] group"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -183,7 +183,7 @@ function Nav({
               viewBox="0 0 24 24"
               strokeWidth={1.8}
               stroke="currentColor"
-              className="size-4.5 sm:size-5 text-[var(--text-h)] group-hover:scale-105 transition-transform"
+              className="size-4.5 sm:size-5 text-[#B5814C] dark:text-[#D99F50] group-hover:scale-105 transition-transform"
             >
               <path
                 strokeLinecap="round"
@@ -191,8 +191,6 @@ function Nav({
                 d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
               />
             </svg>
-            {/* Unread indicator dot (Sand Dune Amber) */}
-            <span className="absolute top-2 right-2 size-2 rounded-full bg-[#D99F50] ring-2 ring-[#FAF8F5] dark:ring-[#0B0907]" />
           </button>
         </div>
 
@@ -283,23 +281,15 @@ function Nav({
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-[#EBE5DC] dark:border-[#26211C] mb-2.5">
                 <span className="font-bold text-sm text-[var(--text-h)]">Notifications</span>
-                <span className="text-[10px] uppercase font-bold text-[#B5814C] dark:text-[#D99F50] bg-[#B5814C]/10 dark:bg-[#D99F50]/15 px-2 py-0.5 rounded-full">
-                  Live
+                <span className="text-[10px] uppercase font-bold text-[#8C8377] dark:text-[#7E7569] bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                  0 New
                 </span>
               </div>
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                <div className="p-2.5 rounded-2xl space-y-1">
-                  <p className="font-semibold text-[var(--text-h)]">Bookmarks in Sync</p>
-                  <p className="text-[11px] text-[#5F5850] dark:text-[#A89F91]">
-                    Your saved bookmarks and metadata are synced with cloud storage.
-                  </p>
-                </div>
-                <div className="p-2.5 rounded-2xl space-y-1">
-                  <p className="font-semibold text-[var(--text-h)]">Auto Scraper Online</p>
-                  <p className="text-[11px] text-[#5F5850] dark:text-[#A89F91]">
-                    Smart metadata scraper is active and extracting rich social cards.
-                  </p>
-                </div>
+              <div className="py-6 text-center text-[#5F5850] dark:text-[#A89F91]">
+                <p className="font-medium text-xs text-[var(--text-h)]">No new notifications</p>
+                <p className="text-[11px] text-[#8C8377] dark:text-[#7E7569] mt-0.5">
+                  You're all caught up!
+                </p>
               </div>
               <div className="pt-2 mt-2 border-t border-[#EBE5DC] dark:border-[#26211C] text-center">
                 <button
