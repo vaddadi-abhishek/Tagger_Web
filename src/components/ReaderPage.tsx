@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { fetchBookmarkArticle } from "../services/api";
 import type { ArticleContent } from "../types/bookmark";
 
@@ -368,7 +369,11 @@ export const ReaderPage: React.FC<ReaderPageProps> = () => {
             {/* Render Article HTML */}
             <div
               className={`reader-body ${fontSizeClass}`}
-              dangerouslySetInnerHTML={{ __html: article.content_html }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(article.content_html, {
+                  ADD_ATTR: ['target', 'rel'],
+                }),
+              }}
             />
 
             {/* Colophon / Signoff */}

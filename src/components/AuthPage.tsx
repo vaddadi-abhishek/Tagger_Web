@@ -52,8 +52,11 @@ export function AuthPage({
     }
 
     if (mode === "signup") {
-      if (password.length < 8) {
-        setError("Password must be at least 8 characters long.");
+      const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!PASSWORD_REGEX.test(password)) {
+        setError(
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number."
+        );
         return;
       }
       if (!username.trim()) {
