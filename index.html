@@ -2,9 +2,51 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>Mindspace — The AI-Powered Bookmark &amp; Visual Media Vault</title>
+    <meta name="title" content="Mindspace — The AI-Powered Bookmark &amp; Visual Media Vault" />
+    <meta name="description" content="Never lose a link again. Mindspace automatically organizes your web bookmarks, social posts, and articles with multimodal AI visual context, embedded OCR, and clean reader mode." />
+    <meta name="keywords" content="AI bookmark manager, smart bookmarks, multimodal AI bookmark, visual bookmark organizer, link saver, AI web clipping, reader mode, second brain bookmarks" />
+    <meta name="author" content="Mindspace" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="canonical" href="https://mindspace.app/" />
+
+    <!-- Open Graph / Facebook / LinkedIn / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mindspace.app/" />
+    <meta property="og:site_name" content="Mindspace" />
+    <meta property="og:title" content="Mindspace — The AI-Powered Bookmark &amp; Visual Media Vault" />
+    <meta property="og:description" content="Organize web links, social media posts, and articles with automatic Multimodal AI visual intelligence, OCR context, and distraction-free reader mode." />
+    <meta property="og:image" content="https://mindspace.app/og-preview.png" />
+    <meta property="og:image:secure_url" content="https://mindspace.app/og-preview.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mindspace AI Bookmarks &amp; Media Vault Preview" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://mindspace.app/" />
+    <meta name="twitter:site" content="@mindspace" />
+    <meta name="twitter:creator" content="@mindspace" />
+    <meta name="twitter:title" content="Mindspace — The AI-Powered Bookmark &amp; Visual Media Vault" />
+    <meta name="twitter:description" content="Organize web links, social media posts, and articles with automatic Multimodal AI visual intelligence, OCR context, and distraction-free reader mode." />
+    <meta name="twitter:image" content="https://mindspace.app/og-preview.png" />
+    <meta name="twitter:image:alt" content="Mindspace AI Bookmarks &amp; Media Vault Preview" />
+
+    <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/svg+xml" href="/mindspace-logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="apple-touch-icon" href="/mindspace-logo.svg" />
+    <meta name="theme-color" content="#120F0C" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FAF8F5" media="(prefers-color-scheme: light)" />
+
+    <!-- Security & Referrer -->
     <meta name="referrer" content="no-referrer" />
+
+    <!-- Inline Theme Hydration to prevent theme flash -->
     <script>
       (function() {
         var saved = localStorage.getItem("theme");
@@ -15,10 +57,102 @@
         }
       })();
     </script>
+
+    <!-- Google Web Fonts Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Mindspace</title>
+
+    <!-- AEO & GEO Structured Data (JSON-LD) for Search & AI Engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://mindspace.app/#software",
+          "name": "Mindspace",
+          "url": "https://mindspace.app",
+          "applicationCategory": "ProductivityApplication",
+          "operatingSystem": "Web, Chrome Extension, Mobile",
+          "description": "Intelligent AI-powered bookmark manager and visual media curator with multimodal image analysis, OCR text extraction, and distraction-free article reader.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "description": "Free Collector tier with unlimited bookmark saves and weekly AI visual credits."
+          },
+          "featureList": [
+            "Multimodal AI visual intelligence via Google Gemini",
+            "Automated OCR text extraction from embedded screenshots and diagrams",
+            "Distraction-free article reader mode with reading time calculation",
+            "Deep scrapers for X (Twitter), LinkedIn, Instagram, Reddit, and YouTube",
+            "Sub-millisecond duplicate bookmark detection",
+            "Strict tenant isolation with PostgreSQL Row-Level Security"
+          ],
+          "screenshot": "https://mindspace.app/og-preview.png"
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://mindspace.app/#organization",
+          "name": "Mindspace",
+          "url": "https://mindspace.app",
+          "logo": "https://mindspace.app/mindspace-logo.svg",
+          "sameAs": [
+            "https://twitter.com/mindspace",
+            "https://github.com/mindspace"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://mindspace.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is Mindspace and how is it different from traditional bookmark managers?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Mindspace is an intelligent AI bookmarks manager and knowledge vault. Unlike conventional bookmark tools that rely on folders and manual tags, Mindspace uses Multimodal AI and OCR to automatically inspect images, articles, and social posts, generating contextual summaries and searchable tags instantly."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does AI auto-tagging and visual context work in Mindspace?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "When you save a link, Mindspace captures high-resolution previews, runs OCR to index embedded text, and uses multimodal AI to identify key concepts and visual entities. You can find saved bookmarks later simply by remembering concepts or words seen inside the media."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does Mindspace support reader mode for articles?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Mindspace automatically detects article links and provides a clean, reader-mode view that strips ads and paywall clutter, while calculating estimated reading times and word counts."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is Mindspace free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Mindspace includes a Free Collector tier with unlimited bookmark saves, full search, reader mode, and weekly AI visual intelligence credits. A Thinker Pro tier is available for power users needing unlimited AI credits."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is saved bookmark content private and secure?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Mindspace enforces strict tenant isolation using PostgreSQL Row Level Security (RLS) policies and bcrypt password encryption. Your bookmarks and AI analysis are strictly private to your account."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

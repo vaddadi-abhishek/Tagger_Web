@@ -1,0 +1,23 @@
+# Mindspace
+
+> Mindspace is an intelligent AI bookmark manager and visual media vault. It automatically analyzes, tags, and organizes saved links, social posts, and articles using Multimodal AI visual intelligence and embedded OCR.
+
+## What is Mindspace?
+Mindspace replaces conventional folder-based bookmark managers (like Raindrop.io, Pocket, or browser bookmarks) with an autonomous second-brain knowledge vault. When a user saves any link—whether from X (Twitter), LinkedIn, Instagram, Reddit, YouTube, or web articles—Mindspace captures snapshots, extracts clean article text, identifies entities, and generates intelligent contextual summaries and searchable tags.
+
+## Core Features & Capabilities
+- **Multimodal AI Visual Intelligence**: Uses Google Gemini to inspect images, diagrams, video thumbnails, and page layouts, generating rich descriptions and relevant tags automatically.
+- **Embedded OCR Text Extraction**: Extracts text embedded inside images, memes, slides, infographics, and screenshots so you can search for bookmarks by words seen inside the media.
+- **Reader Mode**: Distraction-free article reader that strips ads, paywalls, and clutter, calculating word count and reading time.
+- **Supported Platforms**: Deep native metadata scrapers for X (Twitter), LinkedIn posts and shares, Instagram posts & reels, Reddit threads, YouTube videos, and standard web articles.
+- **Privacy & Security**: Built with zero direct client-to-database connections. Employs PostgreSQL Row Level Security (RLS), bcrypt password hashing, and encrypted HTTPS transport to keep bookmarks strictly private.
+- **Smart Deduplication**: Automatically canonicalizes URLs and detects duplicate links before network requests, saving credits and avoiding clutter.
+
+## Pricing
+- **Free Collector**: Unlimited bookmark saving, full search, reader mode, and 6 weekly AI visual intelligence credits.
+- **Thinker (Pro)**: Unlimited AI visual analysis, unlimited auto-tagging, priority queueing.
+
+## Links
+- Homepage: https://mindspace.app/
+- Web App: https://mindspace.app/my/app
+- Authentication: https://mindspace.app/auth

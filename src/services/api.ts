@@ -45,25 +45,21 @@ export class CreditExhaustedError extends Error {
 }
 
 /**
- * Resolves the API base URL dynamically.
- * When accessing from a mobile/network device over LAN (e.g., http://192.168.x.x:5173),
- * using the relative path `/api/v1` ensures requests are routed through Vite's dev server proxy
- * on the exact same port (5173), bypassing mobile Safari 'Load failed' network blocks and Windows firewall.
+ * Resolves the API base URL dynamically from environment variables (.env).
+ * If VITE_API_URL is defined, it is used directly.
+ * If omitted, defaults to the relative path '/api/v1', which routes through
+ * Vite's proxy during local development and platform rewrites in production.
  */
 export const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (typeof window !== "undefined" && window.location.hostname) {
-    if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-      if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
-        return envUrl;
-      }
-      return "https://mindspace-link-web-scrapper.onrender.com/api/v1";
-    }
+  if (envUrl && typeof envUrl === "string" && envUrl.trim()) {
+    return envUrl.trim().replace(/\/+$/, "");
   }
-  return envUrl || "https://mindspace-link-web-scrapper.onrender.com/api/v1";
+  return "/api/v1";
 };
 
 const AUTH_TOKEN_KEY = "mindspace_auth_token";
+const AUTH_REFRESH_TOKEN_KEY = "mindspace_refresh_token";
 
 /**
  * Returns authentication headers containing Bearer token from localStorage.
@@ -107,15 +103,50 @@ function validateAndFormatUrl(rawUrl: string): string {
   }
 }
 
+// Track ongoing refresh promise to prevent parallel stampeding refresh requests
+let refreshPromise: Promise<boolean> | null = null;
+
+async function attemptTokenRefresh(): Promise<boolean> {
+  const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY);
+  if (!refreshToken) return false;
+
+  try {
+    const baseUrl = getApiBaseUrl();
+    const response = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+    });
+
+    if (!response.ok) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+      return false;
+    }
+
+    const data = (await response.json()) as { token?: string; refreshToken?: string };
+    if (data.token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      if (data.refreshToken) {
+        localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
+      }
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Centralized fetch wrapper providing standard authentication, response parsing,
- * and strongly typed error propagation.
+ * Centralized fetch wrapper providing standard authentication, automatic token refresh,
+ * response parsing, and strongly typed error propagation.
  */
 async function request<T>(
   path: string,
-  options: RequestInit & { customHeaders?: Record<string, string> } = {}
+  options: RequestInit & { customHeaders?: Record<string, string>; _isRetry?: boolean } = {}
 ): Promise<T> {
-  const { customHeaders, ...init } = options;
+  const { customHeaders, _isRetry, ...init } = options;
   const headers = getAuthHeaders(customHeaders);
 
   const baseUrl = getApiBaseUrl();
@@ -127,6 +158,20 @@ async function request<T>(
       ...(init.headers as Record<string, string> | undefined),
     },
   });
+
+  // Handle 401 Unauthorized with silent token refresh (single retry)
+  if (response.status === 401 && !_isRetry && !path.startsWith("/auth/")) {
+    if (!refreshPromise) {
+      refreshPromise = attemptTokenRefresh().finally(() => {
+        refreshPromise = null;
+      });
+    }
+
+    const refreshed = await refreshPromise;
+    if (refreshed) {
+      return request<T>(path, { ...options, _isRetry: true });
+    }
+  }
 
   if (!response.ok) {
     const errorData = (await response.json().catch(() => ({}))) as {
@@ -157,13 +202,16 @@ async function request<T>(
 // ==========================================
 
 export async function loginUser(email: string, password: string): Promise<AuthUser> {
-  const data = await request<{ token?: string; user: AuthUser }>("/auth/login", {
+  const data = await request<{ token?: string; refreshToken?: string; user: AuthUser }>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+  }
+  if (data.refreshToken) {
+    localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
   }
   return data.user;
 }
@@ -173,18 +221,30 @@ export async function signUpUser(
   password: string,
   username?: string
 ): Promise<{ user: AuthUser | null; message?: string }> {
-  const data = await request<{ user: AuthUser | null; token?: string; message?: string }>(
-    "/auth/signup",
-    {
-      method: "POST",
-      body: JSON.stringify({ email, password, username }),
-    }
-  );
+  const data = await request<{
+    user: AuthUser | null;
+    token?: string;
+    refreshToken?: string;
+    message?: string;
+  }>("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, password, username }),
+  });
 
   if (data.token) {
     localStorage.setItem(AUTH_TOKEN_KEY, data.token);
   }
+  if (data.refreshToken) {
+    localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
+  }
   return data;
+}
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -196,12 +256,14 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     return data.user;
   } catch {
     localStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
     return null;
   }
 }
 
 export function logoutUser(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
 }
 
 // ==========================================
@@ -259,4 +321,3 @@ export async function fetchBookmarkArticle(bookmarkId: string): Promise<ArticleC
     method: "GET",
   });
 }
-

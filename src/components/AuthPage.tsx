@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { loginUser, signUpUser } from "../services/api";
+import { loginUser, signUpUser, forgotPassword } from "../services/api";
 import { AnimatedThemeToggler } from "./ui/AnimatedThemeToggler";
 
 interface AuthPageProps {
@@ -22,6 +22,25 @@ export function AuthPage({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const handleForgotPassword = async () => {
+    setError("");
+    setSuccess("");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setError("Please enter your email address to receive a password reset link.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await forgotPassword(trimmedEmail);
+      setSuccess(res.message || "If an account exists with this email, a password reset link has been sent.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send reset link.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -33,6 +52,10 @@ export function AuthPage({
     }
 
     if (mode === "signup") {
+      if (password.length < 8) {
+        setError("Password must be at least 8 characters long.");
+        return;
+      }
       if (!username.trim()) {
         setError("Please enter a username.");
         return;
@@ -249,7 +272,7 @@ export function AuthPage({
                 {mode === "login" && (
                   <button
                     type="button"
-                    onClick={() => alert("Password reset link sent to email.")}
+                    onClick={handleForgotPassword}
                     className="text-[11px] font-semibold text-[#B5814C] dark:text-[#D99F50] hover:underline cursor-pointer"
                   >
                     Forgot password?
