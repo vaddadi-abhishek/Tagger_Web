@@ -178,12 +178,18 @@ async function request<T>(
       error?: string;
       message?: string;
       ai_status?: string;
+      requireVerification?: boolean;
+      email?: string;
     };
     const errorMessage =
       errorData.error || errorData.message || `Request failed (Status ${response.status})`;
 
     if (response.status === 402 || errorData.error === "NO_CREDITS_LEFT") {
       throw new CreditExhaustedError(errorMessage);
+    }
+
+    if (response.status === 403 && errorData.requireVerification) {
+      throw new EmailNotVerifiedError(errorMessage, errorData.email || "");
     }
 
     throw new Error(errorMessage);
@@ -195,6 +201,15 @@ async function request<T>(
   }
 
   return response.json();
+}
+
+export class EmailNotVerifiedError extends Error {
+  email: string;
+  constructor(message: string, email: string) {
+    super(message);
+    this.name = "EmailNotVerifiedError";
+    this.email = email;
+  }
 }
 
 // ==========================================
@@ -216,17 +231,21 @@ export async function loginUser(email: string, password: string): Promise<AuthUs
   return data.user;
 }
 
+export interface SignUpResponse {
+  user: AuthUser | null;
+  token?: string | null;
+  refreshToken?: string | null;
+  message?: string;
+  requireVerification?: boolean;
+  email?: string;
+}
+
 export async function signUpUser(
   email: string,
   password: string,
   username?: string
-): Promise<{ user: AuthUser | null; message?: string }> {
-  const data = await request<{
-    user: AuthUser | null;
-    token?: string;
-    refreshToken?: string;
-    message?: string;
-  }>("/auth/signup", {
+): Promise<SignUpResponse> {
+  const data = await request<SignUpResponse>("/auth/signup", {
     method: "POST",
     body: JSON.stringify({ email, password, username }),
   });
@@ -238,6 +257,40 @@ export async function signUpUser(
     localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
   }
   return data;
+}
+
+export async function verifyOtpUser(
+  email: string,
+  token: string,
+  type: "signup" | "email" = "signup"
+): Promise<{ user: AuthUser; message?: string }> {
+  const data = await request<{
+    user: AuthUser;
+    token?: string | null;
+    refreshToken?: string | null;
+    message?: string;
+  }>("/auth/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, token, type }),
+  });
+
+  if (data.token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+  }
+  if (data.refreshToken) {
+    localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
+  }
+  return data;
+}
+
+export async function resendOtpUser(
+  email: string,
+  type: "signup" | "email" = "signup"
+): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/resend-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, type }),
+  });
 }
 
 export async function forgotPassword(email: string): Promise<{ message: string }> {
