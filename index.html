@@ -44,17 +44,16 @@
     <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/svg+xml" href="/mindspace-logo.svg" />
     <link rel="apple-touch-icon" href="/mindspace-logo.svg" />
-    <meta name="theme-color" content="#120F0C" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#FAF8F5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#FAF8F5" />
 
     <!-- Security & Referrer -->
     <meta name="referrer" content="no-referrer" />
 
-    <!-- Inline Theme Hydration to prevent theme flash -->
+    <!-- Inline Theme Hydration to prevent theme flash (Default: light) -->
     <script>
       (function() {
         var saved = localStorage.getItem("theme");
-        if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        if (saved === "dark") {
           document.documentElement.classList.add("dark");
         } else {
           document.documentElement.classList.remove("dark");

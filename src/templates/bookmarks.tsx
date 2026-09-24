@@ -55,6 +55,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onViewAiContext,
   onGenerateAiContext,
   generatingAiId,
+  generatingAiIds,
 }: {
   bookmarks: Bookmark[];
   openMenuId: string | null;
@@ -64,6 +65,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onViewAiContext: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   generatingAiId?: string | null;
+  generatingAiIds?: Set<string>;
 }) {
   const columnCount = useColumnCount();
 
@@ -89,7 +91,10 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
               onRequestDelete={onRequestDelete}
               onViewAiContext={onViewAiContext}
               onGenerateAiContext={onGenerateAiContext}
-              isGeneratingAi={generatingAiId === bookmark.id}
+              isGeneratingAi={Boolean(
+                (generatingAiIds && generatingAiIds.has(bookmark.id)) ||
+                generatingAiId === bookmark.id
+              )}
             />
           ))}
         </div>
@@ -106,6 +111,7 @@ interface BookmarksScreenProps {
   onDeleteBookmark?: (id: string) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   generatingAiId?: string | null;
+  generatingAiIds?: Set<string>;
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
   activePlatform?: string;
@@ -121,6 +127,7 @@ export default function BookmarksScreen({
   onDeleteBookmark,
   onGenerateAiContext,
   generatingAiId,
+  generatingAiIds,
   searchTerm: externalSearchTerm,
   onSearchChange: externalOnSearchChange,
   activePlatform: externalActivePlatform,
@@ -374,6 +381,7 @@ export default function BookmarksScreen({
           onViewAiContext={handleViewAiContext}
           onGenerateAiContext={onGenerateAiContext}
           generatingAiId={generatingAiId}
+          generatingAiIds={generatingAiIds}
         />
       ) : (
         <div className="text-center py-24 px-4 text-[var(--text)] space-y-2">

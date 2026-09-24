@@ -338,10 +338,14 @@ export async function createBookmark(url: string, autoAiContext: boolean = true)
   });
 }
 
-export async function triggerGenerateAi(bookmarkId: string): Promise<Bookmark> {
-  return request<Bookmark>(`/bookmarks/${bookmarkId}/generate-ai`, {
+export async function generateAiContext(bookmarkId: string): Promise<Bookmark> {
+  return request<Bookmark>(`/bookmarks/${bookmarkId}/ai-context`, {
     method: "POST",
   });
+}
+
+export async function triggerGenerateAi(bookmarkId: string): Promise<Bookmark> {
+  return generateAiContext(bookmarkId);
 }
 
 export async function deleteBookmark(bookmarkId: string): Promise<void> {

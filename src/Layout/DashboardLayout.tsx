@@ -7,7 +7,7 @@ import { findDuplicateBookmark } from "../lib/utils.ts";
 import {
   fetchBookmarks,
   createBookmark,
-  triggerGenerateAi,
+  generateAiContext,
   deleteBookmark,
   getUserPlan,
   CreditExhaustedError,
@@ -38,14 +38,14 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
   const [activePlatform, setActivePlatform] = useState("all");
 
   // Create Bookmark Modal State
-  // Create Bookmark Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Auto AI Context Setting (Defaults to true, loaded from user plan)
   const [autoAiContext, setAutoAiContext] = useState(true);
 
-  // ID of bookmark actively generating AI context via 3-dots menu
-  const [generatingAiId, setGeneratingAiId] = useState<string | null>(null);
+  // Set of bookmark IDs actively generating AI context
+  const [generatingAiIds, setGeneratingAiIds] = useState<Set<string>>(new Set());
+  const generatingAiId = generatingAiIds.size > 0 ? Array.from(generatingAiIds)[0] : null;
 
   // Floating "No credits left" badge state (appears for 3.2s)
   const [showNoCreditsBadge, setShowNoCreditsBadge] = useState(false);
@@ -162,7 +162,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     };
   }, [addToast]);
 
-  // Add Bookmark Handler: Optimistic card + Node backend extraction & credit-gated AI
+  // Add Bookmark Handler: Optimistic card + Fast Node backend metadata extraction & decoupled AI
   const handleAddBookmark = async (newBookmark: Bookmark) => {
     // 1. Client-Side Duplicate Check: Short-circuit before any network or Gemini API invocation
     const existingBm = findDuplicateBookmark(bookmarks, newBookmark.url);
@@ -177,7 +177,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
       id: tempId,
       url: newBookmark.url,
       title: newBookmark.url,
-      description: "Extracting metadata & analyzing...",
+      description: "Extracting metadata...",
       site_name: "",
       logo: null,
       isFetchingMetadata: true,
@@ -187,7 +187,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     setBookmarks((prev) => [optimisticBookmark, ...prev]);
 
     try {
-      // 3. Call Node backend with autoAiContext (sent as X-Auto-AI-Context header)
+      // 3. Fast metadata extraction & bookmark creation in backend (<500ms)
       const savedBookmark = await createBookmark(newBookmark.url, autoAiContext);
 
       if (savedBookmark.already_exists) {
@@ -197,16 +197,17 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         return;
       }
 
-      // 4. Replace optimistic card with server response
+      // 4. Immediately display the saved bookmark on frontend with extracted metadata
       setBookmarks((prev) => {
         const withoutOld = prev.filter((b) => b.id !== savedBookmark.id && b.id !== tempId);
         return [{ ...savedBookmark, isFetchingMetadata: false }, ...withoutOld];
       });
 
-      if (savedBookmark.ai_status === "no_credits") {
-        triggerNoCreditsBadge();
-      } else {
-        addToast("Bookmark saved successfully!", "success");
+      addToast("Bookmark saved successfully!", "success");
+
+      // 5. If autoAiContext is enabled, take savedBookmark.id and run AI context flow asynchronously
+      if (autoAiContext) {
+        handleGenerateAiContext(savedBookmark);
       }
     } catch (err: unknown) {
       // Remove optimistic card if server call failed
@@ -216,11 +217,15 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
     }
   };
 
-  // Manual Trigger: Generate AI Context for a card from the 3-dots menu
+  // Generate AI Context for a card (auto-triggered or manual trigger from 3-dots menu)
   const handleGenerateAiContext = async (bookmark: Bookmark) => {
-    setGeneratingAiId(bookmark.id);
+    setGeneratingAiIds((prev) => {
+      const next = new Set(prev);
+      next.add(bookmark.id);
+      return next;
+    });
     try {
-      const updated = await triggerGenerateAi(bookmark.id);
+      const updated = await generateAiContext(bookmark.id);
       setBookmarks((prev) =>
         prev.map((b) => (b.id === bookmark.id ? { ...b, ...updated } : b))
       );
@@ -239,7 +244,11 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
         addToast(message, "error");
       }
     } finally {
-      setGeneratingAiId(null);
+      setGeneratingAiIds((prev) => {
+        const next = new Set(prev);
+        next.delete(bookmark.id);
+        return next;
+      });
     }
   };
 
@@ -377,6 +386,7 @@ function DashboardLayout({ user, onSignOut }: DashboardLayoutProps) {
                   onDeleteBookmark={handleDeleteBookmark}
                   onGenerateAiContext={handleGenerateAiContext}
                   generatingAiId={generatingAiId}
+                  generatingAiIds={generatingAiIds}
                   searchTerm={searchTerm}
                   onSearchChange={setSearchTerm}
                   activePlatform={activePlatform}
