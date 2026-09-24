@@ -322,9 +322,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
             ) : null
           }
           text={bookmark.description || bookmark.title}
-          maxLength={140}
           className="text-[13px] leading-normal"
-          buttonClassName="text-slate-400 dark:text-[#a8a8a8] hover:text-slate-600 dark:hover:text-white ml-1 font-normal"
         />
       </div>
 

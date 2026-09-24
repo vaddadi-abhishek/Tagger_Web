@@ -241,9 +241,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
         >
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={hasMedia ? 200 : 300}
-            className={`${hasMedia ? "text-[13.5px]" : "text-[15px]"} leading-normal whitespace-pre-wrap break-words`}
-            buttonClassName="ml-1 text-[#1d9bf0] hover:underline"
+            className={`${hasMedia ? "text-[13.5px]" : "text-[15px]"} leading-normal`}
           />
         </a>
       </div>

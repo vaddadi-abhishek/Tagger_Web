@@ -160,9 +160,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
             <div className="mt-2 text-[12px] text-slate-600 dark:text-[#aaaaaa] leading-relaxed">
               <ExpandableText
                 text={bookmark.description}
-                maxLength={110}
                 className="text-[12px]"
-                buttonClassName="text-[var(--primary)] font-medium hover:underline ml-1"
               />
             </div>
           )}

@@ -259,9 +259,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
         >
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={hasMedia ? 160 : 260}
             className="text-[13.5px] leading-normal"
-            buttonClassName="text-slate-500 dark:text-[#b0b3b8] hover:underline ml-1 font-semibold"
           />
         </a>
       </div>

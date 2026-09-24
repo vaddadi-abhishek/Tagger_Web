@@ -164,9 +164,7 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
         <div className="px-3.5 mb-2">
           <ExpandableText
             text={bookmark.description}
-            maxLength={180}
             className="text-[12.5px] text-slate-600 dark:text-[#a4a7a8] leading-relaxed"
-            buttonClassName="text-[#ff4500] hover:underline ml-1 font-semibold"
           />
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useDeferredValue, memo } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useEffect, memo } from "react";
 import React from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
@@ -8,10 +8,43 @@ import { AiContextModal } from "../components/AiContextModal";
 import { PLATFORM_TABS, resolveCardType, matchesPlatform } from "../lib/utils";
 
 /**
- * Pinterest-style fluid masonry container:
- * - Cards flow dynamically into columns (1 / sm:2 / lg:3 / xl:4) with zero vertical gaps
- * - Single flat list keyed by bookmark.id: cards never unmount or jump between DOM trees on filter/delete/add
- * - Perfect vertical packing with break-inside-avoid
+ * Hook to dynamically track responsive column count matching Tailwind breakpoints:
+ * - Default (<640px): 1 column
+ * - sm (>=640px): 2 columns
+ * - lg (>=1024px): 3 columns
+ * - xl (>=1280px): 4 columns
+ */
+function useColumnCount(): number {
+  const getColumns = () => {
+    if (typeof window === "undefined") return 4;
+    const width = window.innerWidth;
+    if (width >= 1280) return 4; // xl
+    if (width >= 1024) return 3; // lg
+    if (width >= 640) return 2;  // sm
+    return 1;
+  };
+
+  const [columnCount, setColumnCount] = useState(getColumns);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const next = getColumns();
+      setColumnCount((prev) => (prev !== next ? next : prev));
+    };
+
+    window.addEventListener("resize", handleResize, { passive: true });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return columnCount;
+}
+
+/**
+ * Deterministic multi-column layout using independent vertical column lists:
+ * - Distributes cards across columns by row: cards[0]->col 0, cards[1]->col 1, cards[2]->col 2, cards[3]->col 3, cards[4]->col 0...
+ * - Adding a new card at the top (index 0) places it in Col 0, Row 0, shifting all subsequent cards across rows cleanly.
+ * - Expanding a card (e.g. 3rd card in row 1) stays at its exact spot and ONLY pushes the cards below it in that same column down.
+ * - Cards inside each column are tightly packed together (gap-4) with zero artificial vertical dead spaces.
  */
 const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   bookmarks,
@@ -32,20 +65,33 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   generatingAiId?: string | null;
 }) {
+  const columnCount = useColumnCount();
+
+  const columnLists = useMemo(() => {
+    const cols: Bookmark[][] = Array.from({ length: columnCount }, () => []);
+    bookmarks.forEach((item, index) => {
+      cols[index % columnCount].push(item);
+    });
+    return cols;
+  }, [bookmarks, columnCount]);
+
   return (
-    <div className="w-full columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 [column-fill:_balance]">
-      {bookmarks.map((bookmark) => (
-        <div key={bookmark.id} className="break-inside-avoid mb-4">
-          <BookmarkCard
-            bookmark={bookmark}
-            isMenuOpen={openMenuId === bookmark.id}
-            onToggleMenu={onToggleMenu}
-            onCloseMenu={onCloseMenu}
-            onRequestDelete={onRequestDelete}
-            onViewAiContext={onViewAiContext}
-            onGenerateAiContext={onGenerateAiContext}
-            isGeneratingAi={generatingAiId === bookmark.id}
-          />
+    <div className="w-full flex gap-4 items-start">
+      {columnLists.map((colBookmarks, colIndex) => (
+        <div key={colIndex} className="flex-1 flex flex-col gap-4 min-w-0">
+          {colBookmarks.map((bookmark) => (
+            <BookmarkCard
+              key={bookmark.id}
+              bookmark={bookmark}
+              isMenuOpen={openMenuId === bookmark.id}
+              onToggleMenu={onToggleMenu}
+              onCloseMenu={onCloseMenu}
+              onRequestDelete={onRequestDelete}
+              onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={generatingAiId === bookmark.id}
+            />
+          ))}
         </div>
       ))}
     </div>

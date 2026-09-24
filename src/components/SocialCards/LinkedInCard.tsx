@@ -311,9 +311,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
         >
           <ExpandableText
             text={bookmark.description || bookmark.title}
-            maxLength={hasMedia ? 160 : 260}
             className="text-[13px] leading-normal"
-            buttonClassName="text-slate-500 dark:text-slate-400 hover:text-blue-500 ml-1 font-semibold"
           />
         </a>
       </div>

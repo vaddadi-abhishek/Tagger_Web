@@ -3,6 +3,7 @@ import type { Bookmark, GlobalWebCardData } from "../../types/bookmark";
 import { sanitizeUrl, getFaviconUrl, parseCardData } from "../../lib/utils";
 import { SafeImage } from "./SafeImage";
 import { CardActionMenu } from "./CardActionMenu";
+import { ExpandableText } from "./ExpandableText";
 
 interface GenericCardProps {
   bookmark: Bookmark;
@@ -28,7 +29,6 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
   } = props;
 
   const [logoError, setLogoError] = useState(false);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const cardData = useMemo(
     () => parseCardData<GlobalWebCardData>(bookmark.card_data),
@@ -41,8 +41,6 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
     null;
   const mediaUrl = snapshotUrl || bookmark.logo;
   const descriptionText = bookmark.description || "";
-  const DESCRIPTION_LIMIT = 130;
-  const isLongDescription = descriptionText.length > DESCRIPTION_LIMIT;
 
   const domainFavicon = useMemo(() => getFaviconUrl(bookmark.url), [bookmark.url]);
   const logoSrc = !logoError && bookmark.logo ? bookmark.logo : domainFavicon;
@@ -149,31 +147,10 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
         </a>
 
         {descriptionText && (
-          <div className="relative">
-            <div
-              className={`text-[12px] text-slate-600 dark:text-zinc-300 leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${isLongDescription && !isDescriptionExpanded
-                ? "max-h-12"
-                : "max-h-[600px]"
-                }`}
-            >
-              <p>{descriptionText}</p>
-            </div>
-
-            {isLongDescription && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDescriptionExpanded((prev) => !prev);
-                }}
-                className="text-[var(--primary)] font-semibold text-[11px] mt-0.5 hover:underline cursor-pointer transition-all duration-200 active:scale-95 inline-flex items-center gap-1"
-              >
-                <span>
-                  {isDescriptionExpanded ? "show less" : "show more..."}
-                </span>
-              </button>
-            )}
-          </div>
+          <ExpandableText
+            text={descriptionText}
+            className="text-[12px] text-slate-600 dark:text-zinc-300 leading-relaxed"
+          />
         )}
 
         {/* Render Author if available from GlobalWebCardData */}
