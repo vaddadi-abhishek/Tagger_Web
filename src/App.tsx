@@ -14,7 +14,37 @@ export default function App() {
   const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    // Restore session via Node backend
+    // 1. Check for Supabase Auth redirect tokens in URL hash (#access_token=...&refresh_token=...)
+    // or query string (?access_token=...&refresh_token=...)
+    const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+
+    let accessToken: string | null = null;
+    let refreshToken: string | null = null;
+
+    if (hash && (hash.includes("access_token") || hash.includes("error"))) {
+      const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
+      accessToken = hashParams.get("access_token");
+      refreshToken = hashParams.get("refresh_token");
+      const errorDesc = hashParams.get("error_description");
+      if (errorDesc) {
+        console.error("Auth redirect error:", errorDesc);
+      }
+    } else if (searchParams.has("access_token")) {
+      accessToken = searchParams.get("access_token");
+      refreshToken = searchParams.get("refresh_token");
+    }
+
+    if (accessToken) {
+      localStorage.setItem("mindspace_auth_token", accessToken);
+      if (refreshToken) {
+        localStorage.setItem("mindspace_refresh_token", refreshToken);
+      }
+      // Clean up the URL to remove the sensitive tokens from browser address bar
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
+    // 2. Restore session via Node backend
     getCurrentUser()
       .then((currentUser) => {
         if (currentUser) {
@@ -23,12 +53,15 @@ export default function App() {
             name: currentUser.name,
             email: currentUser.email,
           });
+          if (accessToken) {
+            navigate("/my/app", { replace: true });
+          }
         }
       })
       .finally(() => {
         setInitializing(false);
       });
-  }, []);
+  }, [navigate]);
 
   const handleNavigateToAuth = (mode: "login" | "signup" = "login") => {
     setAuthMode(mode);
