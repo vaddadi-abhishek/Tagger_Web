@@ -4,7 +4,7 @@ import { LandingPage } from "./components/LandingPage";
 import { AuthPage } from "./components/AuthPage";
 import DashboardLayout from "./Layout/DashboardLayout";
 import { ReaderPage } from "./components/ReaderPage";
-import { getCurrentUser, logoutUser } from "./services/api";
+import { getCurrentUser, logoutUser, attemptTokenRefresh, isTokenExpired } from "./services/api";
 
 export default function App() {
   const navigate = useNavigate();
@@ -62,6 +62,52 @@ export default function App() {
         setInitializing(false);
       });
   }, [navigate]);
+
+  // Proactive background keep-alive: Periodically refreshes access tokens before expiration
+  // and immediately upon tab focus / device wake / cross-tab storage changes
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const checkAndRefreshSession = async () => {
+      const token = localStorage.getItem("mindspace_auth_token");
+      const refreshToken = localStorage.getItem("mindspace_refresh_token");
+      if (!refreshToken) return;
+
+      // Silently refresh if token is within safety buffer (5 minutes) of expiring or already expired
+      if (isTokenExpired(token, 300)) {
+        await attemptTokenRefresh();
+      }
+    };
+
+    // Check periodically every 60 seconds
+    const intervalId = setInterval(checkAndRefreshSession, 60 * 1000);
+
+    // Refresh immediately when user returns to tab or wakes computer from sleep
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === "visible") {
+        checkAndRefreshSession();
+      }
+    };
+
+    // Keep tabs in sync if user signs out in another tab
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "mindspace_auth_token" && !e.newValue) {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [isLoggedIn]);
 
   const handleNavigateToAuth = (mode: "login" | "signup" = "login") => {
     setAuthMode(mode);

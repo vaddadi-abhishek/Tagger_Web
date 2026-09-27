@@ -58,8 +58,37 @@ export const getApiBaseUrl = (): string => {
   return "/api/v1";
 };
 
-const AUTH_TOKEN_KEY = "mindspace_auth_token";
-const AUTH_REFRESH_TOKEN_KEY = "mindspace_refresh_token";
+export const AUTH_TOKEN_KEY = "mindspace_auth_token";
+export const AUTH_REFRESH_TOKEN_KEY = "mindspace_refresh_token";
+
+/**
+ * Decodes the JWT access token and checks if it is expired or expiring within `bufferSeconds`.
+ * Returns true if the token is missing, invalid, or expired.
+ */
+export function isTokenExpired(
+  token: string | null | undefined,
+  bufferSeconds: number = 60
+): boolean {
+  if (!token || typeof token !== "string") return true;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const payload = JSON.parse(jsonPayload) as { exp?: number };
+    if (typeof payload.exp !== "number") return false;
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    return payload.exp <= nowInSeconds + bufferSeconds;
+  } catch {
+    return true;
+  }
+}
 
 /**
  * Returns authentication headers containing Bearer token from localStorage.
@@ -106,37 +135,58 @@ function validateAndFormatUrl(rawUrl: string): string {
 // Track ongoing refresh promise to prevent parallel stampeding refresh requests
 let refreshPromise: Promise<boolean> | null = null;
 
-async function attemptTokenRefresh(): Promise<boolean> {
+export async function attemptTokenRefresh(): Promise<boolean> {
   const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY);
   if (!refreshToken) return false;
 
-  try {
-    const baseUrl = getApiBaseUrl();
-    const response = await fetch(`${baseUrl}/auth/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-    });
-
-    if (!response.ok) {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
-      return false;
-    }
-
-    const data = (await response.json()) as { token?: string; refreshToken?: string };
-    if (data.token) {
-      localStorage.setItem(AUTH_TOKEN_KEY, data.token);
-      if (data.refreshToken) {
-        localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
-      }
-      return true;
-    }
-    return false;
-  } catch {
-    return false;
+  // Single-flight: Deduplicate concurrent refresh invocations
+  if (refreshPromise) {
+    return refreshPromise;
   }
+
+  refreshPromise = (async () => {
+    try {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+        return false;
+      }
+
+      const data = (await response.json()) as { token?: string; refreshToken?: string };
+      if (data.token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, data.token);
+        if (data.refreshToken) {
+          localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, data.refreshToken);
+        }
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 }
+
+// Public endpoints that must not trigger automatic token refresh upon 401
+const AUTH_NO_RETRY_PATHS = [
+  "/auth/login",
+  "/auth/refresh",
+  "/auth/signup",
+  "/auth/verify-otp",
+  "/auth/resend-otp",
+  "/auth/forgot-password",
+];
 
 /**
  * Centralized fetch wrapper providing standard authentication, automatic token refresh,
@@ -146,11 +196,22 @@ async function request<T>(
   path: string,
   options: RequestInit & { customHeaders?: Record<string, string>; _isRetry?: boolean } = {}
 ): Promise<T> {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const shouldBypassAuthRefresh = AUTH_NO_RETRY_PATHS.includes(normalizedPath);
+
+  // Proactive refresh: If access token is expired or close to expiring, refresh it before dispatching
+  if (!shouldBypassAuthRefresh) {
+    const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+    const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY);
+    if (currentToken && refreshToken && isTokenExpired(currentToken, 60)) {
+      await attemptTokenRefresh();
+    }
+  }
+
   const { customHeaders, _isRetry, ...init } = options;
   const headers = getAuthHeaders(customHeaders);
-
   const baseUrl = getApiBaseUrl();
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+
   const response = await fetch(`${baseUrl}${normalizedPath}`, {
     ...init,
     headers: {
@@ -159,15 +220,10 @@ async function request<T>(
     },
   });
 
-  // Handle 401 Unauthorized with silent token refresh (single retry)
-  if (response.status === 401 && !_isRetry && !path.startsWith("/auth/")) {
-    if (!refreshPromise) {
-      refreshPromise = attemptTokenRefresh().finally(() => {
-        refreshPromise = null;
-      });
-    }
-
-    const refreshed = await refreshPromise;
+  // Reactive fallback: Handle 401 Unauthorized with silent token refresh (single retry)
+  // Protected endpoints like /auth/me or /bookmarks will transparently refresh and retry
+  if (response.status === 401 && !_isRetry && !shouldBypassAuthRefresh) {
+    const refreshed = await attemptTokenRefresh();
     if (refreshed) {
       return request<T>(path, { ...options, _isRetry: true });
     }
@@ -302,7 +358,20 @@ export async function forgotPassword(email: string): Promise<{ message: string }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const token = localStorage.getItem(AUTH_TOKEN_KEY);
-  if (!token) return null;
+  const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY);
+
+  // If there are no credentials stored at all, user is not logged in
+  if (!token && !refreshToken) return null;
+
+  // If access token is missing or expired, attempt refresh before requesting /auth/me
+  if ((!token || isTokenExpired(token, 60)) && refreshToken) {
+    const refreshed = await attemptTokenRefresh();
+    if (!refreshed) {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+      return null;
+    }
+  }
 
   try {
     const data = await request<{ user: AuthUser }>("/auth/me", { method: "GET" });
