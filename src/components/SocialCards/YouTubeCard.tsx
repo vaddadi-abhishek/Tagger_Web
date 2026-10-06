@@ -8,7 +8,6 @@ import {
   YouTubeLikeIcon,
   YouTubeDislikeIcon,
   ShareIcon,
-  SparkleIcon,
   VerifiedBadge,
   VerticalMoreIcon,
 } from "./SocialCardIcons";
@@ -184,12 +183,6 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
           <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
             <ShareIcon className="w-3.5 h-3.5" />
             <span>Share</span>
-          </button>
-
-          {/* Ask/Sparkle Pill */}
-          <button className="bg-slate-100 hover:bg-slate-200 dark:bg-[#272727] dark:hover:bg-white/10 rounded-full px-2.5 py-1 text-[11px] font-medium text-slate-800 dark:text-[#f1f1f1] flex items-center gap-1 shrink-0 cursor-pointer transition-colors border border-slate-200 dark:border-white/5">
-            <SparkleIcon />
-            <span>Ask</span>
           </button>
         </div>
       </div>
