@@ -28,18 +28,25 @@ export const SafeVideo = React.memo(function SafeVideo({
 }: SafeVideoProps) {
   // Poster Facade: only initialize heavy <video> and network stream when user clicks Play
   const [isPlaying, setIsPlaying] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const isHls = Boolean(
+    src &&
+      (src.includes(".m3u8") ||
+        src.includes("HLSPlaylist") ||
+        src.includes("format=m3u8"))
+  );
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
 
   useEffect(() => {
     if (!isPlaying) return;
 
     const video = videoRef.current;
     if (!video || !src) return;
-
-    const isHls =
-      src.includes(".m3u8") ||
-      src.includes("HLSPlaylist") ||
-      src.includes("format=m3u8");
 
     let hlsInstance: Hls | null = null;
 
@@ -71,6 +78,7 @@ export const SafeVideo = React.memo(function SafeVideo({
                 break;
               default:
                 hlsInstance?.destroy();
+                setHasError(true);
                 break;
             }
           }
@@ -81,8 +89,13 @@ export const SafeVideo = React.memo(function SafeVideo({
         video.play().catch(() => {});
       }
     } else {
-      video.src = src;
-      video.play().catch(() => {});
+      if (!video.src) {
+        video.src = src;
+      }
+      video.play().catch((err) => {
+        // Autoplay may be restricted by browser policy; user can click native play control
+        console.debug("Video autoplay unmuted prevented:", err);
+      });
     }
 
     return () => {
@@ -90,7 +103,7 @@ export const SafeVideo = React.memo(function SafeVideo({
         hlsInstance.destroy();
       }
     };
-  }, [isPlaying, src]);
+  }, [isPlaying, src, isHls]);
 
   const handleStartPlay = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -144,16 +157,53 @@ export const SafeVideo = React.memo(function SafeVideo({
     );
   }
 
-  // 2. Active Video Player (Mounted on demand after click)
+  // 2. Error Fallback state
+  if (hasError) {
+    return (
+      <div className={`relative w-full bg-slate-100 dark:bg-black overflow-hidden flex flex-col items-center justify-center p-6 text-center ${className}`}>
+        {poster && (
+          <SafeImage
+            url={poster}
+            alt="Video preview"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 filter blur-xs"
+          />
+        )}
+        <div className="relative z-10 flex flex-col items-center gap-2 max-w-xs">
+          <svg className="size-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <p className="text-xs text-slate-600 dark:text-zinc-400">Media stream unavailable or expired.</p>
+          <button
+            onClick={() => {
+              setHasError(false);
+              setIsPlaying(false);
+            }}
+            className="text-xs px-3 py-1 rounded bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 transition-colors cursor-pointer"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Active Video Player (Mounted on demand after click)
   return (
     <video
       ref={videoRef}
+      src={isHls ? undefined : src}
       poster={poster || undefined}
       controls={controls}
       playsInline={playsInline}
       autoPlay={true}
       muted={muted}
       loop={loop}
+      referrerPolicy="no-referrer"
+      preload="metadata"
+      onError={(e) => {
+        console.warn("Video failed to play:", src, e);
+        setHasError(true);
+      }}
       className={className}
       {...rest}
     />
