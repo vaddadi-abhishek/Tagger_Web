@@ -231,6 +231,33 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
         </div>
       </div>
 
+      {/* Article Header Badge if X Article */}
+      {bookmark.is_article && (
+        <div className="px-3.5 pt-2">
+          <a
+            href={`/my/app/${bookmark.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide uppercase bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+          >
+            <svg className="w-3 h-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <span>Article · {cardData?.reading_time_minutes ? `${cardData.reading_time_minutes} min read` : 'Reader Mode'}</span>
+          </a>
+          {bookmark.title && !bookmark.title.endsWith(' on X') && (
+            <a
+              href={`/my/app/${bookmark.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block font-bold text-[15px] sm:text-[16px] mt-1.5 text-slate-900 dark:text-white leading-snug hover:underline"
+            >
+              {bookmark.title}
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Tweet Body */}
       <div className="px-3.5 mt-2">
         <a

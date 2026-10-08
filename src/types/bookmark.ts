@@ -16,10 +16,15 @@ export interface XCardData {
     likes?: number;
     views?: number;
     bookmarks?: number;
-  };
+  } | null;
   media: MediaItem[] | null;
   posted_at: string;
   video_thumbnail?: string | null;
+  type?: string | null;
+  page_intent?: string | null;
+  article_content?: string | null;
+  word_count?: number | null;
+  reading_time_minutes?: number | null;
 }
 
 export interface InstagramCardData {
@@ -33,7 +38,7 @@ export interface InstagramCardData {
     likes?: number;
     comments?: number;
     reposts?: number;
-  };
+  } | null;
   media: MediaItem[];
   images?: Array<string | { url?: string; src?: string; display_url?: string; [key: string]: unknown }>;
   posted_at: string;
@@ -49,7 +54,7 @@ export interface FacebookCardData {
     likes?: number;
     comments?: number;
     shares?: number;
-  };
+  } | null;
   media: MediaItem[];
   posted_at: string | null;
   video_thumbnail?: string | null;
@@ -64,7 +69,7 @@ export interface LinkedInCardData {
     reactions?: number;
     comments?: number;
     reposts?: number;
-  };
+  } | null;
   media?: MediaItem[];
   posted_at: string | null;
   video_thumbnail?: string | null;
@@ -86,9 +91,9 @@ export interface RedditCardData {
   metrics: {
     upvotes?: number;
     comments?: number;
-  };
+  } | null;
   posted_at: string | null;
-  media: MediaItem[];
+  media: MediaItem[] | null;
   video_thumbnail?: string | null;
 }
 
@@ -100,7 +105,7 @@ export interface YouTubeCardData {
   metrics: {
     views?: number;
     likes?: number;
-  };
+  } | null;
   video_id: string | null;
   posted_at: string | null;
   video_thumbnail?: string | null;
@@ -112,6 +117,7 @@ export interface GlobalWebCardData {
   site_name: string | null;
   type: string | null;
   snapshot?: string | null;
+  metrics?: Record<string, unknown> | null;
 }
 
 export interface PinterestCardData {
@@ -124,7 +130,7 @@ export interface PinterestCardData {
     saves?: number;
     comments?: number;
     repins?: number;
-  };
+  } | null;
   media?: MediaItem[];
   posted_at?: string | null;
   video_thumbnail?: string | null;
