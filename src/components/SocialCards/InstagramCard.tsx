@@ -157,7 +157,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
   };
 
   const currentMedia = mediaItems[activeMediaIdx];
-  const postDate = cardData?.posted_at || bookmark.created_at;
+  const postDate = cardData?.posted_at;
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#f5f5f5] font-sans rounded-2xl border border-slate-200/80 dark:border-[#262626] overflow-hidden pb-3 shadow-sm">
@@ -276,13 +276,8 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center justify-center" aria-label="Like">
             <InstagramLikeIcon className="w-[22px] h-[22px] fill-current shrink-0" />
           </button>
-          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center gap-1.5 justify-center" aria-label="Comment">
+          <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center justify-center" aria-label="Comment">
             <InstagramCommentIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
-            {metrics?.comments && metrics.comments > 0 ? (
-              <span className="text-[13px] font-semibold text-slate-900 dark:text-white">
-                {formatNumber(metrics.comments)}
-              </span>
-            ) : null}
           </button>
           <button className="hover:opacity-60 transition-opacity cursor-pointer flex items-center gap-1.5 justify-center" aria-label="Repost">
             <InstagramRepostIcon className="w-[22px] h-[22px] stroke-current fill-none shrink-0" />
@@ -304,7 +299,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
 
       {/* 5. Likes Count */}
       {metrics?.likes ? (
-        <div className="px-4 pt-1 pb-0.5">
+        <div className="px-4">
           <span className="font-bold text-[13px] text-slate-900 dark:text-[#f5f5f5]">
             {formatNumber(metrics.likes)} likes
           </span>
@@ -312,7 +307,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
       ) : null}
 
       {/* 6. Caption / Title */}
-      <div className="px-4 mt-1 text-[13px] leading-relaxed text-slate-900 dark:text-[#f5f5f5]">
+      <div className="px-4 text-[13px] leading-relaxed text-slate-900 dark:text-[#f5f5f5]">
         <ExpandableText
           prefix={
             author?.username ? (
@@ -321,24 +316,23 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
               </span>
             ) : null
           }
-          text={bookmark.description || bookmark.title}
+          text={bookmark.description}
           className="text-[13px] leading-normal"
         />
       </div>
 
       {/* 7. Comments link & Timestamp */}
-      <div className="px-4 mt-2 space-y-1 pb-1">
+      <div className="px-4">
         {metrics?.comments ? (
           <a
             href={sanitizeUrl(bookmark.url)}
             target="_blank"
             rel="noreferrer"
-            className="block text-[12px] text-slate-500 dark:text-[#a8a8a8] hover:underline"
+            className="block mt-1 text-[12px] text-slate-500 dark:text-[#a8a8a8] hover:underline"
           >
             View all {formatNumber(metrics.comments)} comments
           </a>
         ) : null}
-
         {formatRelativeDate(postDate) && (
           <div className="text-[10px] tracking-wider text-slate-400 dark:text-[#737373] uppercase font-medium">
             {formatRelativeDate(postDate)}
