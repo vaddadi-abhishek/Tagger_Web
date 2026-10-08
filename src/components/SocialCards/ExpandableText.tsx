@@ -21,7 +21,7 @@ export function measure3LineMetrics(el: HTMLElement) {
 }
 
 export interface ExpandableTextProps {
-  text: string;
+  text?: string | null;
   prefix?: React.ReactNode;
   maxLength?: number;
   className?: string;

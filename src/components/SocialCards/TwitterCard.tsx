@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import type { Bookmark, XCardData, MediaItem } from "../../types/bookmark";
 import { sanitizeUrl, formatNumber, formatDetailDate, parseCardData } from "../../lib/utils";
+import { fetchUrlMetadata } from "../../services/api";
 import { ExpandableText } from "./ExpandableText";
 import { SafeImage } from "./SafeImage";
 import { SafeVideo } from "./SafeVideo";
@@ -14,6 +15,97 @@ import {
   XBrandLogo,
 } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
+
+function isTwitterProfileUrl(url?: string | null): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    if (!/(?:^|\.)(?:twitter|x)\.com$/i.test(parsed.hostname)) return false;
+    const parts = parsed.pathname.split("/").filter(Boolean);
+    if (parts.length === 0) return false;
+    const first = parts[0].toLowerCase();
+    const systemSlugs = new Set([
+      "home", "explore", "notifications", "messages", "search", "settings",
+      "i", "hashtag", "login", "signup", "compose", "tos", "privacy",
+      "rules", "help", "intent", "share", "account"
+    ]);
+    if (systemSlugs.has(first)) return false;
+    if (parts.length === 1) return true;
+    if (parts.length === 2 && ["header_photo", "photo", "about", "following", "followers", "verified_followers"].includes(parts[1].toLowerCase())) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function formatProfileCount(val: unknown): string | null {
+  if (val === undefined || val === null || val === "") return null;
+  if (typeof val === "string") return val;
+  if (typeof val === "number") {
+    if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(1)}M`;
+    if (val >= 1_000) return `${(val / 1_000).toFixed(1)}K`;
+    return val.toLocaleString();
+  }
+  return null;
+}
+
+function renderBioWithLinks(bioText: string) {
+  const tokenRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?|@[a-zA-Z0-9_]+|#[a-zA-Z0-9_]+)/g;
+  const parts = bioText.split(tokenRegex);
+
+  return parts.map((part, idx) => {
+    if (!part) return null;
+    if (/^https?:\/\//i.test(part) || /^www\./i.test(part) || /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}/i.test(part)) {
+      const href = part.startsWith("http") ? part : `https://${part}`;
+      const display = part.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+      return (
+        <a
+          key={idx}
+          href={sanitizeUrl(href)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#1d9bf0] hover:underline break-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {display}
+        </a>
+      );
+    }
+    if (part.startsWith("@")) {
+      const handle = part.slice(1);
+      return (
+        <a
+          key={idx}
+          href={`https://x.com/${handle}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#1d9bf0] hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    if (part.startsWith("#")) {
+      const tag = part.slice(1);
+      return (
+        <a
+          key={idx}
+          href={`https://x.com/hashtag/${tag}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#1d9bf0] hover:underline"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return <span key={idx}>{part}</span>;
+  });
+}
 
 interface TwitterCardProps {
   bookmark: Bookmark;
@@ -43,6 +135,32 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
   const author = cardData?.author;
   const metrics = cardData?.metrics;
   const postedAt = cardData?.posted_at || bookmark.created_at;
+
+  const isProfile = useMemo(() => {
+    if (cardData?.is_profile) return true;
+    return (
+      isTwitterProfileUrl(bookmark.url) ||
+      isTwitterProfileUrl((bookmark as any).canonical_url)
+    );
+  }, [cardData?.is_profile, bookmark.url, (bookmark as any).canonical_url]);
+
+  const [profileData, setProfileData] = useState<XCardData | null>(null);
+
+  useEffect(() => {
+    if (isProfile && (!cardData?.banner_url || !cardData?.metrics?.followers)) {
+      let isMounted = true;
+      fetchUrlMetadata(bookmark.url, true)
+        .then((res) => {
+          if (isMounted && res.card_data) {
+            setProfileData(res.card_data as XCardData);
+          }
+        })
+        .catch(() => {});
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [isProfile, bookmark.url, cardData?.banner_url, cardData?.metrics?.followers]);
 
   // Extract playable video URL
   const videoUrl = useMemo((): string | null => {
@@ -181,6 +299,192 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       </div>
     );
   };
+
+  if (isProfile) {
+    const bannerUrl = profileData?.banner_url || cardData?.banner_url || null;
+    const avatarUrl = profileData?.author?.avatar_url || author?.avatar_url || null;
+    const name = profileData?.author?.name || author?.name || bookmark.title?.split(" (")[0]?.split(" on X")[0] || "User";
+    const rawHandle = profileData?.author?.handle || author?.handle;
+    const handle = rawHandle ? (rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`) : "";
+    const verified = Boolean(profileData?.author?.verified ?? author?.verified);
+    const displayBio = profileData?.bio || cardData?.bio || (bookmark.description && !bookmark.description.includes("on X") ? bookmark.description : null);
+    const joinedDate = profileData?.joined_date || cardData?.joined_date || null;
+    const following = formatProfileCount(profileData?.metrics?.following ?? metrics?.following);
+    const followers = formatProfileCount(profileData?.metrics?.followers ?? metrics?.followers);
+    const profileUrl = sanitizeUrl(bookmark.url);
+
+    return (
+      <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans rounded-2xl border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-sm">
+        {/* 1. Header Banner with 3:1 ratio and floating controls */}
+        <div className="relative w-full aspect-[3/1] max-h-36 sm:max-h-40 bg-slate-200 dark:bg-[#16181c] overflow-hidden">
+          {bannerUrl ? (
+            <SafeImage
+              url={bannerUrl}
+              alt={`${name}'s header banner`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-slate-700 via-slate-800 to-zinc-900 dark:from-[#15181c] dark:to-[#22272c]" />
+          )}
+
+          {/* Floating translucent action menu button */}
+          <div className="absolute top-2.5 right-3 z-10 pointer-events-auto">
+            <CardActionMenu
+              bookmark={bookmark}
+              isOpen={Boolean(isMenuOpen)}
+              onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
+              onClose={onCloseMenu || (() => {})}
+              onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={isGeneratingAi}
+              onRequestDelete={onRequestDelete}
+              theme="twitter"
+              icon="horizontal"
+              buttonClassName="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-colors shadow-sm cursor-pointer outline-none"
+            />
+          </div>
+        </div>
+
+        {/* 2. Avatar & Action Buttons Row (Overlapping the banner) */}
+        <div className="px-3.5 sm:px-4 -mt-10 sm:-mt-11 flex items-end justify-between relative z-10">
+          {/* Overlapping circular avatar */}
+          <a
+            href={profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="relative block rounded-full ring-4 ring-white dark:ring-black bg-white dark:bg-black overflow-hidden shadow-md shrink-0 w-20 h-20 sm:w-22 sm:h-22"
+          >
+            {avatarUrl ? (
+              <SafeImage
+                url={avatarUrl}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-slate-300 dark:bg-[#202327] flex items-center justify-center text-slate-500 font-bold text-xl">
+                {name?.[0]?.toUpperCase() || "X"}
+              </div>
+            )}
+          </a>
+
+          {/* Action buttons on the right matching screenshot */}
+          <div className="flex items-center gap-2 mb-1">
+            {/* Notification Bell button */}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-9 h-9 rounded-full border border-slate-300 dark:border-[#536471] bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-800 dark:text-[#eff3f4] transition-colors cursor-pointer"
+              title="Notifications"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M22 5v2h-3v3h-2V7h-3V5h3V2h2v3h3zm-.86 13h-4.241c-.464 2.281-2.482 4-4.899 4s-4.435-1.719-4.899-4H2.87L4 9.05C4.51 5.02 7.93 2 12 2v2C8.94 4 6.36 6.27 5.98 9.3L5.13 16h13.73l-.38-3h2.02l.64 5zm-6.323 0H9.183c.412 1.164 1.51 2 2.817 2s2.405-.836 2.817-2z" />
+              </svg>
+            </a>
+
+            {/* Profile Checkmark / Following status button */}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-9 h-9 rounded-full border border-slate-300 dark:border-[#536471] bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-800 dark:text-[#eff3f4] transition-colors cursor-pointer"
+              title="Following"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M14 6c0 2.21-1.791 4-4 4S6 8.21 6 6s1.791-4 4-4 4 1.79 4 4zm-4 5c-2.352 0-4.373.85-5.863 2.44-1.477 1.58-2.366 3.8-2.632 6.46l-.11 1.1h17.21l-.11-1.1c-.266-2.66-1.155-4.88-2.632-6.46C14.373 11.85 12.352 11 10 11zm12.223-5.89l-2.969 4.46L17.3 8.1l-1.2 1.6 3.646 2.73 4.141-6.21-1.664-1.11z" />
+              </svg>
+            </a>
+
+            {/* Share / Upload button */}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-9 h-9 rounded-full border border-slate-300 dark:border-[#536471] bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-800 dark:text-[#eff3f4] transition-colors cursor-pointer"
+              title="Share"
+            >
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                <path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29 12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        {/* 3. Name, Badges & Handle Row */}
+        <div className="px-3.5 sm:px-4 mt-2 flex flex-col">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="font-extrabold text-[18px] sm:text-[19px] text-slate-900 dark:text-[#e7e9ea] leading-tight hover:underline truncate"
+            >
+              {name}
+            </a>
+            {verified && <VerifiedBadge />}
+            {/* Small 𝕏 affiliation badge */}
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-[#16181c] border border-white/20 text-[10px] text-white font-mono leading-none select-none">
+              𝕏
+            </span>
+          </div>
+          <span className="text-[13.5px] text-slate-500 dark:text-[#71767b] leading-tight mt-0.5">
+            {handle}
+          </span>
+        </div>
+
+        {/* 4. Bio with Links (rendered only if bio is non-empty) */}
+        {displayBio ? (
+          <div className="px-3.5 sm:px-4 mt-2 text-[13.5px] text-slate-800 dark:text-[#e7e9ea] leading-normal break-words">
+            {renderBioWithLinks(displayBio)}
+          </div>
+        ) : null}
+
+        {/* 5. Joined Date with calendar icon and chevron */}
+        {joinedDate ? (
+          <div className="px-3.5 sm:px-4 mt-2 flex items-center gap-1.5 text-[12.5px] text-slate-500 dark:text-[#71767b]">
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current shrink-0">
+              <path d="M7 4V3h2v1h6V3h2v1h1.5C19.89 4 21 5.12 21 6.5v12c0 1.38-1.11 2.5-2.5 2.5h-13C4.12 21 3 19.88 3 18.5v-12C3 5.12 4.12 4 5.5 4H7zm0 2H5.5c-.27 0-.5.22-.5.5v12c0 .28.23.5.5.5h13c.28 0 .5-.22.5-.5v-12c0-.28-.22-.5-.5-.5H17v1h-2V6H9v1H7V6zm0 6h2v-2H7v2zm0 4h2v-2H7v2zm4-4h2v-2h-2v2zm0 4h2v-2h-2v2zm4-4h2v-2h-2v2z" />
+            </svg>
+            <span>{joinedDate}</span>
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current opacity-70 shrink-0">
+              <path d="M14.586 12L7.543 4.96l1.414-1.42L17.414 12l-8.457 8.46-1.414-1.42L14.586 12z" />
+            </svg>
+          </div>
+        ) : null}
+
+        {/* 6. Following & Followers stats */}
+        <div className="px-3.5 sm:px-4 mt-2.5 pb-3 flex items-center gap-4 text-[13.5px]">
+          {following ? (
+            <a
+              href={`${profileUrl}/following`}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline flex items-center gap-1"
+            >
+              <span className="font-bold text-slate-900 dark:text-[#e7e9ea]">
+                {following}
+              </span>
+              <span className="text-slate-500 dark:text-[#71767b]">Following</span>
+            </a>
+          ) : null}
+
+          {followers ? (
+            <a
+              href={`${profileUrl}/verified_followers`}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline flex items-center gap-1"
+            >
+              <span className="font-bold text-slate-900 dark:text-[#e7e9ea]">
+                {followers}
+              </span>
+              <span className="text-slate-500 dark:text-[#71767b]">Followers</span>
+            </a>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#e7e9ea] font-sans pb-2 rounded-2xl border border-slate-200/80 dark:border-[#2f3336] overflow-hidden shadow-sm">

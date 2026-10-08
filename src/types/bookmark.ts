@@ -16,6 +16,8 @@ export interface XCardData {
     likes?: number;
     views?: number;
     bookmarks?: number;
+    following?: number;
+    followers?: number;
   } | null;
   media: MediaItem[] | null;
   posted_at: string;
@@ -25,6 +27,11 @@ export interface XCardData {
   article_content?: string | null;
   word_count?: number | null;
   reading_time_minutes?: number | null;
+  is_profile?: boolean;
+  banner_url?: string | null;
+  joined_date?: string | null;
+  bio?: string | null;
+  website?: string | null;
 }
 
 export interface InstagramCardData {
@@ -151,8 +158,9 @@ export type AnyCardData =
 export interface Bookmark {
   id: string;
   url: string;
+  canonical_url?: string | null;
   title: string;
-  description: string;
+  description: string | null;
   logo: string | null;
   snapshot_url?: string | null;
   snapshot?: string | null;

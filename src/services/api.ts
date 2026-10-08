@@ -434,11 +434,11 @@ export async function updateUserSettings(settings: { auto_ai_context: boolean })
   });
 }
 
-export async function fetchUrlMetadata(url: string): Promise<MetadataResponse> {
+export async function fetchUrlMetadata(url: string, forceRefresh: boolean = false): Promise<MetadataResponse> {
   const validatedUrl = validateAndFormatUrl(url);
   return request<MetadataResponse>("/extract", {
     method: "POST",
-    body: JSON.stringify({ url: validatedUrl }),
+    body: JSON.stringify({ url: validatedUrl, forceRefresh }),
   });
 }
 

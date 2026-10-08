@@ -16,7 +16,7 @@ import {
 } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
 
-function isInstagramProfileUrl(url?: string): boolean {
+function isInstagramProfileUrl(url?: string | null): boolean {
   if (!url) return false;
   try {
     const parsed = new URL(url);

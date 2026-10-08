@@ -198,7 +198,7 @@ export const SafeVideo = React.memo(function SafeVideo({
       autoPlay={true}
       muted={muted}
       loop={loop}
-      referrerPolicy="no-referrer"
+      {...({ referrerPolicy: "no-referrer" } as any)}
       preload="metadata"
       onError={(e) => {
         console.warn("Video failed to play:", src, e);
