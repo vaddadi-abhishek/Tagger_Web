@@ -56,13 +56,29 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
 
   const mediaItems: MediaItem[] = useMemo(() => {
     if (Array.isArray(cardData?.media) && cardData.media.length > 0) {
-      return cardData.media;
+      return (cardData.media as Array<MediaItem | string>)
+        .map((m) => {
+          if (!m) return null;
+          if (typeof m === "string" && m.trim()) {
+            const isVid = m.includes(".mp4") || m.includes("v.redd.it");
+            return { type: isVid ? "video" : "image", url: m.trim() };
+          }
+          if (typeof m === "object" && m.url && typeof m.url === "string" && m.url.trim()) {
+            return {
+              type: m.type || (m.url.includes(".mp4") || m.url.includes("v.redd.it") ? "video" : "image"),
+              url: m.url.trim(),
+            };
+          }
+          return null;
+        })
+        .filter((item): item is MediaItem => item !== null);
     }
     return [];
   }, [cardData?.media]);
 
   const videoItem = mediaItems.find((m) => m.type === "video");
   const imageItems = mediaItems.filter((m) => m.type !== "video");
+  const hasMedia = Boolean(videoItem || imageItems.length > 0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartX(e.touches[0].clientX);
@@ -159,8 +175,8 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
         </a>
       </div>
 
-      {/* 3. Text Body (if description differs from title) */}
-      {bookmark.description && bookmark.description !== bookmark.title && (
+      {/* 3. Text Body (only when media is null / no media files exist) */}
+      {!hasMedia && bookmark.description && bookmark.description.trim() !== bookmark.title?.trim() && (
         <div className="px-3.5 mb-2">
           <ExpandableText
             text={bookmark.description}
