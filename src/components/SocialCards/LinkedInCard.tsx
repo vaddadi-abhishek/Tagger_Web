@@ -316,40 +316,6 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
         </a>
       </div>
 
-      {/* Document details if present */}
-      {cardData?.document && (
-        <div className="px-3.5 pb-2.5">
-          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl border border-slate-200 dark:border-[#38434f] bg-slate-50/80 dark:bg-[#28323d]/50">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center font-bold text-[11px] shrink-0 uppercase tracking-tight">
-                PDF
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-                  {cardData.document.title || bookmark.title || "Document"}
-                </span>
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                  {cardData.document.page_count ? `${cardData.document.page_count} pages` : `${postImages.length} pages`}
-                </span>
-              </div>
-            </div>
-            {cardData.document.pdf_url && (
-              <a
-                href={sanitizeUrl(cardData.document.pdf_url)}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 shrink-0 px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/50 flex items-center gap-1.5 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* 3. Media: Video or Multi-Image Grid */}
       {hasMedia &&
         (videoUrl && !videoError ? (
