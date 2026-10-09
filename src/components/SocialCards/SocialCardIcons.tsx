@@ -219,6 +219,48 @@ export function FacebookShareIcon({ className = "w-4 h-4 fill-none stroke-curren
   );
 }
 
+export function FacebookVerifiedBadge({ className = "w-5 h-5 text-[#1877F2] shrink-0" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Verified account" className={className}>
+      <title>Verified account</title>
+      <path d="M8.004 1.183a1.5 1.5 0 0 1 2.049-.55L12 1.759 13.947.634a1.5 1.5 0 0 1 2.05.549L17.045 3H19.5A1.5 1.5 0 0 1 21 4.5v2.453l1.817 1.05a1.5 1.5 0 0 1 .55 2.049L22.241 12l1.124 1.947a1.5 1.5 0 0 1-.55 2.05L21 17.044V19.5a1.5 1.5 0 0 1-1.5 1.5h-2.454l-1.05 1.817a1.5 1.5 0 0 1-2.048.549L12 22.241l-1.948 1.125a1.5 1.5 0 0 1-2.049-.549L6.955 21H4.5A1.5 1.5 0 0 1 3 19.5v-2.455l-1.817-1.049a1.5 1.5 0 0 1-.549-2.049L1.758 12 .634 10.053a1.5 1.5 0 0 1 .549-2.05L3 6.954V4.5A1.5 1.5 0 0 1 4.5 3h2.454l1.05-1.817zm9.703 9.024a1 1 0 0 0-1.414-1.414l-5.44 5.44a.5.5 0 0 1-.707 0l-2.439-2.44a1 1 0 0 0-1.414 1.414l2.44 2.44a2.5 2.5 0 0 0 3.535 0l5.44-5.44z" />
+    </svg>
+  );
+}
+
+export function FacebookMessengerIcon({ className = "w-4 h-4 fill-current shrink-0" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <path d="M12 2C6.477 2 2 6.145 2 11.258c0 2.915 1.464 5.522 3.754 7.18V22l3.418-1.875c.9.248 1.848.383 2.828.383 5.523 0 10-4.145 10-9.25C22 6.145 17.523 2 12 2zm1.03 12.378l-2.584-2.756-5.045 2.756 5.55-5.892 2.65 2.756 4.978-2.756-5.549 5.892z" />
+    </svg>
+  );
+}
+
+export function FacebookFollowIcon({ className = "w-4 h-4 fill-current shrink-0" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+    </svg>
+  );
+}
+
+export function FacebookWatchIcon({ className = "w-4 h-4 fill-current shrink-0" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+export function FacebookSearchIcon({ className = "w-4 h-4 fill-none stroke-current stroke-2 shrink-0" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+    </svg>
+  );
+}
+
 // ==========================================
 // LINKEDIN ICONS
 // ==========================================

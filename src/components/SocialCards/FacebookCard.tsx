@@ -8,9 +8,70 @@ import {
   FacebookBrandLogo,
   FacebookLikeBadge,
   FacebookShareIcon,
+  FacebookVerifiedBadge,
   CommentIcon,
 } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
+
+function isFacebookProfileUrl(url?: string | null): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.includes("facebook.com")) return false;
+
+    if (parsed.pathname === "/profile.php" && parsed.searchParams.has("id")) {
+      return true;
+    }
+
+    if (parsed.pathname.startsWith("/people/")) {
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      if (parts.length >= 2 && !["posts", "videos", "photos", "reels"].includes(parts[parts.length - 1])) {
+        return true;
+      }
+    }
+
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    if (segments.length === 0) return false;
+
+    const systemPaths = new Set([
+      "watch", "reel", "reels", "stories", "story.php", "photo", "photo.php",
+      "photos", "video", "videos", "share", "permalink.php", "groups", "events",
+      "gaming", "marketplace", "login", "login.php", "help", "settings",
+      "policies", "recover", "checkpoint", "hashtag", "search", "dialog", "plugins"
+    ]);
+
+    const firstSegment = segments[0].toLowerCase();
+    if (systemPaths.has(firstSegment)) return false;
+
+    if (segments.length === 1) return true;
+
+    if (segments.length === 2) {
+      const profileSubpages = new Set(["about", "followers", "following", "photos", "reels", "videos", "community"]);
+      return profileSubpages.has(segments[1].toLowerCase());
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+function formatProfileCount(val: unknown): string | null {
+  if (val === undefined || val === null || val === "") return null;
+  if (typeof val === "string") return val;
+  if (typeof val === "number") {
+    if (val >= 1_000_000) {
+      const m = val / 1_000_000;
+      return `${Math.floor(m)}M`;
+    }
+    if (val >= 1_000) {
+      const k = val / 1_000;
+      return `${Math.floor(k)}K`;
+    }
+    return val.toLocaleString();
+  }
+  return null;
+}
 
 interface FacebookCardProps {
   bookmark: Bookmark;
@@ -43,6 +104,11 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
   const author = cardData?.author;
   const metrics = cardData?.metrics;
   const postedAt = cardData?.posted_at || bookmark.created_at;
+
+  const isProfile = useMemo(() => {
+    if (cardData?.is_profile) return true;
+    return isFacebookProfileUrl(bookmark.url) || isFacebookProfileUrl(bookmark.canonical_url);
+  }, [cardData?.is_profile, bookmark.url, bookmark.canonical_url]);
 
   // Extract playable video URL
   const videoUrl = useMemo((): string | null => {
@@ -97,6 +163,146 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
   }, [cardData?.media]);
 
   const hasMedia = Boolean(videoUrl || postImages.length > 0);
+
+  if (isProfile) {
+    const bannerUrl =
+      cardData?.banner_url ||
+      (cardData?.media?.[0]
+        ? typeof cardData.media[0] === "string"
+          ? cardData.media[0]
+          : cardData.media[0].url
+        : null);
+    const avatarUrl = author?.avatar_url || null;
+    const name = author?.name || bookmark.title || "Facebook User";
+    const verified = Boolean(author?.verified);
+    const followers = formatProfileCount(cardData?.followers);
+    const following = formatProfileCount(cardData?.following);
+    const category = cardData?.category || null;
+    const profileUrl = sanitizeUrl(bookmark.url);
+    const displayBio = bookmark.description || "";
+
+    const isMediaCategory =
+      Boolean(category && /cinema|movie|film|video|tv|entertainment|music/i.test(category));
+
+    return (
+      <div className="flex flex-col h-full bg-white dark:bg-[#1c1e21] text-slate-900 dark:text-[#e4e6eb] font-sans rounded-2xl border border-slate-200/80 dark:border-[#3a3b3c] overflow-hidden shadow-sm">
+        {/* 1. Cover Banner with floating menu and Facebook logo */}
+        <div className="relative w-full aspect-[2.6/1] max-h-40 sm:max-h-48 bg-slate-200 dark:bg-[#18191a] overflow-hidden">
+          {bannerUrl ? (
+            <SafeImage
+              url={bannerUrl}
+              alt={`${name}'s cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-slate-700 via-slate-800 to-zinc-900 dark:from-[#18191a] dark:to-[#242526]" />
+          )}
+
+          {/* Left top: Facebook brand logo */}
+          <div className="absolute top-2.5 left-3 z-10 pointer-events-auto">
+            <div className="p-1 rounded-full bg-black/40 backdrop-blur-md">
+              <FacebookBrandLogo className="w-5 h-5" />
+            </div>
+          </div>
+
+          {/* Right top: Card Action Menu */}
+          <div className="absolute top-2.5 right-3 z-10 pointer-events-auto">
+            <CardActionMenu
+              bookmark={bookmark}
+              isOpen={Boolean(isMenuOpen)}
+              onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
+              onClose={onCloseMenu || (() => {})}
+              onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={isGeneratingAi}
+              onRequestDelete={onRequestDelete}
+              theme="facebook"
+              icon="horizontal"
+              buttonClassName="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/80 transition-colors shadow-sm cursor-pointer outline-none"
+            />
+          </div>
+        </div>
+
+        {/* 2. Overlapping Circular Avatar in Center */}
+        <div className="flex flex-col items-center -mt-12 sm:-mt-14 relative z-10 px-4">
+          <div className="relative">
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="relative block rounded-full ring-4 ring-white dark:ring-[#1c1e21] bg-white dark:bg-[#242526] overflow-hidden shadow-md shrink-0 w-24 h-24 sm:w-28 sm:h-28"
+            >
+              {avatarUrl ? (
+                <SafeImage
+                  url={avatarUrl}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-200 dark:bg-[#3a3b3c] flex items-center justify-center text-slate-600 dark:text-[#e4e6eb] font-bold text-2xl">
+                  {name[0]?.toUpperCase() || "F"}
+                </div>
+              )}
+            </a>
+            {/* Active status indicator green dot on bottom-right of avatar circle */}
+            <span
+              className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#1c1e21]"
+              title="Active Status"
+            />
+          </div>
+
+          {/* 3. Centered Name & Verified Badge */}
+          <div className="mt-2.5 flex items-center justify-center gap-1.5 flex-wrap">
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="font-bold text-[19px] sm:text-[21px] text-slate-900 dark:text-white leading-tight hover:underline text-center"
+            >
+              {name}
+            </a>
+            {verified && <FacebookVerifiedBadge className="w-5 h-5" />}
+          </div>
+
+          {/* 4. Followers & Following Row */}
+          {(followers || following) && (
+            <div className="text-[13px] sm:text-[13.5px] text-slate-500 dark:text-[#b0b3b8] mt-0.5 text-center font-normal">
+              {followers && <span>{followers} followers</span>}
+              {followers && following && <span className="mx-1.5">•</span>}
+              {following && <span>{following} following</span>}
+            </div>
+          )}
+
+          {/* 5. Bio / Description */}
+          {displayBio ? (
+            <div className="mt-3 text-[13.5px] text-slate-800 dark:text-[#e4e6eb] text-center leading-relaxed max-w-md mx-auto">
+              <ExpandableText text={displayBio} className="text-[13.5px] leading-relaxed" />
+            </div>
+          ) : null}
+
+          {/* 7. Category / Highlighted Details */}
+          {category && (
+            <div className="mt-2.5 mb-2 flex items-center justify-center gap-1.5 text-[12.5px] text-slate-500 dark:text-[#b0b3b8]">
+              {isMediaCategory ? (
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0">
+                  <path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm0 4h16V6H4v2zm0 2v8h16v-8H4z" />
+                </svg>
+              ) : /game|gaming/i.test(category) ? (
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current shrink-0">
+                  <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2 shrink-0">
+                  <path d="M7 7h.01M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z" />
+                </svg>
+              )}
+              <span>{category}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   const renderImageGrid = () => {
     if (postImages.length === 0) return null;
