@@ -155,7 +155,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
             setProfileData(res.card_data as XCardData);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
       return () => {
         isMounted = false;
       };
@@ -333,7 +333,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
               bookmark={bookmark}
               isOpen={Boolean(isMenuOpen)}
               onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-              onClose={onCloseMenu || (() => {})}
+              onClose={onCloseMenu || (() => { })}
               onViewAiContext={onViewAiContext}
               onGenerateAiContext={onGenerateAiContext}
               isGeneratingAi={isGeneratingAi}
@@ -369,19 +369,6 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
 
           {/* Action buttons on the right matching screenshot */}
           <div className="flex items-center gap-2 mb-1">
-            {/* Notification Bell button */}
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="w-9 h-9 rounded-full border border-slate-300 dark:border-[#536471] bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-800 dark:text-[#eff3f4] transition-colors cursor-pointer"
-              title="Notifications"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M22 5v2h-3v3h-2V7h-3V5h3V2h2v3h3zm-.86 13h-4.241c-.464 2.281-2.482 4-4.899 4s-4.435-1.719-4.899-4H2.87L4 9.05C4.51 5.02 7.93 2 12 2v2C8.94 4 6.36 6.27 5.98 9.3L5.13 16h13.73l-.38-3h2.02l.64 5zm-6.323 0H9.183c.412 1.164 1.51 2 2.817 2s2.405-.836 2.817-2z" />
-              </svg>
-            </a>
-
             {/* Profile Checkmark / Following status button */}
             <a
               href={profileUrl}
@@ -392,19 +379,6 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                 <path d="M14 6c0 2.21-1.791 4-4 4S6 8.21 6 6s1.791-4 4-4 4 1.79 4 4zm-4 5c-2.352 0-4.373.85-5.863 2.44-1.477 1.58-2.366 3.8-2.632 6.46l-.11 1.1h17.21l-.11-1.1c-.266-2.66-1.155-4.88-2.632-6.46C14.373 11.85 12.352 11 10 11zm12.223-5.89l-2.969 4.46L17.3 8.1l-1.2 1.6 3.646 2.73 4.141-6.21-1.664-1.11z" />
-              </svg>
-            </a>
-
-            {/* Share / Upload button */}
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="w-9 h-9 rounded-full border border-slate-300 dark:border-[#536471] bg-white/50 dark:bg-black/50 hover:bg-slate-100 dark:hover:bg-white/10 flex items-center justify-center text-slate-800 dark:text-[#eff3f4] transition-colors cursor-pointer"
-              title="Share"
-            >
-              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M12 2.59l5.7 5.7-1.41 1.42L13 6.41V16h-2V6.41L7.71 9.71 6.3 8.29 12 2.59zM21 15l-.02 3.51c0 1.38-1.12 2.49-2.5 2.49H5.5C4.11 21 3 19.88 3 18.5V15h2v3.5c0 .28.22.5.5.5h12.98c.28 0 .5-.22.5-.5L19 15h2z" />
               </svg>
             </a>
           </div>
@@ -523,7 +497,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
             bookmark={bookmark}
             isOpen={Boolean(isMenuOpen)}
             onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
-            onClose={onCloseMenu || (() => {})}
+            onClose={onCloseMenu || (() => { })}
             onViewAiContext={onViewAiContext}
             onGenerateAiContext={onGenerateAiContext}
             isGeneratingAi={isGeneratingAi}

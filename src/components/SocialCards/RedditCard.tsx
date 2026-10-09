@@ -6,6 +6,7 @@ import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
 import { SafeVideo } from "./SafeVideo";
 import {
+  RedditBrandLogo,
   RedditAlienLogo,
   UpvoteIcon,
   DownvoteIcon,
@@ -147,6 +148,9 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
         </div>
 
         <div className="flex items-center gap-1 shrink-0 ml-2">
+          <div className="p-0.5 shrink-0">
+            <RedditBrandLogo />
+          </div>
           <CardActionMenu
             bookmark={bookmark}
             isOpen={Boolean(isMenuOpen)}
