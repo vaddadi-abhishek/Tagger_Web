@@ -187,7 +187,7 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
 
       {/* 4. Media Area */}
       {videoItem ? (
-        <div className="w-full bg-slate-100 dark:bg-black overflow-hidden border-y border-slate-200 dark:border-[#343536]">
+        <div className="w-full bg-slate-100 dark:bg-black overflow-hidden select-none">
           <SafeVideo
             key={videoItem.url}
             src={videoItem.url}
@@ -199,7 +199,11 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
         </div>
       ) : imageItems.length > 0 ? (
         <div
-          className="relative w-full bg-slate-100 dark:bg-black overflow-hidden border-y border-slate-200 dark:border-[#343536]"
+          className={`relative w-full shrink-0 ${
+            imageItems.length > 1
+              ? "aspect-square max-h-[380px] sm:max-h-[360px]"
+              : "max-h-[380px]"
+          } bg-slate-100 dark:bg-black overflow-hidden select-none flex items-center justify-center`}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -207,18 +211,22 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
             href={sanitizeUrl(bookmark.url)}
             target="_blank"
             rel="noreferrer"
-            className="block w-full overflow-hidden"
+            className={`w-full ${
+              imageItems.length > 1 ? "h-full" : "h-auto"
+            } flex items-center justify-center overflow-hidden`}
           >
             <SafeImage
               url={imageItems[activeMediaIdx]?.url}
               alt="Reddit media"
-              className="w-full h-auto max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
+              className={`w-full ${
+                imageItems.length > 1 ? "h-full" : "h-auto max-h-[380px]"
+              } object-contain mx-auto block bg-slate-100 dark:bg-black`}
             />
           </a>
 
           {imageItems.length > 1 && (
             <>
-              <div className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-black/65 backdrop-blur-sm text-[11px] font-semibold text-white">
+              <div className="absolute top-2.5 right-2.5 z-10 px-2 py-0.5 rounded-full bg-black/65 backdrop-blur-sm text-[11px] font-semibold text-white pointer-events-none select-none">
                 {activeMediaIdx + 1}/{imageItems.length}
               </div>
               <CarouselNavButtons
