@@ -60,6 +60,24 @@ export const getApiBaseUrl = (): string => {
 
 export const AUTH_TOKEN_KEY = "mindspace_auth_token";
 export const AUTH_REFRESH_TOKEN_KEY = "mindspace_refresh_token";
+export const AUTH_USER_KEY = "mindspace_user";
+
+/**
+ * Synchronously retrieves cached user information from localStorage if available.
+ */
+export function getCachedUser(): AuthUser | null {
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.email === "string") {
+      return parsed as AuthUser;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Decodes the JWT access token and checks if it is expired or expiring within `bufferSeconds`.
@@ -361,7 +379,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   const refreshToken = localStorage.getItem(AUTH_REFRESH_TOKEN_KEY);
 
   // If there are no credentials stored at all, user is not logged in
-  if (!token && !refreshToken) return null;
+  if (!token && !refreshToken) {
+    localStorage.removeItem(AUTH_USER_KEY);
+    return null;
+  }
 
   // If access token is missing or expired, attempt refresh before requesting /auth/me
   if ((!token || isTokenExpired(token, 60)) && refreshToken) {
@@ -369,16 +390,21 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     if (!refreshed) {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
       return null;
     }
   }
 
   try {
     const data = await request<{ user: AuthUser }>("/auth/me", { method: "GET" });
+    if (data?.user) {
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+    }
     return data.user;
   } catch {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+    localStorage.removeItem(AUTH_USER_KEY);
     return null;
   }
 }
@@ -386,6 +412,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 export function logoutUser(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_KEY);
 }
 
 // ==========================================

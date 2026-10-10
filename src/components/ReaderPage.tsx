@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { fetchBookmarkArticle } from "../services/api";
 import type { ArticleContent } from "../types/bookmark";
+import { MindspaceLogo } from "./ui/MindspaceLogo";
 
 interface ReaderPageProps {
   user?: { name: string; email: string } | null;
@@ -178,8 +179,8 @@ export const ReaderPage: React.FC<ReaderPageProps> = () => {
             aria-label="Mindspace Home"
             className="group flex items-center gap-2.5 focus:outline-none"
           >
-            <div className="size-8 rounded-lg bg-gradient-to-tr from-[#B5814C] to-[#996533] text-[#FAF8F5] flex items-center justify-center font-bold text-sm shadow-xs shadow-[#B5814C]/20 transition-transform group-hover:scale-105">
-              M
+            <div className="size-8 rounded-lg bg-gradient-to-tr from-[#B5814C] to-[#996533] text-[#FAF8F5] flex items-center justify-center p-1.5 shadow-xs shadow-[#B5814C]/20 transition-transform group-hover:scale-105">
+              <MindspaceLogo className="w-full h-full text-[#FAF8F5]" />
             </div>
             <span className={`text-xs uppercase tracking-widest font-semibold ${themeStyles.subtext} opacity-70 group-hover:opacity-100 transition-opacity hidden sm:inline`}>
               Mindspace
