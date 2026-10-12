@@ -7,6 +7,7 @@ import { InteractiveStory } from "./landing/InteractiveStory";
 import { PricingSection } from "./landing/PricingSection";
 import { FaqSection } from "./landing/FaqSection";
 import { AnimatedThemeToggler } from "./ui/AnimatedThemeToggler";
+import { MindspaceLogo } from "./ui/MindspaceLogo";
 
 declare global {
   interface Window {
@@ -134,11 +135,12 @@ export function LandingPage({
             : "shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
             }`}
         >
-          {/* Left: Wordmark */}
+          {/* Left: Wordmark & Logo */}
           <div
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
+            <MindspaceLogo className="size-6 text-[#211D1A] dark:text-white transition-transform duration-200 group-hover:scale-105 shrink-0" />
             <span className="text-xl font-bold tracking-tight text-[#211D1A] dark:text-white font-sans lowercase">
               mindspace
             </span>
