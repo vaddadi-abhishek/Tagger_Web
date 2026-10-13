@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useDeferredValue, useEffect, memo } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useEffect, memo, useRef } from "react";
 import React from "react";
 import type { Bookmark } from "../types/bookmark";
 import { BookmarkCard } from "../components/BookmarkCard";
@@ -206,6 +206,64 @@ export default function BookmarksScreen({
     }
   }, [onCloseAddModal]);
 
+  // Dynamic Edge Fade Effect for Horizontal Tabs Scroll Container
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkTabsScroll = useCallback(() => {
+    const el = tabsScrollRef.current;
+    if (!el) return;
+    const hasOverflow = el.scrollWidth > el.clientWidth + 1;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(hasOverflow && el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    checkTabsScroll();
+    const el = tabsScrollRef.current;
+    if (!el) return;
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        checkTabsScroll();
+      });
+      resizeObserver.observe(el);
+    }
+
+    window.addEventListener("resize", checkTabsScroll);
+    return () => {
+      if (resizeObserver) resizeObserver.disconnect();
+      window.removeEventListener("resize", checkTabsScroll);
+    };
+  }, [checkTabsScroll]);
+
+  const tabsMaskStyle = useMemo<React.CSSProperties>(() => {
+    if (canScrollLeft && canScrollRight) {
+      const gradient = "linear-gradient(to right, transparent 0px, black 32px, black calc(100% - 32px), transparent 100%)";
+      return {
+        maskImage: gradient,
+        WebkitMaskImage: gradient,
+      };
+    }
+    if (canScrollLeft) {
+      const gradient = "linear-gradient(to right, transparent 0px, black 32px, black 100%)";
+      return {
+        maskImage: gradient,
+        WebkitMaskImage: gradient,
+      };
+    }
+    if (canScrollRight) {
+      const gradient = "linear-gradient(to right, black 0%, black calc(100% - 32px), transparent 100%)";
+      return {
+        maskImage: gradient,
+        WebkitMaskImage: gradient,
+      };
+    }
+    return {};
+  }, [canScrollLeft, canScrollRight]);
+
   const bookmarks = externalBookmarks || internalBookmarks;
   const rawSearchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm;
 
@@ -379,36 +437,43 @@ export default function BookmarksScreen({
 
       {/* Top Dashboard Controls Bar: Platform Filters List & Add Bookmark Action Button */}
       <div className="w-full pb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-        {/* Horizontal Platform Filter Pills */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -my-1 max-w-full">
-          {PLATFORM_TABS.map((tab) => {
-            const isActive = activePlatform === tab.id;
-            const count = platformCounts[tab.id] ?? 0;
-            const logo = renderTabLogo(tab.id, isActive);
+        {/* Horizontal Platform Filter Pills Container with Dynamic Edge Fade */}
+        <div className="relative flex-1 min-w-0 overflow-hidden">
+          <div
+            ref={tabsScrollRef}
+            onScroll={checkTabsScroll}
+            style={tabsMaskStyle}
+            className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -my-1 px-0.5 transition-[mask-image] duration-150"
+          >
+            {PLATFORM_TABS.map((tab) => {
+              const isActive = activePlatform === tab.id;
+              const count = platformCounts[tab.id] ?? 0;
+              const logo = renderTabLogo(tab.id, isActive);
 
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => handlePlatformChange(tab.id)}
-                className={`group relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0 select-none ${isActive
-                  ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] scale-100"
-                  : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
-                  }`}
-              >
-                {logo}
-                <span>{tab.label}</span>
-                <span
-                  className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${isActive
-                    ? "bg-white/20 text-white"
-                    : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handlePlatformChange(tab.id)}
+                  className={`group relative px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold tracking-tight whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-2 shrink-0 select-none ${isActive
+                    ? "bg-gradient-to-r from-[#B5814C] to-[#996533] text-[#FAF8F5] shadow-[0_2px_12px_rgba(181,129,76,0.35)] scale-100"
+                    : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
                     }`}
                 >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+                  {logo}
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-black/5 dark:bg-white/10 text-[#8C8377] dark:text-[#A89F91] group-hover:bg-[#B5814C]/20 group-hover:text-[#B5814C]"
+                      }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Primary Action: Add Bookmark Button */}

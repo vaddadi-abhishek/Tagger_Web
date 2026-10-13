@@ -611,7 +611,13 @@ export function DashboardWireframe() {
           {/* ─── 3. Platform Filters & Add Bookmark Controls Bar ─── */}
           <div className="shrink-0 px-4 sm:px-6 pt-2.5 pb-2.5 border-b border-[#EBE5DC]/50 dark:border-[#26211C]/50 flex flex-wrap items-center justify-between gap-2 z-10 bg-[#FAF8F5]/80 dark:bg-[#0B0907]/80">
             {/* Horizontal Platform Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full">
+            <div
+              style={{
+                maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+                WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+              }}
+              className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 max-w-full"
+            >
               {DEMO_PLATFORM_TABS.map((tab) => {
                 const isActive = activePlatform === tab.id;
                 const count = platformCounts[tab.id] ?? 0;
