@@ -33,4 +33,4 @@ User-agent: Bingbot
 Allow: /
 
 # Canonical Sitemap
-Sitemap: https://mindspace.app/sitemap.xml
+Sitemap: https://usemindspace.online/sitemap.xml

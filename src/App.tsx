@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
+import { ComparePage } from "./components/ComparePage";
 import { AuthPage } from "./components/AuthPage";
 import DashboardLayout from "./Layout/DashboardLayout";
 import { ReaderPage } from "./components/ReaderPage";
@@ -25,8 +26,10 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => Boolean(cachedUser && hasToken));
   const [user, setUser] = useState<{ name: string; email: string } | null>(() => cachedUser);
 
-  // If user is at root "/" and not on OAuth callback, never block the marketing page
-  const isRootRoute = typeof window !== "undefined" && window.location.pathname === "/";
+  // If user is at root "/" or comparison routes, never block the public page
+  const isPublicRoute =
+    typeof window !== "undefined" &&
+    (window.location.pathname === "/" || window.location.pathname.startsWith("/compare"));
   const isOAuthRedirect =
     typeof window !== "undefined" &&
     (window.location.hash.includes("access_token") ||
@@ -34,7 +37,7 @@ export default function App() {
 
   const [initializing, setInitializing] = useState<boolean>(() => {
     if (isOAuthRedirect) return true;
-    if (isRootRoute) return false;
+    if (isPublicRoute) return false;
     // On protected routes, if we have cached credentials, let the route mount with skeletons
     if (cachedUser && hasToken) return false;
     return true;
@@ -203,6 +206,10 @@ export default function App() {
           />
         }
       />
+
+      {/* Competitor & Alternative Comparison Landing Routes */}
+      <Route path="/compare/:slug" element={<ComparePage />} />
+      <Route path="/compare" element={<Navigate to="/compare/raindrop-alternative" replace />} />
 
       {/* Main App Protected Route: /my/app */}
       <Route

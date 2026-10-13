@@ -258,7 +258,7 @@ export function LandingPage({
 
             {/* Subheading */}
             <p className="text-base sm:text-lg text-[#5F5850] dark:text-[#B3ABA0] leading-relaxed font-normal">
-              From tweets and reels to full articles, Mindspace understands what you save, recognizes the context, and tags it for you. No folders, no labels, no manual organizing. Find anything by what you remember, not what you named it.
+              The intelligent AI bookmark manager and visual memory vault. From tweets and reels to full articles, Mindspace understands what you save, indexes text with OCR, and auto-tags your library. No folders, no manual organizing. Find anything by what you remember.
             </p>
           </div>
         </div>
@@ -319,12 +319,35 @@ export function LandingPage({
           7. EDITORIAL SWISS FOOTER
       ══════════════════════════════════════════════════════════════ */}
       <footer className="w-full border-t border-neutral-200 dark:border-neutral-800/80 py-12 px-6 mt-16 bg-white/40 dark:bg-neutral-950/40">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-neutral-500 font-mono">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-neutral-500 font-mono">
           <div className="flex items-center gap-3">
             <span className="font-bold text-sm tracking-tight text-neutral-900 dark:text-white font-sans lowercase">
               mindspace
             </span>
           </div>
+
+          {/* Internal SEO Comparison Links */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-neutral-600 dark:text-neutral-400 font-sans">
+            <a href="/compare/raindrop-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              Raindrop Alternative
+            </a>
+            <a href="/compare/pocket-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              Pocket Alternative
+            </a>
+            <a href="/compare/mymind-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              mymind Alternative
+            </a>
+            <a href="/compare/karakeep-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              Karakeep Alternative
+            </a>
+            <a href="/compare/readwise-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              Readwise Alternative
+            </a>
+            <a href="/compare/notion-alternative" className="hover:text-black dark:hover:text-white transition-colors">
+              Notion Alternative
+            </a>
+          </div>
+
           <div>
             © {new Date().getFullYear()} Mindspace Inc. All rights reserved.
           </div>

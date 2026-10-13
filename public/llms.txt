@@ -1,23 +1,38 @@
 # Mindspace
 
-> Mindspace is an intelligent AI bookmark manager and visual media vault. It automatically analyzes, tags, and organizes saved links, social posts, and articles using Multimodal AI visual intelligence and embedded OCR.
+> Mindspace (https://usemindspace.online) is an intelligent AI bookmark manager, AI bookmark organizer, and visual media vault. It automatically analyzes, tags, and organizes saved links, social posts, and articles using Multimodal AI visual intelligence and embedded OCR.
 
 ## What is Mindspace?
-Mindspace replaces conventional folder-based bookmark managers (like Raindrop.io, Pocket, or browser bookmarks) with an autonomous second-brain knowledge vault. When a user saves any link—whether from X (Twitter), LinkedIn, Instagram, Reddit, YouTube, or web articles—Mindspace captures snapshots, extracts clean article text, identifies entities, and generates intelligent contextual summaries and searchable tags.
+Mindspace replaces conventional folder-based bookmark managers (like Raindrop.io, Pocket, Notion Web Clipper, or browser bookmarks) with an autonomous second-brain knowledge vault. When a user saves any link—whether from X (Twitter), LinkedIn, Instagram, Reddit, YouTube, or web articles—Mindspace captures snapshots, extracts clean article text, indexes visual text with OCR, and generates intelligent contextual summaries and searchable tags.
+
+## Alternatives Comparison
+- **Mindspace vs Raindrop.io**: Unlike Raindrop which requires manual nested folders and tags, Mindspace autonomously auto-tags links using Multimodal AI and OCR, indexing text inside screenshots and infographics.
+- **Mindspace vs Pocket**: While Pocket focuses strictly on plain text reading, Mindspace provides platform-native social card preservation (X, Instagram reels, Reddit, LinkedIn), multimodal vision, and an integrated distraction-free reader mode.
+- **Mindspace vs mymind**: Mindspace provides explicit structured search, deep platform scrapers, automated article readability metrics, and Model Context Protocol (MCP) connectivity for ChatGPT and Claude.
+- **Mindspace vs Karakeep (Hoarder)**: Mindspace gives you zero-maintenance cloud intelligence, avoiding the complexity of self-hosting Docker servers and local LLMs.
+- **Mindspace vs Readwise Reader**: Mindspace is built for the multimodal web (social posts, reels, diagrams, and OCR search) rather than just PDF/EPUB highlighting.
+- **Mindspace vs Notion Web Clipper**: Mindspace provides instant 1-click saves with automated categorization, eliminating bloated, slow Notion databases.
 
 ## Core Features & Capabilities
 - **Multimodal AI Visual Intelligence**: Uses Google Gemini to inspect images, diagrams, video thumbnails, and page layouts, generating rich descriptions and relevant tags automatically.
 - **Embedded OCR Text Extraction**: Extracts text embedded inside images, memes, slides, infographics, and screenshots so you can search for bookmarks by words seen inside the media.
 - **Reader Mode**: Distraction-free article reader that strips ads, paywalls, and clutter, calculating word count and reading time.
 - **Supported Platforms**: Deep native metadata scrapers for X (Twitter), LinkedIn posts and shares, Instagram posts & reels, Reddit threads, YouTube videos, and standard web articles.
+- **Model Context Protocol (MCP)**: Native bridge allowing Claude, ChatGPT, and AI agents to query your personal bookmark library directly as real-time context.
 - **Privacy & Security**: Built with zero direct client-to-database connections. Employs PostgreSQL Row Level Security (RLS), bcrypt password hashing, and encrypted HTTPS transport to keep bookmarks strictly private.
 - **Smart Deduplication**: Automatically canonicalizes URLs and detects duplicate links before network requests, saving credits and avoiding clutter.
 
 ## Pricing
-- **Free Collector**: Unlimited bookmark saving, full search, reader mode, and 6 weekly AI visual intelligence credits.
-- **Thinker (Pro)**: Unlimited AI visual analysis, unlimited auto-tagging, priority queueing.
+- **Free Collector**: Unlimited bookmark saving, full search, reader mode, and weekly AI visual intelligence credits. No credit card required.
+- **Thinker (Pro)**: Unlimited AI visual analysis, unlimited auto-tagging, priority processing queue.
 
 ## Links
-- Homepage: https://mindspace.app/
-- Web App: https://mindspace.app/my/app
-- Authentication: https://mindspace.app/auth
+- Homepage: https://usemindspace.online/
+- Web App: https://usemindspace.online/my/app
+- Authentication: https://usemindspace.online/auth
+- Raindrop Alternative: https://usemindspace.online/compare/raindrop-alternative
+- Pocket Alternative: https://usemindspace.online/compare/pocket-alternative
+- mymind Alternative: https://usemindspace.online/compare/mymind-alternative
+- Karakeep Alternative: https://usemindspace.online/compare/karakeep-alternative
+- Readwise Alternative: https://usemindspace.online/compare/readwise-alternative
+- Notion Web Clipper Alternative: https://usemindspace.online/compare/notion-alternative
