@@ -317,47 +317,48 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           </div>
         </div>
 
-        {/* 3. Grid Tab Header (Iconic Posts Icon) */}
-        <div className="border-t border-slate-100 dark:border-[#262626] flex items-center justify-center py-2 text-slate-900 dark:text-white">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-            <span>POSTS</span>
-          </div>
-        </div>
+        {/* 3. Grid Tab Header & 3x2 Grid (Only when profile posts are public/available) */}
+        {gridMedia.length > 0 && (
+          <>
+            <div className="border-t border-slate-100 dark:border-[#262626] flex items-center justify-center py-2 text-slate-900 dark:text-white">
+              <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <span>POSTS</span>
+              </div>
+            </div>
 
-        {/* 4. 3x2 Grid (6 Images) */}
-        {gridMedia.length > 0 ? (
-          <div className="grid grid-cols-3 gap-0.5 bg-slate-100 dark:bg-zinc-900">
-            {gridMedia.map((item, idx) => (
-              <a
-                key={item.url || idx}
-                href={sanitizeUrl(bookmark.url)}
-                target="_blank"
-                rel="noreferrer"
-                className="relative aspect-square overflow-hidden block group bg-slate-200 dark:bg-zinc-800"
-              >
-                <SafeImage
-                  url={item.url}
-                  alt={`Profile post ${idx + 1}`}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                />
-                {item.type === "video" && (
-                  <div className="absolute top-1.5 right-1.5 text-white drop-shadow-md pointer-events-none">
-                    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors pointer-events-none" />
-              </a>
-            ))}
-          </div>
-        ) : null}
+            <div className="grid grid-cols-3 gap-0.5 bg-slate-100 dark:bg-zinc-900">
+              {gridMedia.map((item, idx) => (
+                <a
+                  key={item.url || idx}
+                  href={sanitizeUrl(bookmark.url)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="relative aspect-square overflow-hidden block group bg-slate-200 dark:bg-zinc-800"
+                >
+                  <SafeImage
+                    url={item.url}
+                    alt={`Profile post ${idx + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  {item.type === "video" && (
+                    <div className="absolute top-1.5 right-1.5 text-white drop-shadow-md pointer-events-none">
+                      <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors pointer-events-none" />
+                </a>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     );
   }
