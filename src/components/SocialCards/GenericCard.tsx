@@ -14,6 +14,7 @@ interface GenericCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const GenericCard = React.memo(function GenericCard(props: GenericCardProps) {
@@ -26,6 +27,7 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
     onViewAiContext,
     onGenerateAiContext,
     isGeneratingAi,
+    onOpenMedia,
   } = props;
 
   const [logoError, setLogoError] = useState(false);
@@ -46,22 +48,31 @@ export const GenericCard = React.memo(function GenericCard(props: GenericCardPro
   const logoSrc = !logoError && bookmark.logo ? bookmark.logo : domainFavicon;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-[#18181b] text-slate-900 dark:text-zinc-100 font-sans rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-sm pb-1">
+    <div className="flex flex-col h-full bg-white dark:bg-[#18181b] text-slate-900 dark:zinc-100 font-sans rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden shadow-sm pb-1">
       {/* Media Image Section */}
       {mediaUrl ? (
         <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-slate-100 dark:bg-zinc-900 shrink-0">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full h-full"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, 0);
+              }
+            }}
+            className="block w-full h-full cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={mediaUrl}
               alt={bookmark.title}
               className="w-full h-full object-cover"
             />
-          </a>
+          </div>
 
           {/* Top Right Source Logo Badge & Vertical 3-dots Menu */}
           <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">

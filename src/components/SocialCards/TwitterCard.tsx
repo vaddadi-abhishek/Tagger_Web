@@ -116,6 +116,7 @@ interface TwitterCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardProps) {
@@ -128,6 +129,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
     onViewAiContext,
     onGenerateAiContext,
     isGeneratingAi,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(() => parseCardData<XCardData>(bookmark.card_data), [bookmark.card_data]);
@@ -227,18 +229,27 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
     if (postImages.length === 1) {
       return (
         <div className="px-3.5 mt-2">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full overflow-hidden rounded-xl border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-black"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, 0);
+              }
+            }}
+            className="block w-full overflow-hidden rounded-xl border border-slate-200 dark:border-[#2f3336] bg-slate-100 dark:bg-black cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={postImages[0]}
               alt="X post media"
               className="w-full h-auto max-h-[360px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
-          </a>
+          </div>
         </div>
       );
     }
@@ -247,12 +258,26 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       return (
         <div className="px-3.5 mt-2">
           <div className="grid grid-cols-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-44 sm:h-52 bg-slate-200 dark:bg-[#2f3336]">
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 0);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
+            >
               <SafeImage url={postImages[0]} className="w-full h-full object-cover" />
-            </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 1);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
+            >
               <SafeImage url={postImages[1]} className="w-full h-full object-cover" />
-            </a>
+            </button>
           </div>
         </div>
       );
@@ -262,15 +287,36 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       return (
         <div className="px-3.5 mt-2">
           <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-48 sm:h-56 bg-slate-200 dark:bg-[#2f3336]">
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 0);
+              }}
+              className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
+            >
               <SafeImage url={postImages[0]} className="w-full h-full object-cover" />
-            </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 1);
+              }}
+              className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
+            >
               <SafeImage url={postImages[1]} className="w-full h-full object-cover" />
-            </a>
-            <a href={sanitizeUrl(bookmark.url)} target="_blank" rel="noreferrer" className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block">
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 2);
+              }}
+              className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
+            >
               <SafeImage url={postImages[2]} className="w-full h-full object-cover" />
-            </a>
+            </button>
           </div>
         </div>
       );
@@ -280,12 +326,14 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
       <div className="px-3.5 mt-2">
         <div className="grid grid-cols-2 grid-rows-2 gap-1 rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3336] h-48 sm:h-56 bg-slate-200 dark:bg-[#2f3336]">
           {postImages.slice(0, 4).map((imgUrl, idx) => (
-            <a
+            <button
               key={idx}
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, idx);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-zinc-900 block cursor-pointer border-none p-0 outline-none"
             >
               <SafeImage url={imgUrl} className="w-full h-full object-cover" />
               {idx === 3 && postImages.length > 4 && (
@@ -293,7 +341,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
                   +{postImages.length - 3}
                 </div>
               )}
-            </a>
+            </button>
           ))}
         </div>
       </div>
@@ -565,6 +613,7 @@ export const TwitterCard = React.memo(function TwitterCard(props: TwitterCardPro
                 poster={cardData?.video_thumbnail || postImages[0]}
                 controls
                 playsInline
+                onOpenFullscreen={() => onOpenMedia?.(bookmark, 0)}
                 className="w-full max-h-[360px] object-contain bg-slate-100 dark:bg-black mx-auto block"
                 onError={() => setVideoError(true)}
               />

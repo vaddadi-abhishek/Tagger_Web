@@ -15,6 +15,7 @@ interface PinterestCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 
@@ -28,6 +29,7 @@ export const PinterestCard = React.memo(function PinterestCard(props: PinterestC
     onViewAiContext,
     onGenerateAiContext,
     isGeneratingAi,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(
@@ -65,21 +67,31 @@ export const PinterestCard = React.memo(function PinterestCard(props: PinterestC
             poster={cardData?.video_thumbnail || imageUrl}
             controls
             playsInline
+            onOpenFullscreen={() => onOpenMedia?.(bookmark, 0)}
             className="w-full max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
           />
         ) : imageUrl ? (
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full overflow-hidden"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, 0);
+              }
+            }}
+            className="block w-full overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={imageUrl}
               alt={authorName}
               className="w-full h-auto max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
-          </a>
+          </div>
         ) : (
           <div className="w-full h-40 flex items-center justify-center bg-slate-100 dark:bg-zinc-800">
             <PinterestBrandLogo className="size-10 opacity-30" />

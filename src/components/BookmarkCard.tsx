@@ -18,6 +18,7 @@ interface BookmarkCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 import { resolveCardType } from "../lib/utils";

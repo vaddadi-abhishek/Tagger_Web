@@ -111,6 +111,7 @@ export function parseCardData<T>(rawCardData: unknown): T | null {
  */
 export function resolveCardType(bookmark: Bookmark): string {
   const rawType = (bookmark.type || "").toLowerCase().trim();
+  if (rawType === "article" || rawType === "read" || (bookmark as any).is_article) return "article";
   if (rawType === "x" || rawType === "twitter") return "x";
   if (rawType === "reddit") return "reddit";
   if (rawType === "instagram") return "instagram";
@@ -138,7 +139,9 @@ export function resolveCardType(bookmark: Bookmark): string {
  */
 export function matchesPlatform(bookmark: Bookmark, platform: string): boolean {
   if (!platform || platform === "all") return true;
-  return resolveCardType(bookmark) === platform;
+  const cardType = resolveCardType(bookmark);
+  if (platform === "articles") return Boolean((bookmark as any).is_article || cardType === "article" || cardType === "generic");
+  return cardType === platform;
 }
 
 /**
@@ -159,6 +162,7 @@ export function getFaviconUrl(url?: string): string {
  */
 export const PLATFORM_TABS = [
   { id: "all", label: "All" },
+  { id: "articles", label: "Articles" },
   { id: "x", label: "Twitter / X" },
   { id: "youtube", label: "YouTube" },
   { id: "instagram", label: "Instagram" },
@@ -446,6 +450,99 @@ export function findDuplicateBookmark(bookmarks: Bookmark[], targetUrl: string):
     return undefined;
   }
   return bookmarks.find((bm) => isSameBookmarkUrl(bm.url, targetUrl));
+}
+
+export interface ExtractedMediaItem {
+  type: "image" | "video";
+  url: string;
+  posterUrl?: string | null;
+}
+
+export function isVideoUrl(url?: string | null): boolean {
+  if (!url || typeof url !== "string") return false;
+  const clean = url.split("?")[0].toLowerCase();
+  return (
+    clean.endsWith(".mp4") ||
+    clean.endsWith(".webm") ||
+    clean.endsWith(".m3u8") ||
+    clean.endsWith(".mov") ||
+    clean.includes("video") ||
+    clean.includes("ext_tw_video") ||
+    clean.includes("fbcdn.net/v/")
+  );
+}
+
+export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
+  const cardData = (typeof bookmark.card_data === "object" && bookmark.card_data !== null
+    ? bookmark.card_data
+    : {}) as Record<string, any>;
+  const items: ExtractedMediaItem[] = [];
+  const seenUrls = new Set<string>();
+
+  const add = (url: string | null | undefined, type: "image" | "video", posterUrl?: string | null) => {
+    if (!url || typeof url !== "string") return;
+    const trimmed = url.trim();
+    if (!trimmed || seenUrls.has(trimmed)) return;
+    if (
+      trimmed.includes("150x150") ||
+      trimmed.includes("s150x150") ||
+      trimmed.includes("profile_pic") ||
+      trimmed.includes("avatar") ||
+      trimmed.includes("rlcdn")
+    ) {
+      return;
+    }
+    seenUrls.add(trimmed);
+    items.push({ type, url: trimmed, posterUrl: posterUrl || null });
+  };
+
+  // 1. Direct cardData video_url or stream
+  const directVid = cardData?.video_url || cardData?.playback_url || cardData?.stream_url;
+  if (directVid) {
+    add(directVid, "video", cardData?.video_thumbnail || bookmark.snapshot);
+  }
+
+  // 2. Scan cardData.media array
+  if (Array.isArray(cardData?.media)) {
+    for (const m of cardData.media) {
+      if (!m) continue;
+      if (typeof m === "string") {
+        const isVid = isVideoUrl(m);
+        add(m, isVid ? "video" : "image", cardData?.video_thumbnail);
+      } else if (typeof m === "object") {
+        const itemUrl = (m.url || "").trim();
+        const itemType = (m.type || "").toLowerCase();
+        const isVid =
+          itemType === "video" ||
+          itemType === "reel" ||
+          itemType === "gif" ||
+          m.is_video === true ||
+          isVideoUrl(itemUrl);
+        if (isVid) {
+          add(itemUrl, "video", m.thumbnail_url || m.poster || cardData?.video_thumbnail);
+        } else if (itemUrl) {
+          add(itemUrl, "image");
+        }
+      }
+    }
+  }
+
+  // 3. Scan cardData.images array
+  if (Array.isArray(cardData?.images)) {
+    for (const img of cardData.images) {
+      const u = typeof img === "string" ? img.trim() : (img?.url || img?.src || "").trim();
+      if (u) {
+        add(u, isVideoUrl(u) ? "video" : "image");
+      }
+    }
+  }
+
+  // 4. Snapshot fallback if no media found
+  if (items.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes("avatar")) {
+    add(bookmark.snapshot, "image");
+  }
+
+  return items;
 }
 
 

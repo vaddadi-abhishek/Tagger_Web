@@ -58,6 +58,7 @@ interface InstagramCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const InstagramCard = React.memo(function InstagramCard(props: InstagramCardProps) {
@@ -70,6 +71,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
     onViewAiContext,
     onGenerateAiContext,
     isGeneratingAi,
+    onOpenMedia,
   } = props;
 
   const [activeMediaIdx, setActiveMediaIdx] = useState(0);
@@ -334,12 +336,14 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
 
             <div className="grid grid-cols-3 gap-0.5 bg-slate-100 dark:bg-zinc-900">
               {gridMedia.map((item, idx) => (
-                <a
+                <button
                   key={item.url || idx}
-                  href={sanitizeUrl(bookmark.url)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="relative aspect-square overflow-hidden block group bg-slate-200 dark:bg-zinc-800"
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenMedia?.(bookmark, idx);
+                  }}
+                  className="relative aspect-square overflow-hidden block group bg-slate-200 dark:bg-zinc-800 cursor-pointer text-left w-full h-full border-none p-0 outline-none"
                 >
                   <SafeImage
                     url={item.url}
@@ -354,7 +358,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors pointer-events-none" />
-                </a>
+                </button>
               ))}
             </div>
           </>
@@ -428,21 +432,31 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
               poster={cardData?.video_thumbnail}
               controls
               playsInline
+              onOpenFullscreen={() => onOpenMedia?.(bookmark, activeMediaIdx)}
               className="w-full max-h-[420px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
           ) : (
-            <a
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              className="block w-full overflow-hidden"
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, activeMediaIdx);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpenMedia?.(bookmark, activeMediaIdx);
+                }
+              }}
+              className="block w-full overflow-hidden cursor-pointer"
             >
               <SafeImage
                 url={currentMedia.url}
                 alt="Instagram post media"
-                className="w-full h-auto max-h-[420px] object-contain mx-auto block bg-slate-100 dark:bg-black"
+                className="w-full h-auto max-h-[420px] object-contain mx-auto block bg-slate-100 dark:bg-black hover:opacity-95 transition-opacity"
               />
-            </a>
+            </div>
           )}
 
           {/* Carousel Slide Indicators */}

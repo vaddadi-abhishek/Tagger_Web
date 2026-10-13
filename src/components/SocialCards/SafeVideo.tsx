@@ -12,6 +12,7 @@ interface SafeVideoProps extends Omit<React.VideoHTMLAttributes<HTMLVideoElement
   muted?: boolean;
   loop?: boolean;
   onPlayStart?: () => void;
+  onOpenFullscreen?: () => void;
 }
 
 export const SafeVideo = React.memo(function SafeVideo({
@@ -24,6 +25,7 @@ export const SafeVideo = React.memo(function SafeVideo({
   muted = false,
   loop = false,
   onPlayStart,
+  onOpenFullscreen,
   ...rest
 }: SafeVideoProps) {
   // Poster Facade: only initialize heavy <video> and network stream when user clicks Play
@@ -108,6 +110,10 @@ export const SafeVideo = React.memo(function SafeVideo({
   const handleStartPlay = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (onOpenFullscreen) {
+      onOpenFullscreen();
+      return;
+    }
     setIsPlaying(true);
     onPlayStart?.();
   };

@@ -5,6 +5,16 @@ import { BookmarkCard } from "../components/BookmarkCard";
 import { DeleteConfirmModal } from "../components/DeleteConfirmModal";
 import { AddBookmarkModal } from "../components/AddBookmarkModal";
 import { AiContextModal } from "../components/AiContextModal";
+import { FullScreenMediaModal } from "../components/FullScreenMediaModal";
+import {
+  XBrandLogo,
+  InstagramBrandLogo,
+  FacebookBrandLogo,
+  RedditBrandLogo,
+  LinkedInBrandLogo,
+  YouTubeBrandLogo,
+  PinterestBrandLogo,
+} from "../components/SocialCards/SocialCardIcons";
 import { PLATFORM_TABS, resolveCardType, matchesPlatform } from "../lib/utils";
 
 /**
@@ -56,6 +66,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onGenerateAiContext,
   generatingAiId,
   generatingAiIds,
+  onOpenMedia,
 }: {
   bookmarks: Bookmark[];
   openMenuId: string | null;
@@ -66,6 +77,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   generatingAiId?: string | null;
   generatingAiIds?: Set<string>;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }) {
   const columnCount = useColumnCount();
 
@@ -91,6 +103,7 @@ const BookmarkColumnsLayout = memo(function BookmarkColumnsLayout({
               onRequestDelete={onRequestDelete}
               onViewAiContext={onViewAiContext}
               onGenerateAiContext={onGenerateAiContext}
+              onOpenMedia={onOpenMedia}
               isGeneratingAi={Boolean(
                 (generatingAiIds && generatingAiIds.has(bookmark.id)) ||
                 generatingAiId === bookmark.id
@@ -143,6 +156,10 @@ export default function BookmarksScreen({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [internalIsAddModalOpen, setInternalIsAddModalOpen] = useState(false);
+  const [selectedMediaBookmark, setSelectedMediaBookmark] = useState<{
+    bookmark: Bookmark;
+    initialIndex: number;
+  } | null>(null);
 
   const activePlatform =
     externalActivePlatform !== undefined
@@ -159,6 +176,14 @@ export default function BookmarksScreen({
     },
     [externalOnPlatformChange]
   );
+
+  const handleOpenMedia = useCallback((bookmark: Bookmark, initialIndex = 0) => {
+    setSelectedMediaBookmark({ bookmark, initialIndex });
+  }, []);
+
+  const handleCloseMedia = useCallback(() => {
+    setSelectedMediaBookmark(null);
+  }, []);
 
   const isAddModalOpen =
     externalIsAddModalOpen !== undefined
@@ -260,6 +285,9 @@ export default function BookmarksScreen({
     bookmarks.forEach((item) => {
       const type = resolveCardType(item);
       counts[type] = (counts[type] || 0) + 1;
+      if ((item as any).is_article || type === "article" || type === "generic") {
+        counts["articles"] = (counts["articles"] || 0) + 1;
+      }
     });
 
     return counts;
@@ -305,6 +333,40 @@ export default function BookmarksScreen({
     [externalAddBookmark]
   );
 
+  const renderTabLogo = (id: string, isActive: boolean) => {
+    switch (id) {
+      case "x":
+        return (
+          <XBrandLogo
+            className={`w-3.5 h-3.5 ${
+              isActive ? "fill-white" : "fill-current"
+            } shrink-0`}
+          />
+        );
+      case "youtube":
+        return <YouTubeBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      case "instagram":
+        return <InstagramBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      case "pinterest":
+        return <PinterestBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      case "facebook":
+        return <FacebookBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      case "linkedin":
+        return (
+          <LinkedInBrandLogo
+            className={`w-3.5 h-3.5 ${
+              isActive ? "fill-white" : "fill-[#0a66c2]"
+            } shrink-0`}
+          />
+        );
+      case "reddit":
+        return <RedditBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      default:
+        // Do not add logos for "all" or "articles"
+        return null;
+    }
+  };
+
   return (
     <div className="w-full relative pb-8">
       {/* Invisible backdrop to dismiss open card dropdown menus */}
@@ -322,6 +384,7 @@ export default function BookmarksScreen({
           {PLATFORM_TABS.map((tab) => {
             const isActive = activePlatform === tab.id;
             const count = platformCounts[tab.id] ?? 0;
+            const logo = renderTabLogo(tab.id, isActive);
 
             return (
               <button
@@ -333,6 +396,7 @@ export default function BookmarksScreen({
                   : "bg-[#FAF8F5]/80 dark:bg-[#14110E]/80 text-[#5F5850] dark:text-[#A89F91] border border-[#B5814C]/15 dark:border-[#C88E3E]/15 hover:border-[#B5814C]/35 hover:text-[#211D1A] dark:hover:text-[#FAF8F5] hover:bg-[#B5814C]/10 active:scale-95"
                   }`}
               >
+                {logo}
                 <span>{tab.label}</span>
                 <span
                   className={`text-[10.5px] font-bold px-1.5 py-0.2 rounded-full transition-colors ${isActive
@@ -380,6 +444,7 @@ export default function BookmarksScreen({
           onRequestDelete={handleRequestDelete}
           onViewAiContext={handleViewAiContext}
           onGenerateAiContext={onGenerateAiContext}
+          onOpenMedia={handleOpenMedia}
           generatingAiId={generatingAiId}
           generatingAiIds={generatingAiIds}
         />
@@ -418,6 +483,14 @@ export default function BookmarksScreen({
         isOpen={Boolean(deleteConfirmId)}
         onClose={() => setDeleteConfirmId(null)}
         onConfirm={handleDeleteConfirm}
+      />
+
+      {/* Full Screen Media Viewer Modal */}
+      <FullScreenMediaModal
+        isOpen={Boolean(selectedMediaBookmark)}
+        bookmark={selectedMediaBookmark?.bookmark || null}
+        initialIndex={selectedMediaBookmark?.initialIndex ?? 0}
+        onClose={handleCloseMedia}
       />
     </div>
   );

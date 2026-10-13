@@ -82,6 +82,7 @@ interface FacebookCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const FacebookCard = React.memo(function FacebookCard(props: FacebookCardProps) {
@@ -94,6 +95,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     isGeneratingAi,
     onRequestDelete,
     onCloseMenu,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(
@@ -310,18 +312,27 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     if (postImages.length === 1) {
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#3a3b3c]/50 bg-slate-100 dark:bg-black">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, 0);
+              }
+            }}
+            className="block w-full cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={postImages[0]}
               alt="Facebook media"
               className="w-full h-auto max-h-[360px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
-          </a>
+          </div>
         </div>
       );
     }
@@ -329,22 +340,26 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     if (postImages.length === 2) {
       return (
         <div className="grid grid-cols-2 gap-0.5 border-y border-slate-200 dark:border-[#3a3b3c]/50 h-44 sm:h-52 bg-slate-200 dark:bg-[#3a3b3c]">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={postImages[0]} className="w-full h-full object-cover" />
-          </a>
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 1);
+            }}
+            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={postImages[1]} className="w-full h-full object-cover" />
-          </a>
+          </button>
         </div>
       );
     }
@@ -352,30 +367,36 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     if (postImages.length === 3) {
       return (
         <div className="grid grid-cols-2 grid-rows-2 gap-0.5 border-y border-slate-200 dark:border-[#3a3b3c]/50 h-48 sm:h-56 bg-slate-200 dark:bg-[#3a3b3c]">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            className="row-span-2 col-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={postImages[0]} className="w-full h-full object-cover" />
-          </a>
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 1);
+            }}
+            className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={postImages[1]} className="w-full h-full object-cover" />
-          </a>
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 2);
+            }}
+            className="col-span-1 row-span-1 relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={postImages[2]} className="w-full h-full object-cover" />
-          </a>
+          </button>
         </div>
       );
     }
@@ -383,12 +404,14 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
     return (
       <div className="grid grid-cols-2 grid-rows-2 gap-0.5 border-y border-slate-200 dark:border-[#3a3b3c]/50 h-48 sm:h-56 bg-slate-200 dark:bg-[#3a3b3c]">
         {postImages.slice(0, 4).map((imgUrl, idx) => (
-          <a
+          <button
             key={idx}
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block"
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, idx);
+            }}
+            className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#18191a] block cursor-pointer border-none p-0 outline-none"
           >
             <SafeImage url={imgUrl} className="w-full h-full object-cover" />
             {idx === 3 && postImages.length > 4 && (
@@ -396,7 +419,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
                 +{postImages.length - 3}
               </div>
             )}
-          </a>
+          </button>
         ))}
       </div>
     );
@@ -480,6 +503,7 @@ export const FacebookCard = React.memo(function FacebookCard(props: FacebookCard
               poster={cardData?.video_thumbnail || postImages[0]}
               controls
               playsInline
+              onOpenFullscreen={() => onOpenMedia?.(bookmark, 0)}
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
               onError={() => setVideoError(true)}
             />

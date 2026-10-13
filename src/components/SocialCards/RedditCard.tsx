@@ -24,6 +24,7 @@ interface RedditCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const RedditCard = React.memo(function RedditCard(props: RedditCardProps) {
@@ -36,6 +37,7 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
     isGeneratingAi,
     onRequestDelete,
     onCloseMenu,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(
@@ -198,6 +200,7 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
             poster={cardData?.video_thumbnail}
             controls
             playsInline
+            onOpenFullscreen={() => onOpenMedia?.(bookmark, 0)}
             className="w-full max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black"
           />
         </div>
@@ -211,13 +214,22 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, activeMediaIdx);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, activeMediaIdx);
+              }
+            }}
             className={`w-full ${
               imageItems.length > 1 ? "h-full" : "h-auto"
-            } flex items-center justify-center overflow-hidden`}
+            } flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-95 transition-opacity`}
           >
             <SafeImage
               url={imageItems[activeMediaIdx]?.url}
@@ -226,7 +238,7 @@ export const RedditCard = React.memo(function RedditCard(props: RedditCardProps)
                 imageItems.length > 1 ? "h-full" : "h-auto max-h-[380px]"
               } object-contain mx-auto block bg-slate-100 dark:bg-black`}
             />
-          </a>
+          </div>
 
           {imageItems.length > 1 && (
             <>

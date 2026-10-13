@@ -19,6 +19,7 @@ interface LinkedInCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCardProps) {
@@ -31,6 +32,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
     isGeneratingAi,
     onRequestDelete,
     onCloseMenu,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(
@@ -98,18 +100,27 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
     if (cardData?.document && postImages.length > 0) {
       return (
         <div className="relative w-full overflow-hidden border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-100 dark:bg-black group">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, currentSlide);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, currentSlide);
+              }
+            }}
+            className="block w-full cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={postImages[currentSlide] || postImages[0]}
               alt={`Slide ${currentSlide + 1}`}
               className="w-full h-auto max-h-[380px] object-contain mx-auto block bg-slate-100 dark:bg-black select-none"
             />
-          </a>
+          </div>
 
           {postImages.length > 1 && (
             <>
@@ -151,18 +162,27 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
     if (postImages.length === 1) {
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-100 dark:bg-black flex items-center justify-center">
-          <a
-            href={sanitizeUrl(bookmark.url)}
-            target="_blank"
-            rel="noreferrer"
-            className="block w-full"
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenMedia?.(bookmark, 0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onOpenMedia?.(bookmark, 0);
+              }
+            }}
+            className="block w-full cursor-pointer hover:opacity-95 transition-opacity"
           >
             <SafeImage
               url={postImages[0]}
               alt="LinkedIn media"
               className="w-full h-auto max-h-[360px] object-contain mx-auto block bg-slate-100 dark:bg-black"
             />
-          </a>
+          </div>
         </div>
       );
     }
@@ -171,22 +191,26 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
       return (
         <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-200 dark:bg-[#28323d]">
           <div className="grid grid-cols-2 gap-0.5 w-full h-44 sm:h-52">
-            <a
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block"
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 0);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block cursor-pointer border-none p-0 outline-none"
             >
               <SafeImage url={postImages[0]} className="w-full h-full object-cover" />
-            </a>
-            <a
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block"
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, 1);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block cursor-pointer border-none p-0 outline-none"
             >
               <SafeImage url={postImages[1]} className="w-full h-full object-cover" />
-            </a>
+            </button>
           </div>
         </div>
       );
@@ -196,12 +220,14 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
       <div className="w-full overflow-hidden border-y border-slate-200 dark:border-[#38434f]/50 bg-slate-200 dark:bg-[#28323d]">
         <div className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-48 sm:h-56">
           {postImages.slice(0, 4).map((imgUrl, idx) => (
-            <a
+            <button
               key={idx}
-              href={sanitizeUrl(bookmark.url)}
-              target="_blank"
-              rel="noreferrer"
-              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block"
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenMedia?.(bookmark, idx);
+              }}
+              className="relative w-full h-full overflow-hidden bg-slate-100 dark:bg-[#1b1f23] block cursor-pointer border-none p-0 outline-none"
             >
               <SafeImage url={imgUrl} className="w-full h-full object-cover" />
               {idx === 3 && postImages.length > 4 && (
@@ -209,7 +235,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
                   +{postImages.length - 3}
                 </div>
               )}
-            </a>
+            </button>
           ))}
         </div>
       </div>
@@ -326,6 +352,7 @@ export const LinkedInCard = React.memo(function LinkedInCard(props: LinkedInCard
               poster={cardData?.video_thumbnail || postImages[0]}
               controls
               playsInline
+              onOpenFullscreen={() => onOpenMedia?.(bookmark, 0)}
               className="w-full max-h-[380px] object-contain bg-slate-100 dark:bg-black mx-auto block"
               onError={() => setVideoError(true)}
             />

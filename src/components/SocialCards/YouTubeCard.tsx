@@ -22,6 +22,7 @@ interface YouTubeCardProps {
   onViewAiContext?: (bookmark: Bookmark) => void;
   onGenerateAiContext?: (bookmark: Bookmark) => void;
   isGeneratingAi?: boolean;
+  onOpenMedia?: (bookmark: Bookmark, initialIndex?: number) => void;
 }
 
 export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardProps) {
@@ -34,6 +35,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
     onViewAiContext,
     onGenerateAiContext,
     isGeneratingAi,
+    onOpenMedia,
   } = props;
 
   const cardData = useMemo(
@@ -65,11 +67,20 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
     <div className="flex flex-col h-full bg-white dark:bg-[#0f0f0f] text-slate-900 dark:text-[#f1f1f1] font-sans rounded-2xl border border-slate-200/80 dark:border-[#272727] overflow-hidden pb-1 shadow-sm">
       {/* 1. Video Thumbnail Header */}
       <div className="relative w-full aspect-video bg-slate-100 dark:bg-black overflow-hidden group/video">
-        <a
-          href={sanitizeUrl(bookmark.url)}
-          target="_blank"
-          rel="noreferrer"
-          className="block w-full h-full"
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenMedia?.(bookmark, 0);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpenMedia?.(bookmark, 0);
+            }
+          }}
+          className="block w-full h-full cursor-pointer select-none"
         >
           {thumbSrc ? (
             <img
@@ -95,7 +106,7 @@ export const YouTubeCard = React.memo(function YouTubeCard(props: YouTubeCardPro
               </svg>
             </div>
           </div>
-        </a>
+        </div>
 
         {/* Top-Right Logo & 3-dots Menu */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-2 z-10">
