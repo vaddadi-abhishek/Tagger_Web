@@ -488,9 +488,20 @@ export default function BookmarksScreen({
       {/* Full Screen Media Viewer Modal */}
       <FullScreenMediaModal
         isOpen={Boolean(selectedMediaBookmark)}
-        bookmark={selectedMediaBookmark?.bookmark || null}
+        bookmark={
+          selectedMediaBookmark
+            ? bookmarks.find((b) => b.id === selectedMediaBookmark.bookmark.id) || selectedMediaBookmark.bookmark
+            : null
+        }
         initialIndex={selectedMediaBookmark?.initialIndex ?? 0}
         onClose={handleCloseMedia}
+        onViewAiContext={handleViewAiContext}
+        onGenerateAiContext={onGenerateAiContext}
+        isGeneratingAi={Boolean(
+          selectedMediaBookmark &&
+            (generatingAiId === selectedMediaBookmark.bookmark.id ||
+              generatingAiIds?.has(selectedMediaBookmark.bookmark.id))
+        )}
       />
     </div>
   );

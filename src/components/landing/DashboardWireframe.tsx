@@ -321,7 +321,7 @@ function WireframeCard({
                 className="w-full px-3 py-1.5 text-left text-xs font-medium text-[#211D1A] dark:text-[#FAF8F5] hover:bg-[#B5814C]/10 dark:hover:bg-[#B5814C]/20 hover:text-[#B5814C] dark:hover:text-[#D99F50] flex items-center gap-2 cursor-pointer transition-colors"
               >
                 <Sparkles className="size-3.5 text-[#B5814C] dark:text-[#D99F50]" />
-                <span>AI Context</span>
+                <span>View AI Context</span>
               </button>
               <button
                 type="button"

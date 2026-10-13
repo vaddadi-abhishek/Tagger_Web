@@ -24,6 +24,9 @@ export interface FullScreenMediaModalProps {
   bookmark: Bookmark | null;
   initialIndex?: number;
   onClose: () => void;
+  onViewAiContext?: (bookmark: Bookmark) => void;
+  onGenerateAiContext?: (bookmark: Bookmark) => void;
+  isGeneratingAi?: boolean;
 }
 
 export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
@@ -31,10 +34,12 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
   bookmark,
   initialIndex = 0,
   onClose,
+  onViewAiContext,
+  onGenerateAiContext,
+  isGeneratingAi = false,
 }) => {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -46,7 +51,6 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
     if (isOpen) {
       setActiveIndex(initialIndex);
       setIsMenuOpen(false);
-      setCopied(false);
       setIsDescriptionExpanded(false);
       setIsPlaying(true);
     }
@@ -138,53 +142,6 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, mediaItems.length, onClose, isVideo, handleTogglePlay]);
-
-  const handleDownload = useCallback(async () => {
-    if (!currentItem?.url) return;
-    setIsMenuOpen(false);
-
-    try {
-      const response = await fetch(currentItem.url, { mode: "cors" });
-      if (response.ok) {
-        const blob = await response.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        const ext = isVideo ? "mp4" : "jpg";
-        const site = (bookmark?.site_name || "mindspace").toLowerCase().replace(/[^a-z0-9]/g, "");
-        a.download = `${site}_${Date.now()}.${ext}`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-        return;
-      }
-    } catch {
-      // CORS or network error fallback
-    }
-
-    // Direct browser anchor fallback
-    const a = document.createElement("a");
-    a.href = currentItem.url;
-    a.target = "_blank";
-    a.rel = "noreferrer";
-    a.download = "";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, [currentItem, isVideo, bookmark]);
-
-  const handleCopyLink = useCallback(async () => {
-    if (!currentItem?.url) return;
-    try {
-      await navigator.clipboard.writeText(currentItem.url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Ignore clipboard error
-    }
-    setIsMenuOpen(false);
-  }, [currentItem]);
 
   if (!isOpen || !bookmark || mediaItems.length === 0) {
     return null;
@@ -429,58 +386,87 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
                   className="fixed inset-0 z-40"
                   onClick={() => setIsMenuOpen(false)}
                 />
-                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[#1C1917]/95 border border-white/15 shadow-2xl backdrop-blur-xl py-1.5 z-50 overflow-hidden animate-in fade-in slide-from-top-2 duration-150">
-                  {/* Download Button */}
-                  <button
-                    type="button"
-                    onClick={handleDownload}
-                    className="w-full px-4 py-2.5 text-left text-sm font-semibold text-white hover:bg-white/10 active:bg-white/15 flex items-center gap-3 transition-colors cursor-pointer"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      className="size-4.5 text-amber-400 shrink-0"
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[#1C1917]/95 border border-white/15 shadow-2xl backdrop-blur-xl py-1.5 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+                  {/* 1. View AI Context OR Generate AI Context */}
+                  {bookmark.ai_status === "completed" || bookmark.ai_context ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onViewAiContext?.(bookmark);
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm font-medium text-white hover:bg-white/10 active:bg-white/15 flex items-center gap-3 transition-colors cursor-pointer"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.5V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                      />
-                    </svg>
-                    <span>{isVideo ? "Download Video" : "Download Image"}</span>
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.8"
+                        stroke="currentColor"
+                        className="size-4.5 text-amber-400 shrink-0"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+                        />
+                      </svg>
+                      <span>View AI Context</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onGenerateAiContext?.(bookmark);
+                      }}
+                      disabled={isGeneratingAi}
+                      className="w-full px-4 py-2.5 text-left text-sm font-medium text-amber-400 hover:text-amber-300 hover:bg-white/10 active:bg-white/15 flex items-center gap-3 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? (
+                        <svg
+                          className="animate-spin size-4.5 shrink-0 text-amber-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.8"
+                          stroke="currentColor"
+                          className="size-4.5 text-amber-400 shrink-0"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456Z"
+                          />
+                        </svg>
+                      )}
+                      <span>{isGeneratingAi ? "Generating AI..." : "Generate AI Context"}</span>
+                    </button>
+                  )}
 
                   <div className="my-1 border-t border-white/10" />
 
-                  {/* Copy Direct Media Link */}
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-slate-300 hover:text-white hover:bg-white/10 active:bg-white/15 flex items-center gap-3 transition-colors cursor-pointer"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2"
-                      stroke="currentColor"
-                      className="size-4.5 text-slate-400 shrink-0"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 013 20.625V10.875c0-.621.504-1.125 1.125-1.125h3.375m6 0h3.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125v-3.375m6-6v-3.375c0-.621-.504-1.125-1.125-1.125H10.875"
-                      />
-                    </svg>
-                    <span>{copied ? "Link Copied!" : "Copy Media Link"}</span>
-                  </button>
-
-                  <div className="my-1 border-t border-white/10" />
-
-                  {/* Open Original Post */}
+                  {/* 2. Open Original Post */}
                   <a
                     href={sanitizeUrl(bookmark.url)}
                     target="_blank"
