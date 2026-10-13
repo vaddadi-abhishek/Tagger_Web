@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import type { Bookmark, InstagramCardData } from "../../types/bookmark";
-import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData } from "../../lib/utils";
+import { sanitizeUrl, formatNumber, formatRelativeDate, parseCardData, isVideoUrl, isImageUrl } from "../../lib/utils";
 import { ExpandableText } from "./ExpandableText";
 import { CarouselNavButtons } from "./CarouselNavButtons";
 import { SafeImage } from "./SafeImage";
@@ -102,14 +102,7 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
 
       if (typeof rawItem === "string") {
         url = rawItem.trim();
-        if (
-          url.includes(".mp4") ||
-          url.includes("/reel/") ||
-          url.includes("/video/") ||
-          url.includes("video_url")
-        ) {
-          type = "video";
-        }
+        type = isVideoUrl(url) ? "video" : "image";
       } else if (typeof rawItem === "object" && rawItem !== null) {
         const itemObj = rawItem as Record<string, unknown>;
         url = (
@@ -122,11 +115,15 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
           ""
         ).trim();
 
-        if (
-          itemObj.type === "video" ||
+        const itemType = (typeof itemObj.type === "string" ? itemObj.type : "").toLowerCase();
+        if (isImageUrl(url) || itemType === "image") {
+          type = "image";
+        } else if (
+          itemType === "video" ||
+          itemType === "reel" ||
           itemObj.is_video === true ||
           Boolean(itemObj.video_url) ||
-          url.includes(".mp4")
+          isVideoUrl(url)
         ) {
           type = "video";
         }
@@ -146,17 +143,17 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
       items.push({ type, url });
     };
 
+    const rawMedia = cardData?.media;
+    if (Array.isArray(rawMedia) && rawMedia.length > 0) {
+      for (const m of rawMedia) {
+        addItem(m, m.type === "video" ? "video" : "image");
+      }
+    }
+
     const rawImages = cardData?.images;
     if (Array.isArray(rawImages)) {
       for (const img of rawImages) {
         addItem(img, "image");
-      }
-    }
-
-    const rawMedia = cardData?.media;
-    if (Array.isArray(rawMedia)) {
-      for (const m of rawMedia) {
-        addItem(m, m.type === "video" ? "video" : "image");
       }
     }
 

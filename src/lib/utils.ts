@@ -458,20 +458,80 @@ export interface ExtractedMediaItem {
   posterUrl?: string | null;
 }
 
-export function isVideoUrl(url?: string | null): boolean {
+/**
+ * Accurately determines if a URL points to an image file or known image pattern.
+ */
+export function isImageUrl(url?: string | null): boolean {
   if (!url || typeof url !== "string") return false;
-  const clean = url.split("?")[0].toLowerCase();
-  return (
-    clean.endsWith(".mp4") ||
-    clean.endsWith(".webm") ||
-    clean.endsWith(".m3u8") ||
-    clean.endsWith(".mov") ||
-    clean.includes("video") ||
-    clean.includes("ext_tw_video") ||
-    clean.includes("fbcdn.net/v/")
-  );
+  const clean = url.trim().toLowerCase();
+  if (!clean) return false;
+
+  if (clean.startsWith("data:image/")) return true;
+
+  const urlWithoutQuery = clean.split("?")[0];
+  if (
+    /\.(jpg|jpeg|png|webp|gif|svg|ico|bmp|tiff|heic|avif)$/i.test(urlWithoutQuery) ||
+    clean.includes("format=jpg") ||
+    clean.includes("format=jpeg") ||
+    clean.includes("format=png") ||
+    clean.includes("format=webp") ||
+    clean.includes("f_jpg") ||
+    clean.includes("f_png") ||
+    clean.includes("f_webp") ||
+    clean.includes("format=auto") ||
+    clean.includes("_thumb") ||
+    clean.includes("video_thumb")
+  ) {
+    return true;
+  }
+  return false;
 }
 
+/**
+ * Accurately determines if a URL points to a playable video stream or file.
+ */
+export function isVideoUrl(url?: string | null): boolean {
+  if (!url || typeof url !== "string") return false;
+  const clean = url.trim().toLowerCase();
+  if (!clean) return false;
+
+  // Never classify known image formats or thumbnails as video streams
+  if (isImageUrl(clean)) {
+    return false;
+  }
+
+  const urlWithoutQuery = clean.split("?")[0];
+
+  // Direct playable video extensions
+  if (/\.(mp4|mov|webm|m3u8|m4v|mpd|ts)$/i.test(urlWithoutQuery)) {
+    return true;
+  }
+
+  // Common video stream query parameters and mime-type indicators
+  if (
+    clean.includes(".mp4?") ||
+    clean.includes(".m3u8?") ||
+    clean.includes("format=mp4") ||
+    clean.includes("mime_type=video_mp4") ||
+    clean.includes("video/mp4")
+  ) {
+    return true;
+  }
+
+  // Dedicated video-only CDN endpoints (excluding thumbnails)
+  if (
+    (clean.includes("video.twimg.com") && !clean.includes("thumb")) ||
+    (clean.includes("v.redd.it") && !clean.includes("preview"))
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Extracts and categorizes all media items (images and videos) for a bookmark.
+ */
 export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
   const cardData = (typeof bookmark.card_data === "object" && bookmark.card_data !== null
     ? bookmark.card_data
@@ -496,14 +556,8 @@ export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
     items.push({ type, url: trimmed, posterUrl: posterUrl || null });
   };
 
-  // 1. Direct cardData video_url or stream
-  const directVid = cardData?.video_url || cardData?.playback_url || cardData?.stream_url;
-  if (directVid) {
-    add(directVid, "video", cardData?.video_thumbnail || bookmark.snapshot);
-  }
-
-  // 2. Scan cardData.media array
-  if (Array.isArray(cardData?.media)) {
+  // 1. Scan cardData.media array first (structured array from platform extractors)
+  if (Array.isArray(cardData?.media) && cardData.media.length > 0) {
     for (const m of cardData.media) {
       if (!m) continue;
       if (typeof m === "string") {
@@ -512,12 +566,13 @@ export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
       } else if (typeof m === "object") {
         const itemUrl = (m.url || "").trim();
         const itemType = (m.type || "").toLowerCase();
+        // Check explicitly: if it's an image format or typed as image, never force into video
         const isVid =
-          itemType === "video" ||
-          itemType === "reel" ||
-          itemType === "gif" ||
-          m.is_video === true ||
-          isVideoUrl(itemUrl);
+          !isImageUrl(itemUrl) &&
+          (itemType === "video" ||
+            itemType === "reel" ||
+            m.is_video === true ||
+            (itemType !== "image" && isVideoUrl(itemUrl)));
         if (isVid) {
           add(itemUrl, "video", m.thumbnail_url || m.poster || cardData?.video_thumbnail);
         } else if (itemUrl) {
@@ -527,7 +582,7 @@ export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
     }
   }
 
-  // 3. Scan cardData.images array
+  // 2. Scan cardData.images array (only add if not already captured)
   if (Array.isArray(cardData?.images)) {
     for (const img of cardData.images) {
       const u = typeof img === "string" ? img.trim() : (img?.url || img?.src || "").trim();
@@ -537,9 +592,16 @@ export function extractMediaDetails(bookmark: Bookmark): ExtractedMediaItem[] {
     }
   }
 
+  // 3. Direct cardData video_url or stream if it is a real video and not an image
+  const directVid = cardData?.video_url || cardData?.playback_url || cardData?.stream_url;
+  if (directVid && isVideoUrl(directVid) && !isImageUrl(directVid)) {
+    add(directVid, "video", cardData?.video_thumbnail || bookmark.snapshot);
+  }
+
   // 4. Snapshot fallback if no media found
   if (items.length === 0 && bookmark.snapshot && !bookmark.snapshot.includes("avatar")) {
-    add(bookmark.snapshot, "image");
+    const isVid = isVideoUrl(bookmark.snapshot);
+    add(bookmark.snapshot, isVid ? "video" : "image");
   }
 
   return items;
