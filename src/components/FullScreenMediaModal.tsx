@@ -43,6 +43,7 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -53,6 +54,7 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
       setIsMenuOpen(false);
       setIsDescriptionExpanded(false);
       setIsPlaying(true);
+      setIsVideoLoading(true);
     }
   }, [isOpen, initialIndex]);
 
@@ -214,16 +216,37 @@ export const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
               autoPlay
               loop
               playsInline
+              preload="auto"
               muted={isMuted}
               controls={false}
               onClick={handleTogglePlay}
-              onPlay={() => setIsPlaying(true)}
+              onLoadStart={() => setIsVideoLoading(true)}
+              onWaiting={() => setIsVideoLoading(true)}
+              onLoadedData={() => setIsVideoLoading(false)}
+              onCanPlay={() => setIsVideoLoading(false)}
+              onPlaying={() => {
+                setIsPlaying(true);
+                setIsVideoLoading(false);
+              }}
               onPause={() => setIsPlaying(false)}
               className="w-full h-full max-w-full max-h-full object-contain cursor-pointer pointer-events-auto"
             />
 
-            {/* Centered Play Button (Shown when paused) */}
-            {!isPlaying && (
+            {/* Video Buffering Spinner Overlay */}
+            {isVideoLoading && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-white text-xs font-semibold shadow-2xl">
+                  <svg className="animate-spin size-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  <span>Loading video...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Centered Play Button (Shown when paused and not buffering) */}
+            {!isPlaying && !isVideoLoading && (
               <button
                 type="button"
                 onClick={(e) => {

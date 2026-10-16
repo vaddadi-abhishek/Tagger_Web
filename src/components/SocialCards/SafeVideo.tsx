@@ -30,6 +30,7 @@ export const SafeVideo = React.memo(function SafeVideo({
 }: SafeVideoProps) {
   // Poster Facade: only initialize heavy <video> and network stream when user clicks Play
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [hasError, setHasError] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -115,6 +116,7 @@ export const SafeVideo = React.memo(function SafeVideo({
       return;
     }
     setIsPlaying(true);
+    setIsBuffering(true);
     onPlayStart?.();
   };
 
@@ -195,23 +197,42 @@ export const SafeVideo = React.memo(function SafeVideo({
 
   // 3. Active Video Player (Mounted on demand after click)
   return (
-    <video
-      ref={videoRef}
-      src={isHls ? undefined : src}
-      poster={poster || undefined}
-      controls={controls}
-      playsInline={playsInline}
-      autoPlay={true}
-      muted={muted}
-      loop={loop}
-      {...({ referrerPolicy: "no-referrer" } as any)}
-      preload="metadata"
-      onError={(e) => {
-        console.warn("Video failed to play:", src, e);
-        setHasError(true);
-      }}
-      className={className}
-      {...rest}
-    />
+    <div className="relative w-full overflow-hidden flex items-center justify-center">
+      <video
+        ref={videoRef}
+        src={isHls ? undefined : src}
+        poster={poster || undefined}
+        controls={controls}
+        playsInline={playsInline}
+        autoPlay={true}
+        muted={muted}
+        loop={loop}
+        preload="auto"
+        {...({ referrerPolicy: "no-referrer" } as any)}
+        onLoadStart={() => setIsBuffering(true)}
+        onWaiting={() => setIsBuffering(true)}
+        onLoadedData={() => setIsBuffering(false)}
+        onCanPlay={() => setIsBuffering(false)}
+        onPlaying={() => setIsBuffering(false)}
+        onError={(e) => {
+          console.warn("Video failed to play:", src, e);
+          setHasError(true);
+          setIsBuffering(false);
+        }}
+        className={className}
+        {...rest}
+      />
+      {isBuffering && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 bg-black/40 backdrop-blur-[2px]">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/75 border border-white/20 text-white text-xs font-semibold shadow-lg">
+            <svg className="animate-spin size-3.5 text-white" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 });
