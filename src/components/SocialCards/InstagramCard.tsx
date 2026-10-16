@@ -15,6 +15,7 @@ import {
   VerifiedBadge,
 } from "./SocialCardIcons";
 import { CardActionMenu } from "./CardActionMenu";
+import { Lock, ExternalLink } from "lucide-react";
 
 function isInstagramProfileUrl(url?: string | null): boolean {
   if (!url) return false;
@@ -206,6 +207,111 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
     if (!followers && !following && !posts) return null;
     return { followers, following, posts };
   }, [isProfile, bookmark.description]);
+
+  const isRestricted = useMemo(() => {
+    if (cardData?.is_restricted) return true;
+    const authorUser = (author?.username || "").toLowerCase();
+    const authorName = (author?.name || "").toLowerCase();
+    const isUnknown = !authorUser || authorUser === "unknown" || authorName === "instagram user";
+    const noMedia = mediaItems.length === 0;
+    const desc = (bookmark.description || "").trim().toLowerCase();
+    const title = (bookmark.title || "").trim().toLowerCase();
+    const hasRestrictedText =
+      desc.includes("the account is restricted") ||
+      desc.includes("people under") ||
+      desc.includes("limits on who can see") ||
+      desc.includes("restricted") ||
+      title.includes("restricted") ||
+      title.includes("content is unavailable") ||
+      title.includes("this content is unavailable");
+
+    return Boolean(cardData?.is_restricted || hasRestrictedText || (isUnknown && noMedia && (!desc || title === "instagram post")));
+  }, [cardData?.is_restricted, author?.username, author?.name, mediaItems.length, bookmark.description, bookmark.title]);
+
+  if (isRestricted) {
+    const cleanUrl = sanitizeUrl(bookmark.url);
+    const postDate = cardData?.posted_at || bookmark.created_at;
+
+    return (
+      <div className="flex flex-col h-full bg-white dark:bg-black text-slate-900 dark:text-[#f5f5f5] font-sans rounded-2xl border border-slate-200/80 dark:border-[#262626] overflow-hidden shadow-sm">
+        {/* 1. Header: Avatar, Username, Badge, IG Logo & Menu */}
+        <div className="px-3.5 py-2.5 flex items-center justify-between border-b border-slate-100 dark:border-[#262626]/60">
+          <div className="flex items-center gap-2.5 overflow-hidden flex-1">
+            <div className="relative p-[1.5px] rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shrink-0">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-white dark:bg-black p-[1px] flex items-center justify-center">
+                {author?.avatar_url ? (
+                  <SafeImage
+                    url={author.avatar_url}
+                    alt={author.name || author.username || "Instagram"}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <InstagramBrandLogo />
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="font-bold text-[13.5px] text-slate-900 dark:text-[#f5f5f5] truncate">
+                {author?.username && author.username !== "unknown" ? `@${author.username}` : "Instagram"}
+              </span>
+              {author?.verified && <VerifiedBadge />}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            <div className="p-0.5 shrink-0">
+              <InstagramBrandLogo />
+            </div>
+            <CardActionMenu
+              bookmark={bookmark}
+              isOpen={Boolean(isMenuOpen)}
+              onToggle={(e) => onToggleMenu?.(bookmark.id, e)}
+              onClose={onCloseMenu || (() => { })}
+              onViewAiContext={onViewAiContext}
+              onGenerateAiContext={onGenerateAiContext}
+              isGeneratingAi={isGeneratingAi}
+              onRequestDelete={onRequestDelete}
+              theme="instagram"
+              icon="vertical"
+              buttonClassName="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-[#262626] transition-colors cursor-pointer text-slate-500 dark:text-[#a8a8a8] outline-none"
+            />
+          </div>
+        </div>
+
+        {/* 2. Restricted Notice Container */}
+        <div className="p-6 flex flex-col items-center justify-center text-center my-auto min-h-[200px] gap-3.5">
+          <div className="p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+            <Lock className="w-6 h-6" />
+          </div>
+
+          <p className="text-[14px] font-semibold text-slate-900 dark:text-white leading-relaxed max-w-[280px]">
+            The account is restricted, please view it on Instagram.
+          </p>
+
+          {cleanUrl && (
+            <a
+              href={cleanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold text-white bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:opacity-90 active:scale-95 transition-all shadow-sm cursor-pointer mt-0.5"
+            >
+              <span>View on Instagram</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-90" />
+            </a>
+          )}
+        </div>
+
+        {/* 3. Footer with timestamp */}
+        {formatRelativeDate(postDate) && (
+          <div className="px-4 py-2.5 border-t border-slate-100 dark:border-[#262626]/50 flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500 uppercase tracking-wider font-medium">
+            <span>Instagram</span>
+            <span>{formatRelativeDate(postDate)}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (isProfile) {
     const gridMedia = mediaItems.slice(0, 6);
@@ -446,13 +552,21 @@ export const InstagramCard = React.memo(function InstagramCard(props: InstagramC
                   onOpenMedia?.(bookmark, activeMediaIdx);
                 }
               }}
-              className="block w-full overflow-hidden cursor-pointer"
+              className="relative block w-full overflow-hidden cursor-pointer group"
             >
               <SafeImage
                 url={currentMedia.url}
                 alt="Instagram post media"
                 className="w-full h-auto max-h-[420px] object-contain mx-auto block bg-slate-100 dark:bg-black hover:opacity-95 transition-opacity"
               />
+              {Boolean(cardData?.video_thumbnail) && (
+                <div className="absolute top-2.5 right-2.5 z-10 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1.5 text-white text-[11px] font-semibold drop-shadow">
+                  <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  <span>Reel</span>
+                </div>
+              )}
             </div>
           )}
 
