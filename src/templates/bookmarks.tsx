@@ -342,9 +342,13 @@ export default function BookmarksScreen({
 
     bookmarks.forEach((item) => {
       const type = resolveCardType(item);
-      counts[type] = (counts[type] || 0) + 1;
-      if ((item as any).is_article || type === "article" || type === "generic") {
+      const isArticle = Boolean((item as any).is_article || type === "article");
+      if (isArticle) {
         counts["articles"] = (counts["articles"] || 0) + 1;
+      } else if (type === "generic") {
+        counts["generic"] = (counts["generic"] || 0) + 1;
+      } else {
+        counts[type] = (counts[type] || 0) + 1;
       }
     });
 
@@ -419,6 +423,14 @@ export default function BookmarksScreen({
         );
       case "reddit":
         return <RedditBrandLogo className="w-3.5 h-3.5 shrink-0" />;
+      case "generic":
+        return (
+          <svg className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-current"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.6 9h16.8M3.6 15h16.8" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11.5 3a17 17 0 0 0 0 18M12.5 3a17 17 0 0 1 0 18" />
+          </svg>
+        );
       default:
         // Do not add logos for "all" or "articles"
         return null;

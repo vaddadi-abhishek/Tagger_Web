@@ -140,7 +140,8 @@ export function resolveCardType(bookmark: Bookmark): string {
 export function matchesPlatform(bookmark: Bookmark, platform: string): boolean {
   if (!platform || platform === "all") return true;
   const cardType = resolveCardType(bookmark);
-  if (platform === "articles") return Boolean((bookmark as any).is_article || cardType === "article" || cardType === "generic");
+  if (platform === "articles") return Boolean((bookmark as any).is_article || cardType === "article");
+  if (platform === "generic") return cardType === "generic" && !(bookmark as any).is_article;
   return cardType === platform;
 }
 
@@ -163,6 +164,7 @@ export function getFaviconUrl(url?: string): string {
 export const PLATFORM_TABS = [
   { id: "all", label: "All" },
   { id: "articles", label: "Articles" },
+  { id: "generic", label: "Web" },
   { id: "x", label: "Twitter / X" },
   { id: "youtube", label: "YouTube" },
   { id: "instagram", label: "Instagram" },
